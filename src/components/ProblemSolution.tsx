@@ -88,7 +88,7 @@ const ProblemSolution = () => {
 
               <div className="mt-6 p-4 bg-gray-900 rounded-lg border border-neon-green">
                 <code className="text-sm text-neon-green">
-                  > "Create a 4-bit counter with reset"<br/>
+                  {'"Create a 4-bit counter with reset"'}<br/>
                   <span className="text-gray-400">🤖 Generating optimized HDL...</span><br/>
                   <span className="text-neon-purple">✓ Verified & ready to deploy</span>
                 </code>
