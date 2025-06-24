@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Clock, Zap, AlertTriangle, CheckCircle, Timer, Cpu } from "lucide-react";
+import { Clock, Zap, AlertTriangle, CheckCircle, Timer, Cpu } from "lucide-react";
 
 const ConsolidatedSolution = () => {
   return (
@@ -20,7 +20,7 @@ const ConsolidatedSolution = () => {
         </div>
 
         {/* Problem vs Solution Comparison */}
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+        <div className="grid lg:grid-cols-2 gap-12 items-start mb-20 max-w-6xl mx-auto">
           {/* Traditional Challenges */}
           <Card className="bg-slate-800/30 border-amber-500/30 hover:border-amber-400/50 transition-all duration-300 enterprise-shadow">
             <CardContent className="p-8">
@@ -70,14 +70,6 @@ const ConsolidatedSolution = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Arrow */}
-          <div className="flex justify-center lg:flex-col lg:items-center">
-            <ArrowRight className="h-16 w-16 text-cyan-400 animate-data-pulse" />
-            <div className="hidden lg:block text-center mt-4">
-              <div className="text-sm text-slate-400 font-medium">AI Transformation</div>
-            </div>
-          </div>
 
           {/* ChipForge Solution */}
           <Card className="bg-slate-800/30 border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 enterprise-shadow-lg">
