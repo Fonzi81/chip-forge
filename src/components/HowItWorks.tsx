@@ -2,105 +2,179 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Cpu, CheckCircle, ToggleLeft, ToggleRight } from "lucide-react";
+import { FileText, Cpu, CheckCircle, ToggleLeft, ToggleRight, Timer, Zap } from "lucide-react";
 
 const HowItWorks = () => {
   const [isChipForgeFlow, setIsChipForgeFlow] = useState(true);
 
   const traditionalSteps = [
-    { icon: MessageSquare, title: "Specification Document", desc: "Write detailed technical specs", time: "2-4 weeks" },
-    { icon: Cpu, title: "Manual HDL Coding", desc: "Expert engineers write HDL", time: "3-6 months" },
-    { icon: CheckCircle, title: "Manual Testing", desc: "Extensive verification process", time: "1-3 months" }
+    { 
+      icon: FileText, 
+      title: "Manual Specification", 
+      desc: "Write detailed technical documentation and requirements", 
+      time: "2-4 weeks",
+      details: "Requirements gathering, architecture planning, manual documentation"
+    },
+    { 
+      icon: Cpu, 
+      title: "Expert HDL Development", 
+      desc: "Senior engineers manually code Verilog/VHDL implementations", 
+      time: "3-6 months",
+      details: "Manual coding, debugging, optimization iterations"
+    },
+    { 
+      icon: CheckCircle, 
+      title: "Manual Verification", 
+      desc: "Extensive testing, simulation, and validation processes", 
+      time: "1-3 months",
+      details: "Test bench creation, simulation runs, bug fixes"
+    }
   ];
 
   const chipforgeSteps = [
-    { icon: MessageSquare, title: "Plain English Input", desc: "Describe what you want in natural language", time: "5 minutes" },
-    { icon: Cpu, title: "Agentic AI Processing", desc: "AI generates & optimizes HDL automatically", time: "30 seconds" },
-    { icon: CheckCircle, title: "Automated Verification", desc: "AI validates & creates deployment package", time: "2 minutes" }
+    { 
+      icon: FileText, 
+      title: "Natural Language Input", 
+      desc: "Describe chip functionality in plain English specifications", 
+      time: "< 5 minutes",
+      details: "AI parses requirements, extracts technical parameters"
+    },
+    { 
+      icon: Zap, 
+      title: "AI Synthesis Engine", 
+      desc: "Advanced AI generates optimized HDL with formal verification", 
+      time: "< 30 seconds",
+      details: "Multi-agent AI system: architecture, optimization, verification"
+    },
+    { 
+      icon: CheckCircle, 
+      title: "Automated Validation", 
+      desc: "Comprehensive testing suite with deployment package", 
+      time: "< 2 minutes",
+      details: "Formal verification, timing analysis, fabrication files"
+    }
   ];
 
   const currentSteps = isChipForgeFlow ? chipforgeSteps : traditionalSteps;
+  const totalTime = isChipForgeFlow ? "< 8 minutes" : "6-12 months";
+  const efficiency = isChipForgeFlow ? "500x faster" : "baseline";
 
   return (
-    <section className="py-20 px-6">
+    <section className="py-24 px-6 bg-slate-950">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            How It <span className="gradient-text">Works</span>
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/80 border border-cyan-500/20 rounded-full mb-6">
+            <Timer className="h-4 w-4 text-cyan-400" />
+            <span className="text-sm text-slate-300 font-medium">Workflow Comparison</span>
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight tracking-tight">
+            How <span className="gradient-text">ChipForge</span> Works
           </h2>
           
-          {/* Toggle Switch */}
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <span className={`text-lg ${!isChipForgeFlow ? 'text-neon-purple' : 'text-gray-400'}`}>
+          {/* Professional toggle */}
+          <div className="flex items-center justify-center gap-6 mb-12 p-6 bg-slate-800/50 rounded-lg border border-slate-700 max-w-md mx-auto">
+            <span className={`text-sm font-medium transition-colors ${!isChipForgeFlow ? 'text-amber-400' : 'text-slate-500'}`}>
               Traditional Flow
             </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsChipForgeFlow(!isChipForgeFlow)}
-              className="p-0 h-auto"
+              className="p-0 h-auto hover:bg-transparent"
             >
               {isChipForgeFlow ? (
-                <ToggleRight className="h-12 w-12 text-neon-green" />
+                <ToggleRight className="h-8 w-8 text-cyan-400" />
               ) : (
-                <ToggleLeft className="h-12 w-12 text-neon-purple" />
+                <ToggleLeft className="h-8 w-8 text-amber-400" />
               )}
             </Button>
-            <span className={`text-lg ${isChipForgeFlow ? 'text-neon-green' : 'text-gray-400'}`}>
-              ChipForge Flow
+            <span className={`text-sm font-medium transition-colors ${isChipForgeFlow ? 'text-cyan-400' : 'text-slate-500'}`}>
+              ChipForge AI
             </span>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* Professional workflow steps */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {currentSteps.map((step, index) => (
             <Card 
               key={index} 
-              className={`relative bg-dark-surface border-2 transition-all duration-500 hover:scale-105 ${
-                isChipForgeFlow ? 'border-neon-green hover:glow-green' : 'border-neon-purple hover:glow-purple'
+              className={`relative bg-slate-800/50 border-2 transition-all duration-500 enterprise-hover ${
+                isChipForgeFlow ? 'border-cyan-500/30 hover:border-cyan-400' : 'border-amber-500/30 hover:border-amber-400'
               }`}
             >
-              <CardContent className="p-8 text-center">
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-6 ${
-                  isChipForgeFlow ? 'bg-neon-green/20 text-neon-green' : 'bg-neon-purple/20 text-neon-purple'
-                }`}>
-                  <step.icon className="h-8 w-8" />
-                </div>
-                
-                <h3 className="text-xl font-bold mb-4">{step.title}</h3>
-                <p className="text-gray-300 mb-4">{step.desc}</p>
-                
-                <div className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                  isChipForgeFlow ? 'bg-neon-green/20 text-neon-green' : 'bg-neon-purple/20 text-neon-purple'
-                }`}>
-                  {step.time}
-                </div>
-
-                {/* Step number */}
-                <div className={`absolute -top-4 -left-4 w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                  isChipForgeFlow ? 'bg-neon-green text-black' : 'bg-neon-purple text-white'
+              <CardContent className="p-8">
+                {/* Step indicator */}
+                <div className={`absolute -top-4 -left-4 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
+                  isChipForgeFlow ? 'bg-cyan-500 text-slate-900' : 'bg-amber-500 text-slate-900'
                 }`}>
                   {index + 1}
                 </div>
 
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-xl mb-6 ${
+                  isChipForgeFlow ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'
+                }`}>
+                  <step.icon className="h-8 w-8" />
+                </div>
+                
+                <h3 className="text-xl font-bold mb-3 text-slate-100">{step.title}</h3>
+                <p className="text-slate-400 mb-4 leading-relaxed">{step.desc}</p>
+                
+                {/* Time indicator */}
+                <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold mb-4 ${
+                  isChipForgeFlow ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'
+                }`}>
+                  <Timer className="h-4 w-4" />
+                  {step.time}
+                </div>
+
+                {/* Technical details */}
+                <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+                  <div className="text-xs text-slate-500 mb-1">Process Details:</div>
+                  <div className="text-sm text-slate-300">{step.details}</div>
+                </div>
+
                 {/* Connection line */}
                 {index < currentSteps.length - 1 && (
-                  <div className={`hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 ${
-                    isChipForgeFlow ? 'bg-neon-green' : 'bg-neon-purple'
-                  } animate-shimmer`}></div>
+                  <div className={`hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 ${
+                    isChipForgeFlow ? 'bg-cyan-500' : 'bg-amber-500'
+                  } animate-trace-flow`}></div>
                 )}
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Summary */}
-        <div className="text-center mt-16">
-          <p className="text-2xl text-gray-300">
-            Total Time: <span className={`font-bold ${isChipForgeFlow ? 'text-neon-green' : 'text-red-400'}`}>
-              {isChipForgeFlow ? '< 1 hour' : '6-12 months'}
-            </span>
-          </p>
+        {/* Professional summary with metrics */}
+        <div className="text-center">
+          <Card className="max-w-2xl mx-auto bg-slate-800/30 border-slate-700">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-bold mb-6 text-slate-100">Workflow Comparison Summary</h3>
+              
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div className="text-center">
+                  <div className="text-sm text-slate-500 mb-1">Total Time to Production</div>
+                  <div className={`text-3xl font-bold ${isChipForgeFlow ? 'text-cyan-400' : 'text-amber-400'}`}>
+                    {totalTime}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm text-slate-500 mb-1">Efficiency Gain</div>
+                  <div className={`text-3xl font-bold ${isChipForgeFlow ? 'text-emerald-400' : 'text-slate-400'}`}>
+                    {efficiency}
+                  </div>
+                </div>
+              </div>
+
+              {isChipForgeFlow && (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                  <div className="text-sm text-emerald-400 font-medium">
+                    ✓ Production-ready HDL in minutes, not months
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

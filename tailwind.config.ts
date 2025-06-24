@@ -63,16 +63,54 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// ChipForge custom colors
-				'neon-green': 'hsl(var(--neon-green))',
-				'neon-purple': 'hsl(var(--neon-purple))',
-				'dark-bg': 'hsl(var(--dark-bg))',
-				'dark-surface': 'hsl(var(--dark-surface))'
+				// Professional slate scale
+				slate: {
+					50: 'hsl(var(--slate-50))',
+					100: 'hsl(var(--slate-100))',
+					200: 'hsl(var(--slate-200))',
+					300: 'hsl(var(--slate-300))',
+					400: 'hsl(var(--slate-400))',
+					500: 'hsl(var(--slate-500))',
+					600: 'hsl(var(--slate-600))',
+					700: 'hsl(var(--slate-700))',
+					800: 'hsl(var(--slate-800))',
+					900: 'hsl(var(--slate-900))',
+					950: 'hsl(var(--slate-950))'
+				},
+				// Technical accent colors
+				cyan: {
+					400: 'hsl(var(--cyan-400))',
+					500: 'hsl(var(--cyan-500))',
+					600: 'hsl(var(--cyan-600))'
+				},
+				blue: {
+					400: 'hsl(var(--blue-400))',
+					500: 'hsl(var(--blue-500))',
+					600: 'hsl(var(--blue-600))'
+				},
+				emerald: {
+					400: 'hsl(var(--emerald-400))',
+					500: 'hsl(var(--emerald-500))',
+					600: 'hsl(var(--emerald-600))'
+				},
+				amber: {
+					400: 'hsl(var(--amber-400))',
+					500: 'hsl(var(--amber-500))'
+				},
+				red: {
+					400: 'hsl(var(--red-400))',
+					500: 'hsl(var(--red-500))'
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontFamily: {
+				sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+				mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular'],
+				display: ['Geist Sans', 'Inter', 'ui-sans-serif']
 			},
 			keyframes: {
 				'accordion-down': {
@@ -90,11 +128,79 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				// Professional animations
+				'trace-flow': {
+					'0%': { 
+						strokeDashoffset: '100',
+						opacity: '0.3'
+					},
+					'50%': { 
+						opacity: '1'
+					},
+					'100%': { 
+						strokeDashoffset: '0',
+						opacity: '0.3'
+					}
+				},
+				'data-pulse': {
+					'0%, 100%': { 
+						opacity: '0.4',
+						transform: 'scale(1)'
+					},
+					'50%': { 
+						opacity: '1',
+						transform: 'scale(1.05)'
+					}
+				},
+				'silicon-etch': {
+					'0%': { 
+						backgroundPosition: '0% 0%',
+						opacity: '0.5'
+					},
+					'50%': { 
+						opacity: '0.8'
+					},
+					'100%': { 
+						backgroundPosition: '100% 100%',
+						opacity: '0.5'
+					}
+				},
+				'code-compile': {
+					'0%': { 
+						transform: 'translateX(-100%)',
+						opacity: '0'
+					},
+					'20%': { 
+						opacity: '1'
+					},
+					'80%': { 
+						opacity: '1'
+					},
+					'100%': { 
+						transform: 'translateX(100%)',
+						opacity: '0'
+					}
+				},
+				'metric-update': {
+					'0%': { 
+						transform: 'translateY(10px)',
+						opacity: '0'
+					},
+					'100%': { 
+						transform: 'translateY(0)',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'trace-flow': 'trace-flow 3s ease-in-out infinite',
+				'data-pulse': 'data-pulse 2s ease-in-out infinite',
+				'silicon-etch': 'silicon-etch 8s linear infinite',
+				'code-compile': 'code-compile 4s ease-in-out infinite',
+				'metric-update': 'metric-update 0.5s ease-out'
 			}
 		}
 	},

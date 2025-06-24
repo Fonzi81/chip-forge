@@ -3,48 +3,82 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import futuristic fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap');
+/* Import professional fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Geist+Sans:wght@300;400;500;600;700;800;900&display=swap');
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Professional Design System - Clinical & Enterprise Grade */
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 210 20% 98%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
-    /* Custom ChipForge colors */
-    --neon-green: 150 100% 50%;
-    --neon-purple: 262 83% 58%;
-    --dark-bg: 240 10% 3.9%;
-    --dark-surface: 240 6% 10%;
-    --gradient-start: 150 100% 50%;
-    --gradient-end: 262 83% 58%;
+    /* Professional ChipForge colors - Clinical and sophisticated */
+    --slate-50: 210 40% 98%;
+    --slate-100: 210 40% 96%;
+    --slate-200: 214 32% 91%;
+    --slate-300: 213 27% 84%;
+    --slate-400: 215 20% 65%;
+    --slate-500: 215 16% 47%;
+    --slate-600: 215 19% 35%;
+    --slate-700: 215 25% 27%;
+    --slate-800: 217 33% 17%;
+    --slate-900: 222 47% 11%;
+    --slate-950: 229 84% 5%;
+
+    /* Technical accent colors */
+    --cyan-400: 187 85% 53%;
+    --cyan-500: 188 94% 43%;
+    --cyan-600: 188 94% 37%;
+    
+    --blue-400: 213 93% 68%;
+    --blue-500: 217 91% 60%;
+    --blue-600: 221 83% 53%;
+    
+    --emerald-400: 158 64% 52%;
+    --emerald-500: 160 84% 39%;
+    --emerald-600: 161 94% 30%;
+    
+    --amber-400: 43 96% 56%;
+    --amber-500: 38 92% 50%;
+    
+    --red-400: 0 84% 60%;
+    --red-500: 0 72% 51%;
+
+    /* Dark mode overrides for professional dark theme */
+    &.dark {
+      --background: 229 84% 5%;
+      --foreground: 210 40% 98%;
+      --card: 222 47% 11%;
+      --card-foreground: 210 40% 98%;
+      --border: 215 25% 27%;
+      --input: 215 25% 27%;
+    }
   }
 
   * {
@@ -52,92 +86,188 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    background: hsl(var(--dark-bg));
-    font-family: 'Inter', sans-serif;
+    @apply bg-slate-950 text-slate-100 font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, hsl(229, 84%, 5%) 0%, hsl(217, 33%, 17%) 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Geist Sans', 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
   }
 }
 
 @layer utilities {
-  .text-neon-green {
-    color: hsl(var(--neon-green));
-  }
+  /* Professional color utilities */
+  .text-slate-50 { color: hsl(var(--slate-50)); }
+  .text-slate-100 { color: hsl(var(--slate-100)); }
+  .text-slate-200 { color: hsl(var(--slate-200)); }
+  .text-slate-300 { color: hsl(var(--slate-300)); }
+  .text-slate-400 { color: hsl(var(--slate-400)); }
+  .text-slate-500 { color: hsl(var(--slate-500)); }
+  .text-slate-600 { color: hsl(var(--slate-600)); }
+  .text-slate-700 { color: hsl(var(--slate-700)); }
+  .text-slate-800 { color: hsl(var(--slate-800)); }
+  .text-slate-900 { color: hsl(var(--slate-900)); }
+
+  .bg-slate-50 { background-color: hsl(var(--slate-50)); }
+  .bg-slate-100 { background-color: hsl(var(--slate-100)); }
+  .bg-slate-200 { background-color: hsl(var(--slate-200)); }
+  .bg-slate-800 { background-color: hsl(var(--slate-800)); }
+  .bg-slate-900 { background-color: hsl(var(--slate-900)); }
+  .bg-slate-950 { background-color: hsl(var(--slate-950)); }
+
+  .text-cyan-400 { color: hsl(var(--cyan-400)); }
+  .text-cyan-500 { color: hsl(var(--cyan-500)); }
+  .text-cyan-600 { color: hsl(var(--cyan-600)); }
   
-  .text-neon-purple {
-    color: hsl(var(--neon-purple));
-  }
+  .text-blue-400 { color: hsl(var(--blue-400)); }
+  .text-blue-500 { color: hsl(var(--blue-500)); }
+  .text-blue-600 { color: hsl(var(--blue-600)); }
   
-  .bg-neon-green {
-    background-color: hsl(var(--neon-green));
-  }
+  .text-emerald-400 { color: hsl(var(--emerald-400)); }
+  .text-emerald-500 { color: hsl(var(--emerald-500)); }
+  .text-emerald-600 { color: hsl(var(--emerald-600)); }
+
+  .bg-cyan-500 { background-color: hsl(var(--cyan-500)); }
+  .bg-blue-500 { background-color: hsl(var(--blue-500)); }
+  .bg-emerald-500 { background-color: hsl(var(--emerald-500)); }
+
+  .border-cyan-500 { border-color: hsl(var(--cyan-500)); }
+  .border-blue-500 { border-color: hsl(var(--blue-500)); }
+  .border-emerald-500 { border-color: hsl(var(--emerald-500)); }
   
-  .bg-neon-purple {
-    background-color: hsl(var(--neon-purple));
-  }
-  
-  .bg-dark-surface {
-    background-color: hsl(var(--dark-surface));
-  }
-  
+  /* Professional gradient text */
   .gradient-text {
-    @apply bg-gradient-to-r from-green-400 to-purple-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-cyan-400 via-blue-500 to-emerald-400 bg-clip-text text-transparent;
   }
   
-  .glow-green {
-    box-shadow: 0 0 20px hsl(var(--neon-green) / 0.5);
+  /* Subtle professional shadows */
+  .enterprise-shadow {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
   
-  .glow-purple {
-    box-shadow: 0 0 20px hsl(var(--neon-purple) / 0.5);
+  .enterprise-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
   
+  /* Professional circuit pattern */
   .circuit-pattern {
     background-image: 
-      linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px),
-      linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px);
-    background-size: 50px 50px;
+      linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+      linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Silicon wafer pattern for hero */
+  .silicon-pattern {
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+      linear-gradient(90deg, rgba(6, 182, 212, 0.02) 1px, transparent 1px),
+      linear-gradient(rgba(59, 130, 246, 0.02) 1px, transparent 1px);
+    background-size: 200px 200px, 150px 150px, 20px 20px, 20px 20px;
   }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+/* Professional animations */
+@keyframes trace-flow {
+  0% { 
+    stroke-dashoffset: 100;
+    opacity: 0.3;
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px hsl(var(--neon-green) / 0.3); }
-  50% { box-shadow: 0 0 40px hsl(var(--neon-green) / 0.8); }
+@keyframes data-pulse {
+  0%, 100% { 
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes silicon-etch {
+  0% { 
+    background-position: 0% 0%;
+    opacity: 0.5;
+  }
+  50% { 
+    opacity: 0.8;
+  }
+  100% { 
+    background-position: 100% 100%;
+    opacity: 0.5;
+  }
 }
 
-@keyframes circuit-flow {
-  0% { opacity: 0; transform: translateX(-100%); }
-  50% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(100%); }
+@keyframes code-compile {
+  0% { 
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  20% { 
+    opacity: 1;
+  }
+  80% { 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+@keyframes metric-update {
+  0% { 
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% { 
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+.animate-trace-flow {
+  animation: trace-flow 3s ease-in-out infinite;
 }
 
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.4), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+.animate-data-pulse {
+  animation: data-pulse 2s ease-in-out infinite;
 }
 
-.animate-circuit-flow {
-  animation: circuit-flow 3s ease-in-out infinite;
+.animate-silicon-etch {
+  animation: silicon-etch 8s linear infinite;
+}
+
+.animate-code-compile {
+  animation: code-compile 4s ease-in-out infinite;
+}
+
+.animate-metric-update {
+  animation: metric-update 0.5s ease-out;
+}
+
+/* Professional hover states */
+.enterprise-hover {
+  @apply transition-all duration-200 hover:enterprise-shadow-lg hover:scale-[1.02];
+}
+
+.technical-hover {
+  @apply transition-all duration-150 hover:bg-slate-800/50 hover:border-cyan-500/30;
 }
