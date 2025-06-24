@@ -64,7 +64,7 @@ const HeroSection = () => {
             <div className="text-sm text-slate-400">Verification Accuracy</div>
           </div>
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 technical-hover">
-            <div className="text-2xl font-bold text-blue-400 mb-1">< 30s</div>
+            <div className="text-2xl font-bold text-blue-400 mb-1">&lt; 30s</div>
             <div className="text-sm text-slate-400">HDL Generation</div>
           </div>
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 technical-hover">
