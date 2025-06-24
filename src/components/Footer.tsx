@@ -1,7 +1,5 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Shield, Globe, Award } from "lucide-react";
-
 const Footer = () => {
   const footerLinks = {
     Platform: ["Features", "Pricing", "API Documentation", "Technical Specifications"],
@@ -9,23 +7,41 @@ const Footer = () => {
     Enterprise: ["Government Solutions", "Partner Program", "Professional Services", "Support"],
     Compliance: ["Security", "Privacy Policy", "Terms of Service", "Audit Reports"]
   };
-
-  const certifications = [
-    { name: "SOC 2 Type II", icon: "🛡️", description: "Security & Availability" },
-    { name: "FIPS 140-2", icon: "🔒", description: "Cryptographic Security" },
-    { name: "ISO 27001", icon: "📋", description: "Information Security" },
-    { name: "GDPR Compliant", icon: "🌍", description: "Data Protection" }
-  ];
-
-  const globalPresence = [
-    { region: "Singapore", flag: "🇸🇬", status: "HQ & Engineering" },
-    { region: "United States", flag: "🇺🇸", status: "Enterprise Sales" },
-    { region: "European Union", flag: "🇪🇺", status: "Research & Compliance" },
-    { region: "Japan", flag: "🇯🇵", status: "Strategic Partnerships" }
-  ];
-
-  return (
-    <footer className="bg-slate-950 border-t border-slate-800 relative overflow-hidden">
+  const certifications = [{
+    name: "SOC 2 Type II",
+    icon: "🛡️",
+    description: "Security & Availability"
+  }, {
+    name: "FIPS 140-2",
+    icon: "🔒",
+    description: "Cryptographic Security"
+  }, {
+    name: "ISO 27001",
+    icon: "📋",
+    description: "Information Security"
+  }, {
+    name: "GDPR Compliant",
+    icon: "🌍",
+    description: "Data Protection"
+  }];
+  const globalPresence = [{
+    region: "Singapore",
+    flag: "🇸🇬",
+    status: "HQ & Engineering"
+  }, {
+    region: "United States",
+    flag: "🇺🇸",
+    status: "Enterprise Sales"
+  }, {
+    region: "European Union",
+    flag: "🇪🇺",
+    status: "Research & Compliance"
+  }, {
+    region: "Japan",
+    flag: "🇯🇵",
+    status: "Strategic Partnerships"
+  }];
+  return <footer className="bg-slate-950 border-t border-slate-800 relative overflow-hidden">
       {/* Subtle technical background */}
       <div className="absolute inset-0 opacity-3 circuit-pattern"></div>
       
@@ -59,23 +75,16 @@ const Footer = () => {
           </div>
 
           {/* Links Columns */}
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
+          {Object.entries(footerLinks).map(([category, links]) => <div key={category}>
               <h4 className="text-slate-100 font-semibold mb-6 text-lg">{category}</h4>
               <ul className="space-y-4">
-                {links.map((link) => (
-                  <li key={link}>
-                    <a 
-                      href="#" 
-                      className="text-slate-400 hover:text-cyan-400 transition-colors duration-300 hover:translate-x-1 transform inline-block"
-                    >
+                {links.map(link => <li key={link}>
+                    <a href="#" className="text-slate-400 hover:text-cyan-400 transition-colors duration-300 hover:translate-x-1 transform inline-block">
                       {link}
                     </a>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
-            </div>
-          ))}
+            </div>)}
         </div>
 
         {/* Certifications & Compliance */}
@@ -84,13 +93,11 @@ const Footer = () => {
             Enterprise Security & Compliance
           </h4>
           <div className="grid md:grid-cols-4 gap-6">
-            {certifications.map((cert, index) => (
-              <div key={index} className="flex flex-col items-center p-6 bg-slate-800/30 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors duration-300">
+            {certifications.map((cert, index) => <div key={index} className="flex flex-col items-center p-6 bg-slate-800/30 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors duration-300">
                 <span className="text-3xl mb-3">{cert.icon}</span>
                 <h5 className="font-semibold text-slate-200 text-sm mb-1">{cert.name}</h5>
                 <p className="text-xs text-slate-400 text-center">{cert.description}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
 
@@ -100,22 +107,18 @@ const Footer = () => {
             Global Operations
           </h4>
           <div className="grid md:grid-cols-4 gap-6">
-            {globalPresence.map((location, index) => (
-              <div key={index} className="text-center p-4 bg-slate-800/20 rounded-lg border border-slate-700">
+            {globalPresence.map((location, index) => <div key={index} className="text-center p-4 bg-slate-800/20 rounded-lg border border-slate-700">
                 <span className="text-2xl mb-2 block">{location.flag}</span>
                 <h5 className="font-medium text-slate-200 mb-1">{location.region}</h5>
                 <p className="text-xs text-slate-400">{location.status}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-800 pt-8 flex flex-col lg:flex-row items-center justify-between">
           <div className="flex flex-col lg:flex-row items-center gap-6 mb-6 lg:mb-0">
-            <p className="text-slate-400 text-sm">
-              © 2024 ChipForge Pte Ltd. All rights reserved.
-            </p>
+            <p className="text-slate-400 text-sm">© 2025 ChipForge Pte Ltd. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 text-xs">
                 <Globe className="h-3 w-3 mr-1" />
@@ -149,8 +152,6 @@ const Footer = () => {
           <div className="w-32 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
