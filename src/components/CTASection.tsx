@@ -94,7 +94,7 @@ const CTASection = () => {
           <h4 className="text-2xl font-bold mb-4 gradient-text">Limited Availability Program</h4>
           <p className="text-lg text-slate-300 mb-6 leading-relaxed">
             We're accepting only <span className="text-cyan-400 font-semibold">50 organizations</span> into our 
-            enterprise deployment program for 2024. Join industry leaders shaping the future of sovereign chip design.
+            enterprise deployment program for 2025. Join industry leaders shaping the future of sovereign chip design.
           </p>
           
           <div className="grid md:grid-cols-3 gap-6 text-sm">
