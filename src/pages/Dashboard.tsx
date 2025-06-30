@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Upload, Library, Clock, Cpu, Zap, Settings, User, LogOut, BookOpen, Activity } from "lucide-react";
+import { Plus, Upload, Library, Clock, Cpu, Zap, Settings, User, LogOut, BookOpen, Activity, Download, FileCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -83,7 +83,7 @@ const Dashboard = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <Button
             onClick={() => navigate('/new-project')}
             variant="outline"
@@ -111,6 +111,26 @@ const Dashboard = () => {
           >
             <Library className="h-8 w-8" />
             Browse Templates
+          </Button>
+
+          <Button
+            onClick={() => navigate('/export')}
+            variant="outline"
+            size="lg"
+            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-purple-500 font-semibold px-8 py-4 text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2"
+          >
+            <Download className="h-8 w-8" />
+            Export & Fab
+          </Button>
+
+          <Button
+            onClick={() => navigate('/constraints')}
+            variant="outline"
+            size="lg"
+            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-amber-500 font-semibold px-8 py-4 text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2"
+          >
+            <FileCode className="h-8 w-8" />
+            Constraints
           </Button>
         </div>
 

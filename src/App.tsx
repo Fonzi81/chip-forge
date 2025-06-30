@@ -10,6 +10,8 @@ import NewProject from "./pages/NewProject";
 import DesignEditor from "./pages/DesignEditor";
 import AuditTrail from "./pages/AuditTrail";
 import TemplatesLibrary from "./pages/TemplatesLibrary";
+import Export from "./pages/Export";
+import ConstraintEditor from "./pages/ConstraintEditor";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/design-editor" element={<DesignEditor />} />
           <Route path="/audit-trail" element={<AuditTrail />} />
           <Route path="/templates" element={<TemplatesLibrary />} />
+          <Route path="/export" element={<Export />} />
+          <Route path="/constraints" element={<ConstraintEditor />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
