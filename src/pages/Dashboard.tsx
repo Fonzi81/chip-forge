@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -58,15 +59,15 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800">
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Button>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800">
               <User className="h-4 w-4 mr-2" />
               Profile
             </Button>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200" onClick={() => navigate('/')}>
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800" onClick={() => navigate('/')}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
@@ -82,10 +83,11 @@ const Dashboard = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Button
             onClick={() => navigate('/new-project')}
-            className="h-32 bg-emerald-500 text-slate-900 hover:bg-emerald-400 flex flex-col items-center justify-center space-y-2 text-lg font-semibold"
+            size="lg"
+            className="h-32 bg-cyan-500 text-slate-900 hover:bg-cyan-400 font-semibold px-8 py-4 text-lg enterprise-shadow-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2"
           >
             <Zap className="h-8 w-8" />
             New Design
@@ -93,7 +95,8 @@ const Dashboard = () => {
           
           <Button
             variant="outline"
-            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 flex flex-col items-center justify-center space-y-2 text-lg font-semibold"
+            size="lg"
+            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-blue-500 font-semibold px-8 py-4 text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2"
           >
             <Upload className="h-8 w-8" />
             Upload HDL
@@ -102,7 +105,8 @@ const Dashboard = () => {
           <Button
             onClick={() => navigate('/templates')}
             variant="outline"
-            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 flex flex-col items-center justify-center space-y-2 text-lg font-semibold"
+            size="lg"
+            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-emerald-500 font-semibold px-8 py-4 text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2"
           >
             <BookOpen className="h-8 w-8" />
             Explore Templates
@@ -119,7 +123,7 @@ const Dashboard = () => {
             <Button 
               onClick={() => navigate('/audit-trail')}
               variant="ghost" 
-              className="text-slate-400 hover:text-slate-200"
+              className="text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             >
               View All
             </Button>
@@ -152,11 +156,11 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800">
                       <Zap className="h-4 w-4 mr-2" />
                       Simulate
                     </Button>
-                    <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+                    <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-cyan-500">
                       Open
                     </Button>
                   </div>
