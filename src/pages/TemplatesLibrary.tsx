@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,7 +17,9 @@ import {
   Activity,
   Star,
   Download,
-  Eye
+  Eye,
+  Menu,
+  X
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +27,7 @@ const TemplatesLibrary = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const categories = [
     { id: "all", name: "All Templates", count: 24 },
@@ -144,21 +146,32 @@ const TemplatesLibrary = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-slate-200">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Dashboard
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-slate-200 p-1 sm:p-2">
+              <ArrowLeft className="h-4 w-4 mr-0 sm:mr-2" />
+              <span className="hidden sm:inline">Dashboard</span>
             </Button>
-            <div className="h-6 w-px bg-slate-700"></div>
-            <span className="text-xl font-semibold">Templates Library</span>
-            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-              {filteredTemplates.length} Templates
+            <div className="hidden sm:block h-6 w-px bg-slate-700"></div>
+            <span className="text-lg sm:text-xl font-semibold">Templates</span>
+            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs sm:text-sm">
+              {filteredTemplates.length}
             </Badge>
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+            {/* Mobile menu button */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="sm:hidden text-slate-400 hover:text-slate-200"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            {/* Desktop filter button */}
+            <Button variant="outline" className="hidden sm:flex border-slate-600 text-slate-300 hover:bg-slate-800">
               <Filter className="h-4 w-4 mr-2" />
               Filters
             </Button>
@@ -166,11 +179,75 @@ const TemplatesLibrary = () => {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-73px)]">
-        {/* Sidebar */}
-        <div className="w-64 border-r border-slate-800 bg-slate-900/30 overflow-y-auto">
+      <div className="flex h-[calc(100vh-73px)] relative">
+        {/* Mobile Sidebar Overlay */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 sm:hidden">
+            <div 
+              className="absolute inset-0 bg-black/50" 
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="absolute left-0 top-0 h-full w-80 bg-slate-900 border-r border-slate-800">
+              <div className="flex items-center justify-between p-4 border-b border-slate-800">
+                <span className="font-semibold">Filters & Search</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-slate-400 hover:text-slate-200"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="p-4">
+                {/* Mobile Search */}
+                <div className="mb-6">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search templates..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 bg-slate-900/50 border-slate-700 text-slate-100"
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile Categories */}
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-400 mb-3">Categories</h3>
+                  <div className="space-y-1">
+                    {categories.map((category) => (
+                      <div
+                        key={category.id}
+                        onClick={() => {
+                          setSelectedCategory(category.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center justify-between p-3 rounded cursor-pointer transition-colors ${
+                          selectedCategory === category.id
+                            ? "bg-slate-800 text-slate-100"
+                            : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                        }`}
+                      >
+                        <span className="text-sm">{category.name}</span>
+                        <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded">
+                          {category.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Sidebar */}
+        <div className="hidden sm:block w-64 border-r border-slate-800 bg-slate-900/30 overflow-y-auto">
           <div className="p-4">
-            {/* Search */}
+            {/* Desktop Search */}
             <div className="mb-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -183,7 +260,7 @@ const TemplatesLibrary = () => {
               </div>
             </div>
 
-            {/* Categories */}
+            {/* Desktop Categories */}
             <div>
               <h3 className="text-sm font-semibold text-slate-400 mb-3">Categories</h3>
               <div className="space-y-1">
@@ -210,42 +287,42 @@ const TemplatesLibrary = () => {
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredTemplates.map((template) => {
                 const IconComponent = template.icon;
                 return (
-                  <Card key={template.id} className="p-6 bg-slate-900/30 border-slate-700 hover:border-slate-600 transition-all group">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-slate-800/50 rounded-lg">
-                          <IconComponent className={`h-6 w-6 ${getIconColor(template.color)}`} />
+                  <Card key={template.id} className="p-4 sm:p-6 bg-slate-900/30 border-slate-700 hover:border-slate-600 transition-all group">
+                    <div className="flex items-start justify-between mb-3 sm:mb-4">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="p-1.5 sm:p-2 bg-slate-800/50 rounded-lg">
+                          <IconComponent className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconColor(template.color)}`} />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-slate-200">{template.name}</h3>
-                          <Badge className={getComplexityColor(template.complexity)}>
+                          <h3 className="font-semibold text-slate-200 text-sm sm:text-base">{template.name}</h3>
+                          <Badge className={`${getComplexityColor(template.complexity)} text-xs`}>
                             {template.complexity}
                           </Badge>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 text-amber-400">
-                        <Star className="h-4 w-4 fill-current" />
-                        <span className="text-sm">{template.popularity}</span>
+                        <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-current" />
+                        <span className="text-xs sm:text-sm">{template.popularity}</span>
                       </div>
                     </div>
 
-                    <p className="text-slate-400 text-sm mb-4 leading-relaxed">
+                    <p className="text-slate-400 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
                       {template.description}
                     </p>
 
-                    <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
                       <div className="flex items-center gap-1 text-xs text-slate-500">
                         <Cpu className="h-3 w-3" />
                         {template.gateCount} gates
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-1 mb-4">
+                    <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                       {template.tags.map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs border-slate-600 text-slate-400">
                           {tag}
@@ -253,28 +330,30 @@ const TemplatesLibrary = () => {
                       ))}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Button 
                         size="sm" 
-                        className="flex-1 bg-emerald-500 text-slate-900 hover:bg-emerald-400"
+                        className="flex-1 bg-emerald-500 text-slate-900 hover:bg-emerald-400 text-xs sm:text-sm"
                         onClick={() => navigate('/new-project')}
                       >
                         Use Template
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="border-slate-600 text-slate-300 hover:bg-slate-800"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="border-slate-600 text-slate-300 hover:bg-slate-800"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-slate-600 text-slate-300 hover:bg-slate-800 px-2 sm:px-3"
+                        >
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-slate-600 text-slate-300 hover:bg-slate-800 px-2 sm:px-3"
+                        >
+                          <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 );
@@ -283,9 +362,9 @@ const TemplatesLibrary = () => {
 
             {filteredTemplates.length === 0 && (
               <div className="text-center py-12">
-                <Search className="h-16 w-16 mx-auto mb-4 text-slate-600" />
-                <h3 className="text-lg font-semibold text-slate-400 mb-2">No templates found</h3>
-                <p className="text-slate-500">Try adjusting your search terms or category filter</p>
+                <Search className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-slate-600" />
+                <h3 className="text-base sm:text-lg font-semibold text-slate-400 mb-2">No templates found</h3>
+                <p className="text-sm sm:text-base text-slate-500">Try adjusting your search terms or category filter</p>
               </div>
             )}
           </div>
