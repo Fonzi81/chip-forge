@@ -1,8 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Upload, Library, Clock, Cpu, Zap, Settings, User, LogOut } from "lucide-react";
+import { Plus, Upload, Library, Clock, Cpu, Zap, Settings, User, LogOut, BookOpen, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -83,50 +82,45 @@ const Dashboard = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="grid md:grid-cols-3 gap-4 mb-12">
-          <Card className="p-6 bg-slate-900/50 border-slate-700 hover:border-emerald-500/50 transition-all duration-200 cursor-pointer group"
-                onClick={() => navigate('/new-project')}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center group-hover:bg-emerald-500/30 transition-colors">
-                <Plus className="h-6 w-6 text-emerald-400" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-emerald-400 mb-1">New Design</h3>
-                <p className="text-slate-400">Start from scratch with AI assistance</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-slate-900/50 border-slate-700 hover:border-purple-500/50 transition-all duration-200 cursor-pointer group">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
-                <Upload className="h-6 w-6 text-purple-400" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-purple-400 mb-1">Upload HDL</h3>
-                <p className="text-slate-400">Import existing Verilog/VHDL files</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-slate-900/50 border-slate-700 hover:border-cyan-500/50 transition-all duration-200 cursor-pointer group">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center group-hover:bg-cyan-500/30 transition-colors">
-                <Library className="h-6 w-6 text-cyan-400" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-cyan-400 mb-1">Explore Templates</h3>
-                <p className="text-slate-400">Use pre-built design modules</p>
-              </div>
-            </div>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Button
+            onClick={() => navigate('/new-project')}
+            className="h-32 bg-emerald-500 text-slate-900 hover:bg-emerald-400 flex flex-col items-center justify-center space-y-2 text-lg font-semibold"
+          >
+            <Zap className="h-8 w-8" />
+            New Design
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 flex flex-col items-center justify-center space-y-2 text-lg font-semibold"
+          >
+            <Upload className="h-8 w-8" />
+            Upload HDL
+          </Button>
+          
+          <Button
+            onClick={() => navigate('/templates')}
+            variant="outline"
+            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 flex flex-col items-center justify-center space-y-2 text-lg font-semibold"
+          >
+            <BookOpen className="h-8 w-8" />
+            Explore Templates
+          </Button>
         </div>
 
-        {/* Recent Projects */}
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Recent Projects</h2>
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+        {/* Recent Activity */}
+        <div className="bg-slate-900/30 border border-slate-700 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Activity className="h-5 w-5 text-purple-400" />
+              Recent Activity
+            </h2>
+            <Button 
+              onClick={() => navigate('/audit-trail')}
+              variant="ghost" 
+              className="text-slate-400 hover:text-slate-200"
+            >
               View All
             </Button>
           </div>

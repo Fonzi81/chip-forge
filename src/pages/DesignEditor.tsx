@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import RTLViewer from "@/components/RTLViewer";
+import SimulationPanel from "@/components/SimulationPanel";
 import { 
   ArrowLeft, 
   File, 
@@ -187,31 +188,13 @@ endmodule`);
             <TabsContent value="rtl" className="flex-1 m-0">
               <div className="h-full p-6">
                 <Card className="h-full bg-slate-900/50 border-slate-700 flex items-center justify-center">
-                  <div className="text-center">
-                    <Eye className="h-16 w-16 mx-auto mb-4 text-slate-600" />
-                    <p className="text-slate-400 mb-4">RTL Diagram will be rendered here</p>
-                    <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Diagram
-                    </Button>
-                  </div>
+                  <RTLViewer />
                 </Card>
               </div>
             </TabsContent>
 
             <TabsContent value="simulation" className="flex-1 m-0">
-              <div className="h-full p-6">
-                <Card className="h-full bg-slate-900/50 border-slate-700 flex items-center justify-center">
-                  <div className="text-center">
-                    <Play className="h-16 w-16 mx-auto mb-4 text-slate-600" />
-                    <p className="text-slate-400 mb-4">Simulation waveforms will appear here</p>
-                    <Button className="bg-emerald-500 text-slate-900 hover:bg-emerald-400">
-                      <Play className="h-4 w-4 mr-2" />
-                      Run Simulation
-                    </Button>
-                  </div>
-                </Card>
-              </div>
+              <SimulationPanel />
             </TabsContent>
           </Tabs>
         </div>
