@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -175,11 +174,6 @@ const AuditTrail = () => {
                       <span className="text-xs text-slate-400">{commit.simulation.gateCount} gates</span>
                     </div>
                   </div>
-
-                  {/* Timeline connector */}
-                  {index < commits.length - 1 && (
-                    <div className="absolute left-8 mt-4 w-px h-4 bg-slate-700"></div>
-                  )}
                 </Card>
               ))}
             </div>
@@ -226,7 +220,7 @@ const AuditTrail = () => {
                   <div className="text-red-400 mb-1">- always @(*) begin</div>
                   <div className="text-red-400 mb-1">-     result = a + b;</div>
                   <div className="text-emerald-400">+ always @(posedge clk) begin</div>
-                  <div className="text-emerald-400">+     stage1_a <= a;</div>
+                  <div className="text-emerald-400">+     stage1_a &lt;= a;</div>
                 </div>
               </Card>
 
