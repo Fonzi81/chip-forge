@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NewProject from "./pages/NewProject";
 import DesignEditor from "./pages/DesignEditor";
+import AuditTrail from "./pages/AuditTrail";
+import TemplatesLibrary from "./pages/TemplatesLibrary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
