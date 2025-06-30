@@ -12,6 +12,9 @@ import AuditTrail from "./pages/AuditTrail";
 import TemplatesLibrary from "./pages/TemplatesLibrary";
 import Export from "./pages/Export";
 import ConstraintEditor from "./pages/ConstraintEditor";
+import UsageDashboard from "./pages/UsageDashboard";
+import CollaboratorMode from "./pages/CollaboratorMode";
+import LearningPanel from "./pages/LearningPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +34,9 @@ const App = () => (
           <Route path="/templates" element={<TemplatesLibrary />} />
           <Route path="/export" element={<Export />} />
           <Route path="/constraints" element={<ConstraintEditor />} />
+          <Route path="/usage-dashboard" element={<UsageDashboard />} />
+          <Route path="/collaborator-mode" element={<CollaboratorMode />} />
+          <Route path="/learning-panel" element={<LearningPanel />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

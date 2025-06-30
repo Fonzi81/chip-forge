@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Upload, Library, Clock, Cpu, Zap, Settings, User, LogOut, BookOpen, Activity, Download, FileCode } from "lucide-react";
+import { Plus, Upload, Library, Clock, Cpu, Zap, Settings, User, LogOut, BookOpen, Activity, Download, FileCode, BarChart3, Users, GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -83,7 +83,7 @@ const Dashboard = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Button
             onClick={() => navigate('/new-project')}
             variant="outline"
@@ -122,16 +122,52 @@ const Dashboard = () => {
             <Download className="h-8 w-8" />
             Export & Fab
           </Button>
+        </div>
 
-          <Button
-            onClick={() => navigate('/constraints')}
-            variant="outline"
-            size="lg"
-            className="h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-amber-500 font-semibold px-8 py-4 text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2"
-          >
-            <FileCode className="h-8 w-8" />
-            Constraints
-          </Button>
+        {/* Phase 4 Features */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-slate-200">Collaboration & Learning</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Button
+              onClick={() => navigate('/usage-dashboard')}
+              variant="outline"
+              size="lg"
+              className="h-24 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-purple-500 font-semibold px-6 py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1"
+            >
+              <BarChart3 className="h-6 w-6" />
+              <span className="text-sm">Usage Dashboard</span>
+            </Button>
+
+            <Button
+              onClick={() => navigate('/collaborator-mode')}
+              variant="outline"
+              size="lg"
+              className="h-24 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-blue-500 font-semibold px-6 py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1"
+            >
+              <Users className="h-6 w-6" />
+              <span className="text-sm">Collaborator Mode</span>
+            </Button>
+
+            <Button
+              onClick={() => navigate('/learning-panel')}
+              variant="outline"
+              size="lg"
+              className="h-24 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-amber-500 font-semibold px-6 py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1"
+            >
+              <GraduationCap className="h-6 w-6" />
+              <span className="text-sm">Learning Center</span>
+            </Button>
+
+            <Button
+              onClick={() => navigate('/constraints')}
+              variant="outline"
+              size="lg"
+              className="h-24 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-cyan-500 font-semibold px-6 py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1"
+            >
+              <FileCode className="h-6 w-6" />
+              <span className="text-sm">Constraints</span>
+            </Button>
+          </div>
         </div>
 
         {/* Recent Activity */}
