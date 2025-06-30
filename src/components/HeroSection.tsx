@@ -1,10 +1,27 @@
-
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Cpu, Zap } from "lucide-react";
+import { ArrowRight, Play, Cpu, Zap, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
+  const handleLoginClick = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Login button - top right */}
+      <div className="absolute top-6 right-6 z-20">
+        <Button 
+          onClick={handleLoginClick}
+          className="bg-emerald-500 text-slate-900 hover:bg-emerald-400 font-semibold px-6 py-2 transition-all duration-200 hover:scale-105"
+        >
+          <LogIn className="mr-2 h-4 w-4" />
+          Login
+        </Button>
+      </div>
+
       <div className="relative z-10 text-center max-w-7xl mx-auto px-6 py-20">
         {/* Professional status indicator */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/80 backdrop-blur-sm border border-cyan-500/20 rounded-full mb-8 animate-fade-in">
