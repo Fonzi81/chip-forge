@@ -1,73 +1,226 @@
-# Welcome to your Lovable project
 
-## Project info
+# RTL Design Platform
 
-**URL**: https://lovable.dev/projects/c7480ae0-3b25-4ed7-88d6-5739dac1b957
+A comprehensive web-based platform for RTL (Register Transfer Level) design, simulation, and collaboration. Built with modern web technologies to provide an intuitive interface for digital circuit design and verification.
 
-## How can I edit this code?
+## 🚀 Features
 
-There are several ways of editing your application.
+### Core Design Tools
+- **Visual RTL Editor**: Drag-and-drop interface for creating digital circuits
+- **Real-time Simulation**: Interactive waveform viewer and signal analysis
+- **Template Library**: 24+ pre-built templates including ALUs, counters, FSMs, and communication interfaces
+- **Code Generation**: Export to Verilog, VHDL, and SystemVerilog
 
-**Use Lovable**
+### Advanced Capabilities
+- **Constraint Editor**: Timing and placement constraints management
+- **Design Rule Checking**: Automated validation and optimization
+- **Multi-format Export**: Support for various industry-standard formats
+- **Audit Trail**: Complete design history and version tracking
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c7480ae0-3b25-4ed7-88d6-5739dac1b957) and start prompting.
+### Collaboration & Learning
+- **Team Collaboration**: Real-time collaborative editing with inline comments
+- **Learning Panel**: Interactive courses and AI-powered assistance
+- **Usage Analytics**: Comprehensive dashboard for tracking design metrics
+- **Template Sharing**: Community-driven template marketplace
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Technology Stack
 
-**Use your preferred IDE**
+- **Frontend**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **State Management**: TanStack Query
+- **Routing**: React Router DOM
+- **Icons**: Lucide React
+- **Charts**: Recharts
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📱 Mobile Support
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Fully responsive design optimized for:
+- Desktop workstations
+- Tablets for design review
+- Mobile devices for quick edits and monitoring
 
-Follow these steps:
+## 🏃‍♂️ Quick Start
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### Prerequisites
+- Node.js 16+ and npm
+- Modern web browser with JavaScript enabled
+
+### Installation
+
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Building for Production
 
-**Use GitHub Codespaces**
+```bash
+# Create production build
+npm run build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Preview production build locally
+npm run preview
+```
 
-## What technologies are used for this project?
+## 📚 Usage Guide
 
-This project is built with:
+### Getting Started
+1. **Dashboard**: Overview of recent projects and system status
+2. **New Project**: Create designs from scratch or use templates
+3. **Templates**: Browse and customize pre-built components
+4. **Simulation**: Test and verify your designs with interactive tools
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Template Categories
+- **Arithmetic**: ALUs, multipliers, adders
+- **Memory**: RAM, ROM, caches
+- **Control Logic**: FSMs, counters, encoders
+- **Interfaces**: UART, SPI, I2C
+- **DSP**: Filters, transforms
 
-## How can I deploy this project?
+### Collaboration Features
+- Invite team members to projects
+- Add inline comments and suggestions
+- Track changes with automatic changelog
+- Real-time collaborative editing
 
-Simply open [Lovable](https://lovable.dev/projects/c7480ae0-3b25-4ed7-88d6-5739dac1b957) and click on Share -> Publish.
+## 🔧 Development
 
-## Can I connect a custom domain to my Lovable project?
+### Project Structure
+```
+src/
+├── components/          # Reusable UI components
+│   └── ui/             # shadcn/ui base components
+├── pages/              # Route components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions
+└── main.tsx           # Application entry point
+```
 
-Yes, you can!
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Code Style
+- TypeScript for type safety
+- Functional components with hooks
+- Tailwind CSS for styling
+- ESLint for code quality
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🚀 Deployment
+
+### Lovable Platform (Recommended)
+1. Open your project in [Lovable](https://lovable.dev)
+2. Click "Share" → "Publish"
+3. Your app will be deployed automatically
+
+### Custom Domain
+1. Navigate to Project → Settings → Domains
+2. Click "Connect Domain"
+3. Follow the DNS configuration steps
+
+### Self-Hosting
+The built application is a standard static site that can be deployed to:
+- Vercel, Netlify, or similar platforms
+- AWS S3 + CloudFront
+- Traditional web servers
+- Docker containers
+
+## 🔗 Integration
+
+### GitHub Integration
+- Automatic bidirectional sync with GitHub
+- Branch support for feature development
+- CI/CD pipeline integration
+- Code review workflows
+
+### API Integration
+- RESTful API for external tool integration
+- Webhook support for automation
+- Export APIs for design data
+- Real-time collaboration APIs
+
+## 📊 Analytics & Monitoring
+
+The platform includes comprehensive analytics:
+- Design creation and modification metrics
+- Simulation usage and performance
+- Template popularity and usage
+- User engagement and collaboration stats
+- Export and sharing activities
+
+## 🎓 Learning Resources
+
+### Built-in Learning
+- Interactive tutorials for beginners
+- "Chip Design with No Experience" course
+- AI-powered design assistant
+- Contextual help and documentation
+
+### Community
+- Template sharing and collaboration
+- Design pattern library
+- Best practices documentation
+- Community forums and support
+
+## 🔒 Security & Privacy
+
+- Secure authentication and authorization
+- Project-level access controls
+- Data encryption in transit and at rest
+- GDPR compliance for user data
+- Regular security audits
+
+## 📈 Roadmap
+
+### Upcoming Features
+- Advanced synthesis optimization
+- Physical design tools integration
+- Machine learning-powered design suggestions
+- Enhanced collaboration features
+- Mobile app for iOS and Android
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines and code of conduct.
+
+### Development Setup
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📄 License
+
+This project is proprietary software. See LICENSE file for details.
+
+## 🆘 Support
+
+- **Documentation**: [docs.lovable.dev](https://docs.lovable.dev)
+- **Community**: [Discord](https://discord.com/channels/1119885301872070706/1280461670979993613)
+- **Issues**: GitHub Issues
+- **Email**: support@lovable.dev
+
+## 🙏 Acknowledgments
+
+Built with ❤️ using:
+- React and the amazing React ecosystem
+- Tailwind CSS for beautiful, responsive design
+- shadcn/ui for consistent, accessible components
+- Lucide for comprehensive iconography
+- The open-source community for countless tools and libraries
+
+---
+
+**Ready to start designing?** Launch the platform and explore our template library to get started with your first RTL design project!
