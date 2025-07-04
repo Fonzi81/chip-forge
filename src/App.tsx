@@ -15,6 +15,7 @@ import ConstraintEditor from "./pages/ConstraintEditor";
 import UsageDashboard from "./pages/UsageDashboard";
 import CollaboratorMode from "./pages/CollaboratorMode";
 import LearningPanel from "./pages/LearningPanel";
+import ChipForgeSimulation from "./pages/ChipForgeSimulation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/usage-dashboard" element={<UsageDashboard />} />
           <Route path="/collaborator-mode" element={<CollaboratorMode />} />
           <Route path="/learning-panel" element={<LearningPanel />} />
+          <Route path="/chipforge-simulation" element={<ChipForgeSimulation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

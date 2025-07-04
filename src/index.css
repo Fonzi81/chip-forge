@@ -70,6 +70,16 @@
     --red-400: 0 84% 60%;
     --red-500: 0 72% 51%;
 
+    /* ChipForge Simulation Colors */
+    --chipforge-bg: 217 17% 8%;          /* Matte black */
+    --chipforge-accent: 120 84% 45%;     /* Neon green */
+    --chipforge-waveform: 280 100% 70%;  /* Vibrant purple */
+    --chipforge-signal-high: 120 84% 45%;
+    --chipforge-signal-low: 0 0% 20%;
+    --chipforge-signal-x: 45 93% 47%;    /* Orange for X */
+    --chipforge-signal-z: 200 100% 50%;  /* Blue for Z */
+    --chipforge-console: 222 47% 11%;    /* Dark console bg */
+
     /* Dark mode overrides for professional dark theme */
     &.dark {
       --background: 229 84% 5%;

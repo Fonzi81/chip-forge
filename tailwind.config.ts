@@ -100,6 +100,19 @@ export default {
 				red: {
 					400: 'hsl(var(--red-400))',
 					500: 'hsl(var(--red-500))'
+				},
+				// ChipForge simulation colors
+				chipforge: {
+					bg: 'hsl(var(--chipforge-bg))',
+					accent: 'hsl(var(--chipforge-accent))',
+					waveform: 'hsl(var(--chipforge-waveform))',
+					signal: {
+						high: 'hsl(var(--chipforge-signal-high))',
+						low: 'hsl(var(--chipforge-signal-low))',
+						x: 'hsl(var(--chipforge-signal-x))',
+						z: 'hsl(var(--chipforge-signal-z))'
+					},
+					console: 'hsl(var(--chipforge-console))'
 				}
 			},
 			borderRadius: {
