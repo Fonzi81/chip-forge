@@ -9,10 +9,11 @@ import { Play, Square, RotateCcw, Settings, Clock, Zap } from "lucide-react";
 
 interface SimulationConfigProps {
   onRunSimulation: (config: any) => void;
+  onCancelSimulation?: () => void;
   isRunning: boolean;
 }
 
-const SimulationConfig = ({ onRunSimulation, isRunning }: SimulationConfigProps) => {
+const SimulationConfig = ({ onRunSimulation, onCancelSimulation, isRunning }: SimulationConfigProps) => {
   const [config, setConfig] = useState({
     clockFreq: "100",
     simulationTime: "1000",
@@ -79,7 +80,9 @@ endmodule`
             variant="outline"
             size="icon"
             disabled={!isRunning}
+            onClick={onCancelSimulation}
             className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+            title="Stop Simulation"
           >
             <Square className="h-4 w-4" />
           </Button>

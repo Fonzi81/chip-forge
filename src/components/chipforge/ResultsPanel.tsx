@@ -11,7 +11,8 @@ import {
   Activity,
   Download,
   Share,
-  Bookmark
+  Bookmark,
+  RotateCcw
 } from "lucide-react";
 
 interface ResultsPanelProps {
@@ -22,9 +23,10 @@ interface ResultsPanelProps {
     assertions: { passed: number; failed: number };
   };
   isComplete: boolean;
+  onReset?: () => void;
 }
 
-const ResultsPanel = ({ results, isComplete }: ResultsPanelProps) => {
+const ResultsPanel = ({ results, isComplete, onReset }: ResultsPanelProps) => {
   const assertionSuccessRate = results.assertions.passed + results.assertions.failed > 0 
     ? (results.assertions.passed / (results.assertions.passed + results.assertions.failed)) * 100
     : 0;
@@ -82,6 +84,21 @@ const ResultsPanel = ({ results, isComplete }: ResultsPanelProps) => {
             </Button>
             <Button variant="outline" size="sm" className="border-slate-600 text-slate-300">
               <Bookmark className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+        
+        {/* Reset Button */}
+        {onReset && (
+          <div className="pt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onReset}
+              className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              <RotateCcw className="h-3 w-3 mr-1" />
+              New Simulation
             </Button>
           </div>
         )}

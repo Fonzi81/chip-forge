@@ -4,89 +4,47 @@ import { Badge } from "@/components/ui/badge";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ArrowLeft, Cpu, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useSimulation } from "@/hooks/useSimulation";
 import SimulationConfig from "@/components/chipforge/SimulationConfig";
+import SimulationProgress from "@/components/chipforge/SimulationProgress";
 import WaveformViewer from "@/components/chipforge/WaveformViewer";
 import ConsoleLog from "@/components/chipforge/ConsoleLog";
 import ResultsPanel from "@/components/chipforge/ResultsPanel";
 
-interface SimulationState {
-  isRunning: boolean;
-  isComplete: boolean;
-  status: 'idle' | 'running' | 'success' | 'error';
-  logs: string[];
-  waveformData: any;
-  results: {
-    pass: boolean;
-    duration: string;
-    gateCount: number;
-    assertions: { passed: number; failed: number };
-  };
-}
-
 const ChipForgeSimulation = () => {
   const navigate = useNavigate();
-  const [simulation, setSimulation] = useState<SimulationState>({
-    isRunning: false,
-    isComplete: false,
-    status: 'idle',
-    logs: [],
-    waveformData: null,
-    results: {
-      pass: false,
-      duration: '0ms',
-      gateCount: 0,
-      assertions: { passed: 0, failed: 0 }
-    }
-  });
-
-  const handleRunSimulation = async (config: any) => {
-    setSimulation(prev => ({ 
-      ...prev, 
-      isRunning: true, 
-      status: 'running',
-      logs: ['Starting simulation...', 'Compiling HDL code...']
-    }));
-
-    // Mock simulation - replace with actual API call
-    setTimeout(() => {
-      const mockWaveformData = {
-        signals: ['clk', 'a[3:0]', 'b[3:0]', 'result[3:0]', 'carry_out'],
-        timeScale: 'ns',
-        duration: 1000,
-        traces: [
-          { name: 'clk', type: 'clock', transitions: [] },
-          { name: 'a[3:0]', type: 'bus', width: 4, values: ['0000', '0001', '0010', '0011'] },
-          { name: 'b[3:0]', type: 'bus', width: 4, values: ['0001', '0010', '0011', '0100'] },
-          { name: 'result[3:0]', type: 'bus', width: 4, values: ['0001', '0011', '0101', '0111'] },
-          { name: 'carry_out', type: 'signal', values: ['0', '0', '0', '0'] }
-        ]
-      };
-
-      setSimulation(prev => ({
-        ...prev,
-        isRunning: false,
-        isComplete: true,
-        status: 'success',
-        logs: [...prev.logs, 'Compilation successful', 'Running testbench...', 'Simulation complete'],
-        waveformData: mockWaveformData,
-        results: {
-          pass: true,
-          duration: '2.3s',
-          gateCount: 42,
-          assertions: { passed: 8, failed: 0 }
-        }
-      }));
-    }, 3000);
-  };
+  const { 
+    isRunning, 
+    progress, 
+    result, 
+    logs, 
+    simulate, 
+    cancelSimulation, 
+    clearLogs, 
+    resetSimulation 
+  } = useSimulation();
 
   const getStatusBadge = () => {
-    switch (simulation.status) {
-      case 'running':
-        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Running...</Badge>;
+    if (!result) {
+      switch (progress.stage) {
+        case 'compiling':
+        case 'running':
+        case 'processing':
+          return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Running...</Badge>;
+        case 'complete':
+          return <Badge className="bg-chipforge-accent/20 text-chipforge-accent border-chipforge-accent/30">Success</Badge>;
+        default:
+          return <Badge variant="outline" className="text-slate-400">Ready</Badge>;
+      }
+    }
+    
+    switch (result.status) {
       case 'success':
         return <Badge className="bg-chipforge-accent/20 text-chipforge-accent border-chipforge-accent/30">Success</Badge>;
       case 'error':
         return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Failed</Badge>;
+      case 'timeout':
+        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Timeout</Badge>;
       default:
         return <Badge variant="outline" className="text-slate-400">Ready</Badge>;
     }
@@ -135,10 +93,23 @@ const ChipForgeSimulation = () => {
         <ResizablePanelGroup direction="horizontal" className="h-full">
           {/* Configuration Panel */}
           <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
-            <SimulationConfig 
-              onRunSimulation={handleRunSimulation}
-              isRunning={simulation.isRunning}
-            />
+            <div className="h-full flex flex-col">
+              <SimulationConfig 
+                onRunSimulation={simulate}
+                onCancelSimulation={cancelSimulation}
+                isRunning={isRunning}
+              />
+              
+              {/* Progress Panel */}
+              <div className="border-t border-slate-800 p-4">
+                <SimulationProgress 
+                  stage={progress.stage}
+                  progress={progress.progress}
+                  message={progress.message}
+                  isRunning={isRunning}
+                />
+              </div>
+            </div>
           </ResizablePanel>
           
           <ResizableHandle className="bg-slate-800 hover:bg-slate-700 transition-colors" />
@@ -149,8 +120,8 @@ const ChipForgeSimulation = () => {
               {/* Waveform Viewer */}
               <ResizablePanel defaultSize={70} minSize={50}>
                 <WaveformViewer 
-                  waveformData={simulation.waveformData}
-                  isComplete={simulation.isComplete}
+                  waveformData={result?.waveformData || null}
+                  isComplete={progress.stage === 'complete' && result?.status === 'success'}
                 />
               </ResizablePanel>
               
@@ -159,8 +130,11 @@ const ChipForgeSimulation = () => {
               {/* Console Log */}
               <ResizablePanel defaultSize={30} minSize={20}>
                 <ConsoleLog 
-                  logs={simulation.logs}
-                  status={simulation.status}
+                  logs={logs}
+                  status={result?.status === 'success' ? 'success' : 
+                         result?.status === 'error' ? 'error' :
+                         isRunning ? 'running' : 'idle'}
+                  onClearLogs={clearLogs}
                 />
               </ResizablePanel>
             </ResizablePanelGroup>
@@ -171,8 +145,14 @@ const ChipForgeSimulation = () => {
           {/* Results Panel */}
           <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
             <ResultsPanel 
-              results={simulation.results}
-              isComplete={simulation.isComplete}
+              results={{
+                pass: result?.status === 'success',
+                duration: result?.metrics?.duration || '0ms',
+                gateCount: result?.metrics?.gateCount || 0,
+                assertions: result?.metrics?.assertions || { passed: 0, failed: 0 }
+              }}
+              isComplete={progress.stage === 'complete' && result?.status === 'success'}
+              onReset={resetSimulation}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

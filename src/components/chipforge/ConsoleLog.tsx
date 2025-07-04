@@ -17,9 +17,10 @@ import {
 interface ConsoleLogProps {
   logs: string[];
   status: 'idle' | 'running' | 'success' | 'error';
+  onClearLogs?: () => void;
 }
 
-const ConsoleLog = ({ logs, status }: ConsoleLogProps) => {
+const ConsoleLog = ({ logs, status, onClearLogs }: ConsoleLogProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,8 +31,9 @@ const ConsoleLog = ({ logs, status }: ConsoleLogProps) => {
   }, [logs]);
 
   const handleClearLogs = () => {
-    // Implementation would clear logs
-    console.log('Clear logs');
+    if (onClearLogs) {
+      onClearLogs();
+    }
   };
 
   const handleCopyLogs = () => {
