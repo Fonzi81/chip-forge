@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NewProject from "./pages/NewProject";
-import DesignEditor from "./pages/DesignEditor";
+import ChipForgeWorkspace from "./pages/ChipForgeWorkspace";
 import AuditTrail from "./pages/AuditTrail";
 import TemplatesLibrary from "./pages/TemplatesLibrary";
 import Export from "./pages/Export";
@@ -30,7 +30,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/new-project" element={<NewProject />} />
-          <Route path="/design-editor" element={<DesignEditor />} />
+          <Route path="/workspace" element={<ChipForgeWorkspace />} />
           <Route path="/audit-trail" element={<AuditTrail />} />
           <Route path="/templates" element={<TemplatesLibrary />} />
           <Route path="/export" element={<Export />} />
