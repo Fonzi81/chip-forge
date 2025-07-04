@@ -9,7 +9,11 @@ import {
   ZoomOut, 
   Download, 
   Maximize2,
-  RotateCcw
+  RotateCcw,
+  Ruler,
+  Target,
+  Eye,
+  FileImage
 } from "lucide-react";
 import WaveformCanvas from "./WaveformCanvas";
 
@@ -22,6 +26,10 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [timeOffset, setTimeOffset] = useState(0);
   const [selectedSignal, setSelectedSignal] = useState<string | null>(null);
+  const [timeCursor, setTimeCursor] = useState<number | null>(null);
+  const [measurementStart, setMeasurementStart] = useState<number | null>(null);
+  const [measurementEnd, setMeasurementEnd] = useState<number | null>(null);
+  const [highlightedSignals, setHighlightedSignals] = useState<Set<string>>(new Set());
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const handleZoomIn = () => {
@@ -46,6 +54,45 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
     a.download = 'waveform.vcd';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPNG = () => {
+    // Export waveform as PNG
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      const link = document.createElement('a');
+      link.download = 'waveform.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+  };
+
+  const toggleMeasurement = () => {
+    if (measurementStart && measurementEnd) {
+      setMeasurementStart(null);
+      setMeasurementEnd(null);
+    } else {
+      // Start measurement mode
+    }
+  };
+
+  const toggleSignalHighlight = (signal: string) => {
+    setHighlightedSignals(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(signal)) {
+        newSet.delete(signal);
+      } else {
+        newSet.add(signal);
+      }
+      return newSet;
+    });
+  };
+
+  const getMeasurementDuration = () => {
+    if (measurementStart !== null && measurementEnd !== null) {
+      return Math.abs(measurementEnd - measurementStart);
+    }
+    return null;
   };
 
   return (
@@ -90,6 +137,7 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
             size="sm" 
             onClick={handleReset}
             className="text-slate-400 hover:text-slate-200"
+            title="Reset View"
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
@@ -97,20 +145,46 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-slate-400 hover:text-slate-200"
+            onClick={toggleMeasurement}
+            className={`text-slate-400 hover:text-slate-200 ${
+              measurementStart !== null || measurementEnd !== null ? 'bg-chipforge-accent/20' : ''
+            }`}
+            title="Measurement Tool"
           >
-            <Maximize2 className="h-4 w-4" />
+            <Ruler className="h-4 w-4" />
           </Button>
           
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={handleDownloadVCD}
             className="text-slate-400 hover:text-slate-200"
+            title="Fullscreen"
           >
-            <Download className="h-4 w-4 mr-1" />
-            VCD
+            <Maximize2 className="h-4 w-4" />
           </Button>
+          
+          <div className="flex items-center gap-1 bg-slate-800/50 rounded-md p-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleDownloadVCD}
+              className="h-7 px-2 text-slate-400 hover:text-slate-200 text-xs"
+              title="Download VCD"
+            >
+              <Download className="h-3 w-3 mr-1" />
+              VCD
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleDownloadPNG}
+              className="h-7 px-2 text-slate-400 hover:text-slate-200 text-xs"
+              title="Export as PNG"
+            >
+              <FileImage className="h-3 w-3 mr-1" />
+              PNG
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -122,8 +196,16 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
             zoomLevel={zoomLevel}
             timeOffset={timeOffset}
             selectedSignal={selectedSignal}
+            timeCursor={timeCursor}
+            measurementStart={measurementStart}
+            measurementEnd={measurementEnd}
+            highlightedSignals={highlightedSignals}
             onSignalSelect={setSelectedSignal}
             onTimeOffsetChange={setTimeOffset}
+            onTimeCursorChange={setTimeCursor}
+            onMeasurementStart={setMeasurementStart}
+            onMeasurementEnd={setMeasurementEnd}
+            onSignalHighlight={toggleSignalHighlight}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-slate-500">
@@ -136,13 +218,35 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
         )}
       </div>
 
-      {/* Time Ruler */}
+      {/* Status Bar */}
       {isComplete && waveformData && (
         <div className="border-t border-slate-700 bg-slate-800/50 p-2">
           <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>0 ns</span>
-            <span>Time Scale: {waveformData.timeScale}</span>
-            <span>{waveformData.duration} ns</span>
+            <div className="flex items-center gap-4">
+              <span>0 ns</span>
+              <span>Time Scale: {waveformData.timeScale}</span>
+              <span>{waveformData.duration} ns</span>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {getMeasurementDuration() !== null && (
+                <div className="flex items-center gap-2 text-amber-400">
+                  <Ruler className="h-3 w-3" />
+                  <span>Δt: {getMeasurementDuration()?.toFixed(1)}ns</span>
+                </div>
+              )}
+              
+              {timeCursor !== null && (
+                <div className="flex items-center gap-2 text-chipforge-accent">
+                  <Target className="h-3 w-3" />
+                  <span>Cursor: {timeCursor.toFixed(1)}ns</span>
+                </div>
+              )}
+              
+              <div className="text-slate-500 text-xs">
+                Ctrl+Click: Cursor | Shift+Click: Measure | Double-click: Highlight
+              </div>
+            </div>
           </div>
         </div>
       )}

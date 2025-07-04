@@ -1,22 +1,39 @@
 import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Eye } from "lucide-react";
 
 interface WaveformCanvasProps {
   waveformData: any;
   zoomLevel: number;
   timeOffset: number;
   selectedSignal: string | null;
+  timeCursor: number | null;
+  measurementStart: number | null;
+  measurementEnd: number | null;
+  highlightedSignals: Set<string>;
   onSignalSelect: (signal: string | null) => void;
   onTimeOffsetChange: (offset: number) => void;
+  onTimeCursorChange: (time: number | null) => void;
+  onMeasurementStart: (time: number | null) => void;
+  onMeasurementEnd: (time: number | null) => void;
+  onSignalHighlight: (signal: string) => void;
 }
 
 const WaveformCanvas = ({ 
   waveformData, 
   zoomLevel, 
   timeOffset, 
-  selectedSignal, 
+  selectedSignal,
+  timeCursor,
+  measurementStart,
+  measurementEnd,
+  highlightedSignals,
   onSignalSelect,
-  onTimeOffsetChange 
+  onTimeOffsetChange,
+  onTimeCursorChange,
+  onMeasurementStart,
+  onMeasurementEnd,
+  onSignalHighlight
 }: WaveformCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,7 +47,7 @@ const WaveformCanvas = ({
 
   useEffect(() => {
     drawWaveforms();
-  }, [waveformData, zoomLevel, timeOffset]);
+  }, [waveformData, zoomLevel, timeOffset, timeCursor, measurementStart, measurementEnd, highlightedSignals, selectedSignal]);
 
   const drawWaveforms = () => {
     const canvas = canvasRef.current;
@@ -46,20 +63,76 @@ const WaveformCanvas = ({
     ctx.fillStyle = '#0f172a'; // slate-900
     ctx.fillRect(0, 0, width, height);
 
-    // Draw signals
+    // Draw signals with highlighting
     waveformData.traces.forEach((trace: any, index: number) => {
       const y = index * SIGNAL_SPACING + 30;
+      const isHighlighted = highlightedSignals.has(trace.name);
+      const isSelected = selectedSignal === trace.name;
+      
+      // Draw background highlight for selected/highlighted signals
+      if (isSelected || isHighlighted) {
+        ctx.fillStyle = isSelected ? '#8b5cf6' : '#059669'; // purple or emerald
+        ctx.globalAlpha = 0.1;
+        ctx.fillRect(0, y - SIGNAL_HEIGHT/2 - 5, width, SIGNAL_HEIGHT + 10);
+        ctx.globalAlpha = 1;
+      }
       
       if (trace.type === 'clock') {
-        drawClockSignal(ctx, trace, y, scaledTimeScale, timeOffset);
+        drawClockSignal(ctx, trace, y, scaledTimeScale, timeOffset, isHighlighted || isSelected);
       } else if (trace.type === 'bus') {
-        drawBusSignal(ctx, trace, y, scaledTimeScale, timeOffset);
+        drawBusSignal(ctx, trace, y, scaledTimeScale, timeOffset, isHighlighted || isSelected);
       } else {
-        drawDigitalSignal(ctx, trace, y, scaledTimeScale, timeOffset);
+        drawDigitalSignal(ctx, trace, y, scaledTimeScale, timeOffset, isHighlighted || isSelected);
       }
     });
 
-    // Draw time cursor if hovering
+    // Draw measurement area
+    if (measurementStart !== null && measurementEnd !== null) {
+      const startX = (measurementStart - timeOffset) * scaledTimeScale;
+      const endX = (measurementEnd - timeOffset) * scaledTimeScale;
+      
+      ctx.fillStyle = '#f59e0b'; // amber-500
+      ctx.globalAlpha = 0.2;
+      ctx.fillRect(Math.min(startX, endX), 0, Math.abs(endX - startX), height);
+      ctx.globalAlpha = 1;
+      
+      // Draw measurement lines
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      [startX, endX].forEach(x => {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      });
+      
+      // Draw measurement value
+      const midX = (startX + endX) / 2;
+      const duration = Math.abs(measurementEnd - measurementStart);
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = '14px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Δt: ${duration.toFixed(1)}ns`, midX, 20);
+    }
+
+    // Draw time cursor (persistent)
+    if (timeCursor !== null) {
+      const x = (timeCursor - timeOffset) * scaledTimeScale;
+      ctx.strokeStyle = '#10b981'; // emerald-500
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+      
+      // Time value at cursor
+      ctx.fillStyle = '#10b981';
+      ctx.font = '12px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${timeCursor.toFixed(1)}ns`, x, height - 10);
+    }
+
+    // Draw time cursor if hovering (temporary)
     if (hoveredTime !== null) {
       const x = (hoveredTime - timeOffset) * scaledTimeScale;
       ctx.strokeStyle = '#94a3b8'; // slate-400
@@ -73,9 +146,9 @@ const WaveformCanvas = ({
     }
   };
 
-  const drawClockSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number) => {
-    ctx.strokeStyle = '#10b981'; // emerald-500 (chipforge-accent)
-    ctx.lineWidth = 2;
+  const drawClockSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+    ctx.strokeStyle = highlighted ? '#14f195' : '#10b981'; // brighter if highlighted
+    ctx.lineWidth = highlighted ? 3 : 2;
     
     const period = 10; // 10ns period
     const startTime = Math.max(0, offset);
@@ -96,10 +169,10 @@ const WaveformCanvas = ({
     ctx.stroke();
   };
 
-  const drawBusSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number) => {
-    ctx.strokeStyle = '#8b5cf6'; // purple-500 (chipforge-waveform)
-    ctx.fillStyle = '#8b5cf6';
-    ctx.lineWidth = 2;
+  const drawBusSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+    ctx.strokeStyle = highlighted ? '#a855f7' : '#8b5cf6'; // brighter if highlighted
+    ctx.fillStyle = highlighted ? '#a855f7' : '#8b5cf6';
+    ctx.lineWidth = highlighted ? 3 : 2;
     
     const values = trace.values || ['0000', '0001', '0010', '0011'];
     const transitionTime = 100; // ns between transitions
@@ -132,9 +205,9 @@ const WaveformCanvas = ({
     });
   };
 
-  const drawDigitalSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number) => {
-    ctx.strokeStyle = '#06b6d4'; // cyan-500
-    ctx.lineWidth = 2;
+  const drawDigitalSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+    ctx.strokeStyle = highlighted ? '#22d3ee' : '#06b6d4'; // brighter if highlighted
+    ctx.lineWidth = highlighted ? 3 : 2;
     
     const values = trace.values || ['0', '1', '0', '1'];
     const transitionTime = 100; // ns between transitions
@@ -188,6 +261,35 @@ const WaveformCanvas = ({
     onSignalSelect(signalName === selectedSignal ? null : signalName);
   };
 
+  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const time = timeOffset + (x / (TIME_SCALE * zoomLevel));
+
+    if (event.ctrlKey || event.metaKey) {
+      // Set time cursor on Ctrl/Cmd + click
+      onTimeCursorChange(time);
+    } else if (event.shiftKey) {
+      // Measurement mode with Shift + click
+      if (measurementStart === null) {
+        onMeasurementStart(time);
+      } else if (measurementEnd === null) {
+        onMeasurementEnd(time);
+      } else {
+        // Reset and start new measurement
+        onMeasurementStart(time);
+        onMeasurementEnd(null);
+      }
+    }
+  };
+
+  const handleSignalDoubleClick = (signalName: string) => {
+    onSignalHighlight(signalName);
+  };
+
   return (
     <div className="h-full flex" ref={containerRef}>
       {/* Signal Labels */}
@@ -204,20 +306,29 @@ const WaveformCanvas = ({
               <div
                 key={trace.name}
                 onClick={() => handleSignalClick(trace.name)}
+                onDoubleClick={() => handleSignalDoubleClick(trace.name)}
                 className={`
-                  p-2 rounded cursor-pointer transition-colors font-mono text-sm
+                  p-2 rounded cursor-pointer transition-colors font-mono text-sm relative
                   ${selectedSignal === trace.name 
                     ? 'bg-chipforge-waveform/20 text-chipforge-waveform border border-chipforge-waveform/30' 
+                    : highlightedSignals.has(trace.name)
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                     : 'text-slate-300 hover:bg-slate-700/50'
                   }
                 `}
                 style={{ height: SIGNAL_HEIGHT }}
+                title="Click to select, double-click to highlight"
               >
                 <div className="flex items-center justify-between">
                   <span className="truncate">{trace.name}</span>
-                  {trace.type === 'bus' && (
-                    <span className="text-xs text-slate-500">[{trace.width-1}:0]</span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {highlightedSignals.has(trace.name) && (
+                      <Eye className="h-3 w-3 text-emerald-400" />
+                    )}
+                    {trace.type === 'bus' && (
+                      <span className="text-xs text-slate-500">[{trace.width-1}:0]</span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -231,9 +342,10 @@ const WaveformCanvas = ({
           ref={canvasRef}
           width={1200}
           height={waveformData?.traces.length * SIGNAL_SPACING + 50 || 400}
-          className="block"
+          className="block cursor-crosshair"
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onClick={handleCanvasClick}
         />
       </div>
 
