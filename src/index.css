@@ -63,6 +63,7 @@
     --emerald-400: 158 64% 52%;
     --emerald-500: 160 84% 39%;
     --emerald-600: 161 94% 30%;
+    --emerald-800: 158 64% 18%;
     
     --amber-400: 43 96% 56%;
     --amber-500: 38 92% 50%;
@@ -148,6 +149,7 @@
   .bg-cyan-500 { background-color: hsl(var(--cyan-500)); }
   .bg-blue-500 { background-color: hsl(var(--blue-500)); }
   .bg-emerald-500 { background-color: hsl(var(--emerald-500)); }
+  .bg-emerald-800 { background-color: hsl(var(--emerald-800)); }
 
   .border-cyan-500 { border-color: hsl(var(--cyan-500)); }
   .border-blue-500 { border-color: hsl(var(--blue-500)); }

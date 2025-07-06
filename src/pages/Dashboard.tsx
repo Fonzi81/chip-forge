@@ -123,7 +123,7 @@ const Dashboard = () => {
             onClick={() => navigate('/new-project')}
             variant="outline"
             size="lg"
-            className="h-24 sm:h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-cyan-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
+            className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-cyan-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
           >
             <Plus className="h-6 w-6 sm:h-8 sm:w-8" />
             <span className="text-xs sm:text-base">New Design</span>
@@ -132,7 +132,7 @@ const Dashboard = () => {
           <Button
             variant="outline"
             size="lg"
-            className="h-24 sm:h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-blue-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
+            className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-blue-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
           >
             <Upload className="h-6 w-6 sm:h-8 sm:w-8" />
             <span className="text-xs sm:text-base">Upload HDL</span>
@@ -142,7 +142,7 @@ const Dashboard = () => {
             onClick={() => navigate('/templates')}
             variant="outline"
             size="lg"
-            className="h-24 sm:h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-emerald-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
+            className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-emerald-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
           >
             <Library className="h-6 w-6 sm:h-8 sm:w-8" />
             <span className="text-xs sm:text-base">Browse Templates</span>
@@ -152,7 +152,7 @@ const Dashboard = () => {
             onClick={() => navigate('/workspace')}
             variant="outline"
             size="lg"
-            className="h-24 sm:h-32 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-purple-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
+            className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-purple-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2"
           >
             <Activity className="h-6 w-6 sm:h-8 sm:w-8" />
             <span className="text-xs sm:text-base">ChipForge IDE</span>

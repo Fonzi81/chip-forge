@@ -91,7 +91,8 @@ export default {
 				emerald: {
 					400: 'hsl(var(--emerald-400))',
 					500: 'hsl(var(--emerald-500))',
-					600: 'hsl(var(--emerald-600))'
+					600: 'hsl(var(--emerald-600))',
+					800: 'hsl(var(--emerald-800))'
 				},
 				amber: {
 					400: 'hsl(var(--amber-400))',
