@@ -127,9 +127,39 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {/* Phase 4 Features */}
+        {/* AI Tools & Features */}
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-slate-200">Collaboration & Learning</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-slate-200">AI-Powered Tools</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+            <Button onClick={() => navigate('/hdl-reflexion-agent')} variant="outline" size="lg" className="h-32 sm:h-36 border-slate-600 text-slate-300 hover:border-emerald-500 font-semibold px-4 sm:px-6 py-4 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2 bg-gradient-to-br from-emerald-900/50 to-cyan-900/50 hover:from-emerald-800/50 hover:to-cyan-800/50">
+              <Zap className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-400" />
+              <div className="text-center">
+                <div className="text-sm sm:text-base font-bold">HDL Reflexion Agent</div>
+                <div className="text-xs text-slate-400 mt-1">AI generates & improves HDL code through iterative feedback</div>
+              </div>
+            </Button>
+
+            <Button onClick={() => navigate('/chipforge-simulation')} variant="outline" size="lg" className="h-32 sm:h-36 border-slate-600 text-slate-300 hover:border-purple-500 font-semibold px-4 sm:px-6 py-4 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2 bg-gradient-to-br from-purple-900/50 to-blue-900/50 hover:from-purple-800/50 hover:to-blue-800/50">
+              <Activity className="h-8 w-8 sm:h-10 sm:w-10 text-purple-400" />
+              <div className="text-center">
+                <div className="text-sm sm:text-base font-bold">Advanced Simulation</div>
+                <div className="text-xs text-slate-400 mt-1">Full-featured HDL simulation with waveform analysis</div>
+              </div>
+            </Button>
+
+            <Button onClick={() => navigate('/learning-panel')} variant="outline" size="lg" className="h-32 sm:h-36 border-slate-600 text-slate-300 hover:border-amber-500 font-semibold px-4 sm:px-6 py-4 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2 bg-gradient-to-br from-amber-900/50 to-orange-900/50 hover:from-amber-800/50 hover:to-orange-800/50">
+              <GraduationCap className="h-8 w-8 sm:h-10 sm:w-10 text-amber-400" />
+              <div className="text-center">
+                <div className="text-sm sm:text-base font-bold">Learning Center</div>
+                <div className="text-xs text-slate-400 mt-1">Interactive tutorials and HDL documentation</div>
+              </div>
+            </Button>
+          </div>
+        </div>
+
+        {/* Collaboration & Utilities */}
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-slate-200">Collaboration & Utilities</h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Button onClick={() => navigate('/usage-dashboard')} variant="outline" size="lg" className="h-20 sm:h-24 border-slate-600 text-slate-300 hover:border-purple-500 font-semibold px-3 sm:px-6 py-2 sm:py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 bg-cyan-800 hover:bg-cyan-700">
               <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />

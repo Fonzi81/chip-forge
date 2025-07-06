@@ -18,6 +18,7 @@ import UsageDashboard from "./pages/UsageDashboard";
 import CollaboratorMode from "./pages/CollaboratorMode";
 import LearningPanel from "./pages/LearningPanel";
 import ChipForgeSimulation from "./pages/ChipForgeSimulation";
+import HDLReflexionAgent from "./pages/HDLReflexionAgent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/collaborator-mode" element={<CollaboratorMode />} />
           <Route path="/learning-panel" element={<LearningPanel />} />
           <Route path="/chipforge-simulation" element={<ChipForgeSimulation />} />
+          <Route path="/hdl-reflexion-agent" element={<HDLReflexionAgent />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
