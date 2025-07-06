@@ -12,6 +12,8 @@ const NewProject = () => {
   const [prompt, setPrompt] = useState("");
   const [generatedHDL, setGeneratedHDL] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [hdlType, setHdlType] = useState("SystemVerilog");
+  const [targetPlatform, setTargetPlatform] = useState("FPGA");
 
   const examplePrompts = [
     "Design a 4-bit ALU with carry-out",
@@ -72,6 +74,25 @@ endmodule`;
           </div>
           
           <div className="flex items-center gap-2">
+            <select 
+              value={hdlType}
+              onChange={(e) => setHdlType(e.target.value)}
+              className="bg-slate-800 border border-slate-600 text-slate-200 px-3 py-2 rounded text-sm"
+            >
+              <option value="SystemVerilog">SystemVerilog</option>
+              <option value="Verilog">Verilog</option>
+              <option value="VHDL">VHDL</option>
+              <option value="Chisel">Chisel</option>
+            </select>
+            <select 
+              value={targetPlatform}
+              onChange={(e) => setTargetPlatform(e.target.value)}
+              className="bg-slate-800 border border-slate-600 text-slate-200 px-3 py-2 rounded text-sm"
+            >
+              <option value="FPGA">FPGA</option>
+              <option value="ASIC">ASIC</option>
+              <option value="Simulation">Simulation</option>
+            </select>
             <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
               AI Assistant Active
             </Badge>
@@ -88,7 +109,7 @@ endmodule`;
                 <Cpu className="h-6 w-6 text-emerald-400" />
                 Describe Your Chip
               </h2>
-              <p className="text-slate-400">Tell us what you want to build in plain English. Our AI will generate the HDL code for you.</p>
+              <p className="text-slate-400">Tell us what you want to build in plain English. Our AI will generate {hdlType} code for {targetPlatform} implementation.</p>
             </div>
 
             <div className="flex-1 flex flex-col">
