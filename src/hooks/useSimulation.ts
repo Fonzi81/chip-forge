@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface SimulationConfig {
   clockFreq: string;
@@ -38,19 +38,33 @@ export const useSimulation = () => {
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const simulationIdRef = useRef<string | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   const addLog = useCallback((message: string) => {
+    if (!isMountedRef.current) return;
     const timestamp = new Date().toLocaleTimeString();
     setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
   }, []);
 
   const updateProgress = useCallback((stage: SimulationProgress['stage'], progress: number, message: string) => {
+    if (!isMountedRef.current) return;
     setProgress({ stage, progress, message });
     addLog(message);
   }, [addLog]);
 
   const simulateWithWebSocket = useCallback(async (config: SimulationConfig) => {
-    if (isRunning) return;
+    if (isRunning || !isMountedRef.current) return;
 
     setIsRunning(true);
     setResult(null);
@@ -125,29 +139,37 @@ export const useSimulation = () => {
       };
 
       updateProgress('complete', 100, 'Simulation completed successfully');
-      setResult(mockResult);
+      if (isMountedRef.current) {
+        setResult(mockResult);
+      }
 
     } catch (error) {
       if (abortControllerRef.current?.signal.aborted) {
         updateProgress('idle', 0, 'Simulation cancelled by user');
-        setResult({
-          id: simulationId,
-          status: 'error',
-          logs: [...logs],
-          error: 'Simulation was cancelled'
-        });
+        if (isMountedRef.current) {
+          setResult({
+            id: simulationId,
+            status: 'error',
+            logs: [...logs],
+            error: 'Simulation was cancelled'
+          });
+        }
       } else {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         updateProgress('idle', 0, `Simulation failed: ${errorMessage}`);
-        setResult({
-          id: simulationId,
-          status: 'error',
-          logs: [...logs],
-          error: errorMessage
-        });
+        if (isMountedRef.current) {
+          setResult({
+            id: simulationId,
+            status: 'error',
+            logs: [...logs],
+            error: errorMessage
+          });
+        }
       }
     } finally {
-      setIsRunning(false);
+      if (isMountedRef.current) {
+        setIsRunning(false);
+      }
       abortControllerRef.current = null;
     }
   }, [isRunning, logs, updateProgress]);

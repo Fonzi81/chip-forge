@@ -163,16 +163,6 @@ endmodule`
 
   const activeFile = files.find(f => f.id === activeFileId);
 
-  // Auto-simulate when code changes
-  useEffect(() => {
-    if (autoSimulate && hasUnsavedChanges && !isRunning) {
-      const timer = setTimeout(() => {
-        handleRunSimulation();
-      }, 2000); // Debounce 2 seconds
-      return () => clearTimeout(timer);
-    }
-  }, [hasUnsavedChanges, autoSimulate, isRunning]);
-
   // Event handlers
   const handleSave = () => {
     setHasUnsavedChanges(false);
@@ -190,6 +180,19 @@ endmodule`
       setActiveTab("simulation");
     }
   };
+
+  // Auto-simulate when code changes
+  useEffect(() => {
+    if (autoSimulate && hasUnsavedChanges && !isRunning) {
+      const timer = setTimeout(() => {
+        // Double-check conditions before running simulation
+        if (autoSimulate && !isRunning && hasUnsavedChanges) {
+          handleRunSimulation();
+        }
+      }, 2000); // Debounce 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [hasUnsavedChanges, autoSimulate, isRunning, handleRunSimulation]);
 
   const handleStopSimulation = () => {
     cancelSimulation();
