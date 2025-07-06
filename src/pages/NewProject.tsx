@@ -20,7 +20,7 @@ const NewProject = () => {
     "Create a UART transmitter with configurable baud rate",
     "Build a simple 8-bit counter with reset",
     "Design a priority encoder for 8 inputs",
-    "Create a finite state machine for traffic light control"
+    "Create a Verilog HDL module implementing a finite state machine (FSM) to control a traffic light for a two-directional intersection (North-South and East-West). The FSM should be a Moore machine with four states: North-South Green/East-West Red, North-South Yellow/East-West Red, East-West Green/North-South Red, East-West Yellow/North-South Red. Include inputs for clk and reset, outputs for ns_light[1:0] and ew_light[1:0] where 00=Red, 01=Green, 10=Yellow, timer for state durations, and separate always blocks for state update, next-state logic, and output logic."
   ];
 
   const handleGenerate = async () => {
@@ -30,7 +30,103 @@ const NewProject = () => {
     
     // Simulate AI HDL generation
     setTimeout(() => {
-      const sampleHDL = `module alu_4bit (
+      let sampleHDL = "";
+      
+      // Check if this is a traffic light FSM prompt
+      if (prompt.toLowerCase().includes("traffic light") && prompt.toLowerCase().includes("finite state machine")) {
+        sampleHDL = `module traffic_light_controller (
+    input wire clk,
+    input wire reset,
+    output reg [1:0] ns_light,  // 2'b00=Red, 2'b01=Green, 2'b10=Yellow
+    output reg [1:0] ew_light   // same encoding
+);
+
+    // State encoding
+    typedef enum reg [2:0] {
+        S_NS_GREEN = 3'b000,
+        S_NS_YELLOW = 3'b001,
+        S_EW_GREEN = 3'b010,
+        S_EW_YELLOW = 3'b011
+    } state_t;
+
+    state_t state, next_state;
+
+    // Timer counter
+    reg [3:0] timer;
+
+    // State duration
+    localparam GREEN_TIME = 5;
+    localparam YELLOW_TIME = 2;
+
+    // State transitions
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            state <= S_NS_GREEN;
+            timer <= 0;
+        end else begin
+            if (timer == 0)
+                state <= next_state;
+            else
+                timer <= timer - 1;
+        end
+    end
+
+    // Next state logic
+    always @(*) begin
+        case (state)
+            S_NS_GREEN: begin
+                next_state = S_NS_YELLOW;
+                timer = GREEN_TIME;
+            end
+            S_NS_YELLOW: begin
+                next_state = S_EW_GREEN;
+                timer = YELLOW_TIME;
+            end
+            S_EW_GREEN: begin
+                next_state = S_EW_YELLOW;
+                timer = GREEN_TIME;
+            end
+            S_EW_YELLOW: begin
+                next_state = S_NS_GREEN;
+                timer = YELLOW_TIME;
+            end
+            default: begin
+                next_state = S_NS_GREEN;
+                timer = GREEN_TIME;
+            end
+        endcase
+    end
+
+    // Output logic (Moore machine)
+    always @(*) begin
+        case (state)
+            S_NS_GREEN: begin
+                ns_light = 2'b01; // Green
+                ew_light = 2'b00; // Red
+            end
+            S_NS_YELLOW: begin
+                ns_light = 2'b10; // Yellow
+                ew_light = 2'b00; // Red
+            end
+            S_EW_GREEN: begin
+                ns_light = 2'b00; // Red
+                ew_light = 2'b01; // Green
+            end
+            S_EW_YELLOW: begin
+                ns_light = 2'b00; // Red
+                ew_light = 2'b10; // Yellow
+            end
+            default: begin
+                ns_light = 2'b00; // Red
+                ew_light = 2'b00; // Red
+            end
+        endcase
+    end
+
+endmodule`;
+      } else {
+        // Default ALU sample for other prompts
+        sampleHDL = `module alu_4bit (
     input [3:0] a,
     input [3:0] b,
     input [2:0] op,
@@ -53,6 +149,7 @@ always @(*) begin
 end
 
 endmodule`;
+      }
       
       setGeneratedHDL(sampleHDL);
       setIsGenerating(false);
@@ -114,7 +211,7 @@ endmodule`;
 
             <div className="flex-1 flex flex-col">
               <Textarea
-                placeholder="Example: Design a 4-bit ALU with carry-out that can perform addition, subtraction, AND, OR, XOR operations..."
+                placeholder="Describe your chip design in detail. Include specifications like input/output signals, functionality, timing requirements, and target platform. For example: 'Design a 4-bit ALU with carry-out that can perform addition, subtraction, AND, OR, XOR operations' or try one of the examples below..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 className="flex-1 bg-slate-900/50 border-slate-700 text-slate-100 placeholder:text-slate-500 resize-none min-h-[200px] font-mono"
