@@ -16,10 +16,12 @@ import {
   Play, 
   Eye
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const DesignEditor = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialHdlCode = location.state?.hdlCode;
   const [activeFileId, setActiveFileId] = useState("1");
   const [aiAssistEnabled, setAiAssistEnabled] = useState(true);
   const [compileStatus, setCompileStatus] = useState<'idle' | 'compiling' | 'success' | 'error'>('success');
@@ -36,7 +38,7 @@ const DesignEditor = () => {
       type: "verilog" as const, 
       hasErrors: false, 
       path: "src/alu_4bit.v",
-      content: `module alu_4bit (
+      content: initialHdlCode || `module alu_4bit (
     input [3:0] a,
     input [3:0] b,
     input [2:0] op,

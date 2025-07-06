@@ -303,7 +303,7 @@ endmodule`;
             {generatedHDL && (
               <div className="mt-4 flex gap-3">
                 <Button 
-                  onClick={() => navigate('/design-editor')}
+                  onClick={() => navigate('/design-editor', { state: { hdlCode: generatedHDL } })}
                   className="bg-purple-500 text-white hover:bg-purple-400 font-semibold px-6 py-3 flex-1"
                 >
                   Open in Editor
