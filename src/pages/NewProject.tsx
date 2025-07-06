@@ -248,7 +248,11 @@ endmodule`;
                     className="p-3 bg-slate-900/30 border-slate-700 hover:border-slate-600 cursor-pointer transition-colors"
                     onClick={() => setPrompt(example)}
                   >
-                    <p className="text-sm text-slate-300">{example}</p>
+                    <p className="text-sm text-slate-300">
+                      {example.includes("finite state machine") && example.includes("traffic light") 
+                        ? "Create a Verilog HDL module for a Finite State Machine (FSM) to control traffic lights for a 2 direction intersection" 
+                        : example}
+                    </p>
                   </Card>
                 ))}
               </div>
