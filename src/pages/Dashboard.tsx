@@ -146,7 +146,7 @@ const Dashboard = () => {
               <span className="text-xs sm:text-sm">Learning Center</span>
             </Button>
 
-            <Button onClick={() => navigate('/constraints')} variant="outline" size="lg" className="h-20 sm:h-24 border-slate-600 text-slate-300 hover:border-cyan-500 font-semibold px-3 sm:px-6 py-2 sm:py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 bg-sky-500 hover:bg-sky-400">
+            <Button onClick={() => navigate('/constraints')} variant="outline" size="lg" className="h-20 sm:h-24 border-slate-600 text-slate-300 hover:border-cyan-500 font-semibold px-3 sm:px-6 py-2 sm:py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 bg-cyan-800 hover:bg-cyan-700">
               <FileCode className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-xs sm:text-sm">Constraints</span>
             </Button>
