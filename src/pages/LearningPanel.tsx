@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import CoursesTab from "@/components/learning/CoursesTab";
 import AIAssistantTab from "@/components/learning/AIAssistantTab";
 import ResourcesTab from "@/components/learning/ResourcesTab";
+import GlossaryTab from "@/components/learning/GlossaryTab";
 
 const LearningPanel = () => {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ const LearningPanel = () => {
           <TabsList className="bg-slate-900/50 border-slate-700">
             <TabsTrigger value="courses" className="data-[state=active]:bg-slate-700">Courses</TabsTrigger>
             <TabsTrigger value="ai-assistant" className="data-[state=active]:bg-slate-700">AI Assistant</TabsTrigger>
+            <TabsTrigger value="glossary" className="data-[state=active]:bg-slate-700">Glossary</TabsTrigger>
             <TabsTrigger value="resources" className="data-[state=active]:bg-slate-700">Resources</TabsTrigger>
           </TabsList>
 
@@ -60,6 +62,10 @@ const LearningPanel = () => {
 
           <TabsContent value="ai-assistant" className="space-y-6">
             <AIAssistantTab />
+          </TabsContent>
+
+          <TabsContent value="glossary" className="space-y-6">
+            <GlossaryTab />
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-6">
