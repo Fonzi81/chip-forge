@@ -11,9 +11,10 @@ interface SimulationConfigProps {
   onRunSimulation: (config: any) => void;
   onCancelSimulation?: () => void;
   isRunning: boolean;
+  initialHdlCode?: string;
 }
 
-const SimulationConfig = ({ onRunSimulation, onCancelSimulation, isRunning }: SimulationConfigProps) => {
+const SimulationConfig = ({ onRunSimulation, onCancelSimulation, isRunning, initialHdlCode }: SimulationConfigProps) => {
   const [config, setConfig] = useState({
     clockFreq: "100",
     simulationTime: "1000",
@@ -22,7 +23,7 @@ a = 4'b0000; b = 4'b0001;
 a = 4'b0010; b = 4'b0011;
 a = 4'b0100; b = 4'b0101;
 a = 4'b1111; b = 4'b0001;`,
-    hdlCode: `module alu_4bit (
+    hdlCode: initialHdlCode || `module alu_4bit (
   input [3:0] a,
   input [3:0] b,
   input [2:0] op,

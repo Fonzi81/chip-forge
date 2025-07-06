@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Cpu, Zap, Copy, Download, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -282,11 +283,13 @@ endmodule`;
               )}
             </div>
 
-            <Card className="flex-1 bg-slate-900/50 border-slate-700">
+            <Card className="h-96 bg-slate-900/50 border-slate-700">
               {generatedHDL ? (
-                <pre className="p-4 text-sm font-mono text-slate-200 overflow-auto h-full">
-                  <code>{generatedHDL}</code>
-                </pre>
+                <ScrollArea className="h-full">
+                  <pre className="p-4 text-sm font-mono text-slate-200">
+                    <code>{generatedHDL}</code>
+                  </pre>
+                </ScrollArea>
               ) : (
                 <div className="flex items-center justify-center h-full text-slate-500">
                   <div className="text-center">
@@ -307,6 +310,7 @@ endmodule`;
                 </Button>
                 <Button 
                   variant="outline" 
+                  onClick={() => navigate('/chipforge-simulation', { state: { hdlCode: generatedHDL } })}
                   className="border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-slate-900 font-semibold px-6 py-3"
                 >
                   Simulate

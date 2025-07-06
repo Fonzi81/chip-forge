@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ArrowLeft, Cpu, Activity } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSimulation } from "@/hooks/useSimulation";
 import SimulationConfig from "@/components/chipforge/SimulationConfig";
 import SimulationProgress from "@/components/chipforge/SimulationProgress";
@@ -13,6 +13,8 @@ import ResultsPanel from "@/components/chipforge/ResultsPanel";
 
 const ChipForgeSimulation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialHdlCode = location.state?.hdlCode;
   const { 
     isRunning, 
     progress, 
@@ -98,6 +100,7 @@ const ChipForgeSimulation = () => {
                 onRunSimulation={simulate}
                 onCancelSimulation={cancelSimulation}
                 isRunning={isRunning}
+                initialHdlCode={initialHdlCode}
               />
               
               {/* Progress Panel */}
