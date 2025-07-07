@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { reflexionAI } from '@/services/reflexionAI';
 import { useSimulation } from '@/hooks/useSimulation';
 
@@ -68,8 +68,21 @@ export const useReflexion = (
   const { simulate } = useSimulation();
   const abortControllerRef = useRef<AbortController | null>(null);
   const startTimeRef = useRef<number>(0);
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   const updateState = useCallback((updates: Partial<ReflexionState>) => {
+    if (!isMountedRef.current) return;
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
@@ -80,6 +93,10 @@ export const useReflexion = (
     previousCode?: string,
     reviewerFeedback?: string
   ): Promise<ReflexionIteration> => {
+    if (!isMountedRef.current) {
+      throw new Error('Component unmounted during iteration');
+    }
+    
     const iterationId = `iter_${iteration}_${Date.now()}`;
     
     // Generate code
@@ -90,11 +107,19 @@ export const useReflexion = (
       reviewerFeedback
     );
 
+    if (!isMountedRef.current) {
+      throw new Error('Component unmounted during iteration');
+    }
+
     // Test the code (mock for now since simulate returns void)
     updateState({ currentStage: 'testing' });
     
     // Mock simulation delay
     await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    if (!isMountedRef.current) {
+      throw new Error('Component unmounted during iteration');
+    }
     
     // Mock test result - in production this would use actual simulation
     const mockPassed = Math.random() > 0.3; // 70% chance of success for demo
@@ -125,7 +150,7 @@ export const useReflexion = (
       timestamp: new Date(),
       tokensUsed: 1000 // Mock token count - would be real in production
     };
-  }, [simulate, updateState]);
+  }, [updateState]);
 
   const startReflexion = useCallback(async (description: string, testbench: string) => {
     if (state.isRunning) return;
@@ -217,14 +242,18 @@ export const useReflexion = (
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    updateState({
-      isRunning: false,
-      currentStage: 'idle'
-    });
+    if (isMountedRef.current) {
+      updateState({
+        isRunning: false,
+        currentStage: 'idle'
+      });
+    }
   }, [updateState]);
 
   const resetReflexion = useCallback(() => {
-    setState(initialState);
+    if (isMountedRef.current) {
+      setState(initialState);
+    }
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
