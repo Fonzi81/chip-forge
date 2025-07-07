@@ -14,7 +14,6 @@ import {
   Code
 } from "lucide-react";
 import { ReflexionMetrics, ReflexionIteration } from "@/hooks/useReflexion";
-import React from "react";
 
 interface ReflexionResultsProps {
   finalCode: string | null;
@@ -30,7 +29,7 @@ const MetricCard = ({
   description, 
   variant = "default" 
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: any;
   label: string;
   value: string;
   description: string;

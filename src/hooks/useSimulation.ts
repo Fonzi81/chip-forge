@@ -1,20 +1,41 @@
 import { useState, useCallback, useRef } from 'react';
-import type { SimulationConfig, SimulationProgress, SimulationResult, WaveformData } from '@/components/design-editor/types';
+
+export interface SimulationConfig {
+  clockFreq: string;
+  simulationTime: string;
+  inputVectors: string;
+  hdlCode: string;
+}
+
+export interface SimulationProgress {
+  stage: 'idle' | 'compiling' | 'running' | 'processing' | 'complete';
+  progress: number;
+  message: string;
+}
+
+export interface SimulationResult {
+  id: string;
+  status: 'success' | 'error' | 'timeout';
+  waveformData?: any;
+  logs: string[];
+  metrics?: {
+    duration: string;
+    gateCount: number;
+    assertions: { passed: number; failed: number };
+  };
+  error?: string;
+}
 
 export const useSimulation = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState<SimulationProgress>({
-    progress: 0,
     stage: 'idle',
+    progress: 0,
     message: 'Ready to simulate'
   });
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
-  const [retryCount, setRetryCount] = useState(0);
-  const [lastError, setLastError] = useState<string | null>(null);
-
-  const maxRetries = 3;
-
+  
   const abortControllerRef = useRef<AbortController | null>(null);
   const simulationIdRef = useRef<string | null>(null);
 
@@ -28,18 +49,18 @@ export const useSimulation = () => {
     addLog(message);
   }, [addLog]);
 
-  const simulate = useCallback(async (config: SimulationConfig) => {
+  const simulateWithWebSocket = useCallback(async (config: SimulationConfig) => {
     if (isRunning) return;
 
-    try {
-      setIsRunning(true);
-      setLastError(null);
-      setProgress({
-        progress: 0,
-        stage: 'initializing',
-        message: 'Initializing simulation...'
-      });
+    setIsRunning(true);
+    setResult(null);
+    setLogs([]);
+    abortControllerRef.current = new AbortController();
+    
+    const simulationId = `sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    simulationIdRef.current = simulationId;
 
+    try {
       // Phase 1: Compilation
       updateProgress('compiling', 10, 'Starting HDL compilation...');
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -81,14 +102,14 @@ export const useSimulation = () => {
 
       // Mock successful result
       const mockResult: SimulationResult = {
-        id: simulationIdRef.current,
+        id: simulationId,
         status: 'success',
         waveformData: {
           signals: ['clk', 'a[3:0]', 'b[3:0]', 'result[3:0]', 'carry_out'],
           timeScale: 'ns',
           duration: parseInt(config.simulationTime) || 1000,
           traces: [
-            { name: 'clk', type: 'clock', values: ['0', '1', '0', '1'], transitions: [] },
+            { name: 'clk', type: 'clock', transitions: [] },
             { name: 'a[3:0]', type: 'bus', width: 4, values: ['0000', '0001', '0010', '0011'] },
             { name: 'b[3:0]', type: 'bus', width: 4, values: ['0001', '0010', '0011', '0100'] },
             { name: 'result[3:0]', type: 'bus', width: 4, values: ['0001', '0011', '0101', '0111'] },
@@ -107,32 +128,29 @@ export const useSimulation = () => {
       setResult(mockResult);
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setLastError(errorMessage);
-      
-      if (retryCount < maxRetries) {
-        setRetryCount(prev => prev + 1);
-        setProgress({
-          progress: 0,
-          stage: 'retrying',
-          message: `Retrying... (${retryCount + 1}/${maxRetries})`
-        });
-        
-        // Retry after a delay
-        setTimeout(() => {
-          simulate(config);
-        }, 2000);
-      } else {
+      if (abortControllerRef.current?.signal.aborted) {
+        updateProgress('idle', 0, 'Simulation cancelled by user');
         setResult({
+          id: simulationId,
           status: 'error',
-          error: errorMessage,
-          waveformData: null
+          logs: [...logs],
+          error: 'Simulation was cancelled'
         });
-        setIsRunning(false);
-        setRetryCount(0);
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        updateProgress('idle', 0, `Simulation failed: ${errorMessage}`);
+        setResult({
+          id: simulationId,
+          status: 'error',
+          logs: [...logs],
+          error: errorMessage
+        });
       }
+    } finally {
+      setIsRunning(false);
+      abortControllerRef.current = null;
     }
-  }, [isRunning, retryCount, updateProgress]);
+  }, [isRunning, logs, updateProgress]);
 
   const cancelSimulation = useCallback(() => {
     if (abortControllerRef.current) {
@@ -149,33 +167,20 @@ export const useSimulation = () => {
     setResult(null);
     setLogs([]);
     setProgress({
-      progress: 0,
       stage: 'idle',
+      progress: 0,
       message: 'Ready to simulate'
     });
   }, []);
-
-  const retrySimulation = useCallback(() => {
-    if (lastError && !isRunning) {
-      setRetryCount(0);
-      setLastError(null);
-      // Retry with last config
-      // This would need to store the last config
-    }
-  }, [lastError, isRunning]);
 
   return {
     isRunning,
     progress,
     result,
     logs,
-    simulate,
+    simulate: simulateWithWebSocket,
     cancelSimulation,
     clearLogs,
-    resetSimulation,
-    retrySimulation,
-    retryCount,
-    lastError,
-    maxRetries
+    resetSimulation
   };
 };

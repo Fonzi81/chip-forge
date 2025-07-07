@@ -56,9 +56,7 @@ const DesignEditor = () => {
         onRedo={handleRedo}
         onRunSimulation={handleRunSimulation}
         onExport={handleExport}
-        onOpenSettings={() => {
-          // TODO: Implement settings functionality
-        }}
+        onOpenSettings={() => console.log("Settings")}
         canUndo={canUndo}
         canRedo={canRedo}
         hasUnsavedChanges={hasUnsavedChanges}
@@ -77,9 +75,7 @@ const DesignEditor = () => {
           onFileSelect={setActiveFileId}
           onFileCreate={handleFileCreate}
           onFileDelete={handleFileDelete}
-          onFileRename={(id, name) => {
-            // TODO: Implement file rename functionality
-          }}
+          onFileRename={(id, name) => console.log("Rename", id, name)}
         />
 
         {/* Main Content */}

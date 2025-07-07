@@ -48,22 +48,7 @@ const initialState: ReflexionState = {
   error: null,
 };
 
-/**
- * Custom hook for managing reflexion-based HDL development workflow
- * 
- * @param initialHdlCode - The initial HDL code to start with
- * @param maxIterations - Maximum number of reflexion iterations (default: 5)
- * @returns Object containing reflexion state and control functions
- * 
- * @example
- * ```typescript
- * const { state, startReflexion, stopReflexion, resetReflexion } = useReflexion(initialCode);
- * ```
- */
-export const useReflexion = (
-  initialHdlCode: string = '',
-  maxIterations: number = 5
-) => {
+export const useReflexion = () => {
   const [state, setState] = useState<ReflexionState>(initialState);
   const { simulate } = useSimulation();
   const abortControllerRef = useRef<AbortController | null>(null);

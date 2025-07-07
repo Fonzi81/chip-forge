@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { DesignFile, CompileStatus, DesignMetrics, AISuggestion } from "@/components/design-editor/types";
+import { DesignFile, CompileStatus, DesignMetrics } from "@/components/design-editor/types";
 import { getDefaultFiles, getDefaultAISuggestions } from "@/utils/designEditorDefaults";
-
-type FileType = DesignFile['type'];
 
 export const useDesignEditor = (initialHdlCode?: string) => {
   const [activeFileId, setActiveFileId] = useState("1");
@@ -14,7 +12,7 @@ export const useDesignEditor = (initialHdlCode?: string) => {
   const [canRedo, setCanRedo] = useState(false);
   const [simulationRunning, setSimulationRunning] = useState(false);
   const [files, setFiles] = useState<DesignFile[]>(getDefaultFiles(initialHdlCode));
-  const [aiSuggestions] = useState<AISuggestion[]>(getDefaultAISuggestions());
+  const [aiSuggestions] = useState(getDefaultAISuggestions());
 
   const designMetrics: DesignMetrics = {
     linesOfCode: files.reduce((acc, file) => acc + file.content.split('\n').length, 0),
@@ -48,7 +46,7 @@ export const useDesignEditor = (initialHdlCode?: string) => {
   };
 
   const handleExport = () => {
-    // TODO: Implement design export functionality
+    console.log("Exporting design...");
   };
 
   const handleCodeChange = (content: string) => {
@@ -60,11 +58,11 @@ export const useDesignEditor = (initialHdlCode?: string) => {
     }
   };
 
-  const handleFileCreate = (name: string, type: FileType) => {
+  const handleFileCreate = (name: string, type: string) => {
     const newFile: DesignFile = {
       id: Date.now().toString(),
       name,
-      type,
+      type: type as any,
       hasErrors: false,
       path: `src/${name}`,
       content: type === 'verilog' ? '// New Verilog module\nmodule new_module;\n\nendmodule' : ''
@@ -79,40 +77,20 @@ export const useDesignEditor = (initialHdlCode?: string) => {
     }
   };
 
-  const handleApplySuggestion = (suggestion: AISuggestion) => {
-    // TODO: Implement suggestion application
+  const handleApplySuggestion = (suggestion: any) => {
+    console.log("Applying suggestion:", suggestion);
   };
 
   const handleDismissSuggestion = (id: string) => {
-    // TODO: Implement suggestion dismissal
+    console.log("Dismissing suggestion:", id);
   };
 
   const handleGenerateCode = (prompt: string) => {
-    // TODO: Implement code generation
+    console.log("Generating code for prompt:", prompt);
   };
 
   const handleExplainCode = (code: string) => {
-    // TODO: Implement code explanation
-  };
-
-  const exportDesign = () => {
-    // TODO: Implement design export functionality
-  };
-
-  const applySuggestion = (suggestion: AISuggestion) => {
-    // TODO: Implement suggestion application
-  };
-
-  const dismissSuggestion = (id: string) => {
-    // TODO: Implement suggestion dismissal
-  };
-
-  const generateCode = (prompt: string) => {
-    // TODO: Implement code generation
-  };
-
-  const explainCode = (code: string) => {
-    // TODO: Implement code explanation
+    console.log("Explaining code:", code);
   };
 
   return {
@@ -145,10 +123,5 @@ export const useDesignEditor = (initialHdlCode?: string) => {
     handleDismissSuggestion,
     handleGenerateCode,
     handleExplainCode,
-    exportDesign,
-    applySuggestion,
-    dismissSuggestion,
-    generateCode,
-    explainCode,
   };
 };

@@ -18,7 +18,7 @@ interface DesignEditorTabsProps {
   designMetrics: DesignMetrics;
   onCodeChange: (content: string) => void;
   onSave: () => void;
-  onApplySuggestion: (suggestion: AISuggestion) => void;
+  onApplySuggestion: (suggestion: any) => void;
   onDismissSuggestion: (id: string) => void;
   onGenerateCode: (prompt: string) => void;
   onExplainCode: (code: string) => void;
