@@ -44,6 +44,7 @@ const SignalSearch = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [signalGroups, setSignalGroups] = useState<SignalGroup[]>([]);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   // Group signals by prefix (e.g., "cpu_", "memory_")
   const groupedSignals = useMemo(() => {
@@ -101,6 +102,41 @@ const SignalSearch = ({
     return "text-slate-300 hover:bg-slate-700/50";
   };
 
+  const filterSignalsByType = (type: string) => {
+    setActiveFilter(activeFilter === type ? null : type);
+  };
+
+  const getFilteredSignals = () => {
+    let filtered = signals;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(signal => 
+        signal.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (activeFilter) {
+      filtered = filtered.filter(signal => {
+        const lowerSignal = signal.toLowerCase();
+        switch (activeFilter) {
+          case 'clock':
+            return lowerSignal.includes('clk') || lowerSignal.includes('clock');
+          case 'bus':
+            return lowerSignal.includes('bus') || lowerSignal.includes('data') || lowerSignal.includes('addr');
+          case 'signal':
+            return !lowerSignal.includes('clk') && !lowerSignal.includes('clock') && 
+                   !lowerSignal.includes('bus') && !lowerSignal.includes('data') && !lowerSignal.includes('addr');
+          default:
+            return true;
+        }
+      });
+    }
+    
+    return filtered;
+  };
+
+  const filteredSignals = getFilteredSignals();
+
   return (
     <div className="h-full flex flex-col bg-slate-900/30 border-r border-slate-800">
       {/* Header */}
@@ -155,23 +191,23 @@ const SignalSearch = ({
           <div className="mt-2 p-2 bg-slate-800/30 rounded border border-slate-700">
             <div className="flex flex-wrap gap-1">
               <Badge 
-                variant="outline" 
+                variant={activeFilter === 'clock' ? "default" : "outline"}
                 className="text-xs cursor-pointer hover:bg-slate-700"
-                onClick={() => {/* Filter by type */}}
+                onClick={() => filterSignalsByType('clock')}
               >
                 Clock
               </Badge>
               <Badge 
-                variant="outline" 
+                variant={activeFilter === 'bus' ? "default" : "outline"}
                 className="text-xs cursor-pointer hover:bg-slate-700"
-                onClick={() => {/* Filter by type */}}
+                onClick={() => filterSignalsByType('bus')}
               >
                 Bus
               </Badge>
               <Badge 
-                variant="outline" 
+                variant={activeFilter === 'signal' ? "default" : "outline"}
                 className="text-xs cursor-pointer hover:bg-slate-700"
-                onClick={() => {/* Filter by type */}}
+                onClick={() => filterSignalsByType('signal')}
               >
                 Signal
               </Badge>

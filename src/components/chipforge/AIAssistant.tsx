@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Zap, 
   Lightbulb, 
@@ -12,8 +13,6 @@ import {
   Wand2,
   Send,
   Trash2,
-  ThumbsUp,
-  ThumbsDown,
   Copy,
   Check
 } from "lucide-react";
@@ -44,6 +43,7 @@ interface AIAssistantProps {
   onDismissSuggestion: (id: string) => void;
   onGenerateCode: (prompt: string) => void;
   onExplainCode: (code: string) => void;
+  isLoading?: boolean;
 }
 
 const AIAssistant = ({
@@ -53,14 +53,16 @@ const AIAssistant = ({
   onApplySuggestion,
   onDismissSuggestion,
   onGenerateCode,
-  onExplainCode
+  onExplainCode,
+  isLoading = false
 }: AIAssistantProps) => {
   const [prompt, setPrompt] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   if (!isVisible) return null;
 
-  const getSuggestionIcon = (type: string) => {
+  const getSuggestionIcon = (type: AISuggestion['type']) => {
     switch (type) {
       case 'optimization':
         return <Wand2 className="h-4 w-4 text-emerald-400" />;
@@ -85,11 +87,29 @@ const AIAssistant = ({
     try {
       await navigator.clipboard.writeText(code);
       setCopiedId(id);
+      toast({
+        title: "Code copied",
+        description: "Code has been copied to clipboard",
+      });
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
       console.error('Failed to copy code:', err);
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy code to clipboard",
+        variant: "destructive",
+      });
     }
   };
+
+  // Cleanup timeout on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (copiedId) {
+        setCopiedId(null);
+      }
+    };
+  }, [copiedId]);
 
   const handleSubmitPrompt = () => {
     if (prompt.trim()) {
@@ -148,12 +168,20 @@ const AIAssistant = ({
           />
           <Button
             onClick={handleSubmitPrompt}
-            disabled={!prompt.trim()}
-            className="w-full bg-purple-500 text-white hover:bg-purple-400"
-            size="sm"
+            disabled={!prompt.trim() || isLoading}
+            className="w-full bg-purple-500 text-white hover:bg-purple-400 disabled:opacity-50 text-sm py-1.5"
           >
-            <Send className="h-3 w-3 mr-2" />
-            Generate
+            {isLoading ? (
+              <>
+                <div className="h-3 w-3 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Send className="h-3 w-3 mr-2" />
+                Generate
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -162,7 +190,7 @@ const AIAssistant = ({
       <div className="flex-1 flex flex-col">
         <div className="p-2 border-b border-slate-800">
           <span className="text-sm font-medium text-slate-300">Suggestions</span>
-          <Badge variant="outline" className="ml-2 text-xs">
+          <Badge className="ml-2 text-xs">
             {suggestions.length}
           </Badge>
         </div>
@@ -183,9 +211,8 @@ const AIAssistant = ({
                       {getSuggestionIcon(suggestion.type)}
                       <span className="text-sm font-medium text-slate-200">{suggestion.title}</span>
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${getConfidenceColor(suggestion.confidence)}`}
+                    <Badge
+                      className={`text-xs ${getConfidenceColor(suggestion.confidence)} border border-slate-600`}
                     >
                       {Math.round(suggestion.confidence * 100)}%
                     </Badge>
@@ -198,10 +225,9 @@ const AIAssistant = ({
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-slate-400">Suggested Code:</span>
                         <Button
-                          variant="ghost"
-                          size="sm"
                           onClick={() => handleCopyCode(suggestion.code!, suggestion.id)}
                           className="h-5 w-5 p-0 text-slate-400 hover:text-slate-200"
+                          aria-label={`Copy code for ${suggestion.title}`}
                         >
                           {copiedId === suggestion.id ? (
                             <Check className="h-3 w-3" />
@@ -218,17 +244,15 @@ const AIAssistant = ({
                   
                   <div className="flex gap-1">
                     <Button
-                      size="sm"
                       onClick={() => onApplySuggestion(suggestion)}
                       className="bg-emerald-500 text-slate-900 hover:bg-emerald-400 text-xs h-6"
                     >
                       Apply
                     </Button>
                     <Button
-                      variant="ghost"
-                      size="sm"
                       onClick={() => onDismissSuggestion(suggestion.id)}
                       className="text-slate-400 hover:text-slate-200 text-xs h-6"
+                      aria-label={`Dismiss suggestion: ${suggestion.title}`}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

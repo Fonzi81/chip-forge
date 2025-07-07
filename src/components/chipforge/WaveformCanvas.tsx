@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye } from "lucide-react";
+import { WaveformData, WaveformTrace } from '@/components/design-editor/types';
 
 interface WaveformCanvasProps {
-  waveformData: any;
+  waveformData: WaveformData;
   zoomLevel: number;
   timeOffset: number;
   selectedSignal: string | null;
@@ -19,7 +20,7 @@ interface WaveformCanvasProps {
   onSignalHighlight: (signal: string) => void;
 }
 
-const WaveformCanvas = ({ 
+const WaveformCanvas = React.memo(({ 
   waveformData, 
   zoomLevel, 
   timeOffset, 
@@ -45,6 +46,15 @@ const WaveformCanvas = ({
   const LABEL_WIDTH = 120;
   const TIME_SCALE = 100; // pixels per time unit
 
+  // Memoize expensive calculations
+  const processedData = useMemo(() => {
+    if (!waveformData) return [];
+    return waveformData.traces.map(trace => ({
+      ...trace,
+      values: trace.values.filter((_, index) => index % Math.max(1, Math.floor(1 / zoomLevel)) === 0)
+    }));
+  }, [waveformData, zoomLevel]);
+
   useEffect(() => {
     drawWaveforms();
   }, [waveformData, zoomLevel, timeOffset, timeCursor, measurementStart, measurementEnd, highlightedSignals, selectedSignal]);
@@ -64,7 +74,7 @@ const WaveformCanvas = ({
     ctx.fillRect(0, 0, width, height);
 
     // Draw signals with highlighting
-    waveformData.traces.forEach((trace: any, index: number) => {
+    processedData.forEach((trace: WaveformTrace, index: number) => {
       const y = index * SIGNAL_SPACING + 30;
       const isHighlighted = highlightedSignals.has(trace.name);
       const isSelected = selectedSignal === trace.name;
@@ -146,7 +156,7 @@ const WaveformCanvas = ({
     }
   };
 
-  const drawClockSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+  const drawClockSignal = (ctx: CanvasRenderingContext2D, trace: WaveformTrace, y: number, timeScale: number, offset: number, highlighted = false) => {
     ctx.strokeStyle = highlighted ? '#14f195' : '#10b981'; // brighter if highlighted
     ctx.lineWidth = highlighted ? 3 : 2;
     
@@ -169,7 +179,7 @@ const WaveformCanvas = ({
     ctx.stroke();
   };
 
-  const drawBusSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+  const drawBusSignal = (ctx: CanvasRenderingContext2D, trace: WaveformTrace, y: number, timeScale: number, offset: number, highlighted = false) => {
     ctx.strokeStyle = highlighted ? '#a855f7' : '#8b5cf6'; // brighter if highlighted
     ctx.fillStyle = highlighted ? '#a855f7' : '#8b5cf6';
     ctx.lineWidth = highlighted ? 3 : 2;
@@ -205,7 +215,7 @@ const WaveformCanvas = ({
     });
   };
 
-  const drawDigitalSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+  const drawDigitalSignal = (ctx: CanvasRenderingContext2D, trace: WaveformTrace, y: number, timeScale: number, offset: number, highlighted = false) => {
     ctx.strokeStyle = highlighted ? '#22d3ee' : '#06b6d4'; // brighter if highlighted
     ctx.lineWidth = highlighted ? 3 : 2;
     
@@ -261,7 +271,7 @@ const WaveformCanvas = ({
     onSignalSelect(signalName === selectedSignal ? null : signalName);
   };
 
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -284,7 +294,7 @@ const WaveformCanvas = ({
         onMeasurementEnd(null);
       }
     }
-  };
+  }, [onSignalSelect, timeOffset, zoomLevel, timeCursor, measurementStart, measurementEnd, onTimeCursorChange, onMeasurementStart, onMeasurementEnd]);
 
   const handleSignalDoubleClick = (signalName: string) => {
     onSignalHighlight(signalName);
@@ -302,7 +312,7 @@ const WaveformCanvas = ({
         </div>
         <ScrollArea className="h-full">
           <div className="p-2 space-y-2">
-            {waveformData?.traces.map((trace: any, index: number) => (
+            {waveformData?.traces.map((trace: WaveformTrace, index: number) => (
               <div
                 key={trace.name}
                 onClick={() => handleSignalClick(trace.name)}
@@ -358,6 +368,6 @@ const WaveformCanvas = ({
       )}
     </div>
   );
-};
+});
 
 export default WaveformCanvas;

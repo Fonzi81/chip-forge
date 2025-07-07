@@ -217,11 +217,11 @@ endmodule`
     }
   };
 
-  const handleFileCreate = (name: string, type: string) => {
+  const handleFileCreate = (name: string, type: HDLFile['type']) => {
     const newFile: HDLFile = {
       id: Date.now().toString(),
       name,
-      type: type as any,
+      type,
       hasErrors: false,
       path: `src/${name}`,
       content: type === 'verilog' ? '// New Verilog module\nmodule new_module;\n\nendmodule' : ''
@@ -240,7 +240,9 @@ endmodule`
   useKeyboardShortcuts({
     onRunSimulation: handleRunSimulation,
     onStopSimulation: handleStopSimulation,
-    onExportWaveform: () => console.log("Export"),
+    onExportWaveform: () => {
+      // TODO: Implement waveform export functionality
+    },
     onClearLogs: () => clearLogs()
   });
 
@@ -312,11 +314,19 @@ endmodule`
       {/* Editor Toolbar */}
       <EditorToolbar
         onSave={handleSave}
-        onUndo={() => console.log("Undo")}
-        onRedo={() => console.log("Redo")}
+        onUndo={() => {
+          // TODO: Implement undo functionality
+        }}
+        onRedo={() => {
+          // TODO: Implement redo functionality
+        }}
         onRunSimulation={handleRunSimulation}
-        onExport={() => console.log("Export")}
-        onOpenSettings={() => console.log("Settings")}
+        onExport={() => {
+          // TODO: Implement export functionality
+        }}
+        onOpenSettings={() => {
+          // TODO: Implement settings functionality
+        }}
         canUndo={false}
         canRedo={false}
         hasUnsavedChanges={hasUnsavedChanges}
@@ -337,7 +347,9 @@ endmodule`
               onFileSelect={setActiveFileId}
               onFileCreate={handleFileCreate}
               onFileDelete={handleFileDelete}
-              onFileRename={(id, name) => console.log("Rename", id, name)}
+              onFileRename={(id, name) => {
+                // TODO: Implement file rename functionality
+              }}
             />
           </ResizablePanel>
 
@@ -392,10 +404,18 @@ endmodule`
                     isVisible={aiAssistEnabled}
                     suggestions={aiSuggestions}
                     designMetrics={designMetrics}
-                    onApplySuggestion={() => console.log("Apply")}
-                    onDismissSuggestion={() => console.log("Dismiss")}
-                    onGenerateCode={() => console.log("Generate")}
-                    onExplainCode={() => console.log("Explain")}
+                    onApplySuggestion={() => {
+                      // TODO: Implement suggestion application
+                    }}
+                    onDismissSuggestion={() => {
+                      // TODO: Implement suggestion dismissal
+                    }}
+                    onGenerateCode={() => {
+                      // TODO: Implement code generation
+                    }}
+                    onExplainCode={() => {
+                      // TODO: Implement code explanation
+                    }}
                   />
                 </div>
               </TabsContent>

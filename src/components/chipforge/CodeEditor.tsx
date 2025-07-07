@@ -7,7 +7,9 @@ import {
   ChevronRight,
   AlertCircle,
   Info,
-  Lightbulb
+  Lightbulb,
+  Hash,
+  Save
 } from "lucide-react";
 
 interface CodeError {
@@ -235,8 +237,9 @@ const CodeEditor = ({
             size="sm"
             onClick={() => setShowLineNumbers(!showLineNumbers)}
             className="text-xs text-slate-400 hover:text-slate-200"
+            aria-label={`${showLineNumbers ? 'Hide' : 'Show'} line numbers`}
           >
-            Line Numbers
+            <Hash className="h-4 w-4" />
           </Button>
           {errors.length > 0 && (
             <Badge variant="outline" className="text-xs text-red-400 border-red-400/30">
@@ -285,6 +288,36 @@ const CodeEditor = ({
               <p className="mt-1">{error.message}</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Editor Footer */}
+      <div className="flex items-center justify-between p-2 bg-slate-800/50 border-t border-slate-700">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowLineNumbers(!showLineNumbers)}
+            className="text-slate-400 hover:text-slate-200"
+            aria-label={`${showLineNumbers ? 'Hide' : 'Show'} line numbers`}
+          >
+            <Hash className="h-4 w-4" />
+          </Button>
+          <span className="text-xs text-slate-500">
+            Line {cursorPosition.line}, Col {cursorPosition.column}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSave}
+            className="text-slate-400 hover:text-slate-200"
+            aria-label="Save file"
+          >
+            <Save className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>

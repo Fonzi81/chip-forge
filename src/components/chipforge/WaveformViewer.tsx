@@ -23,9 +23,10 @@ import WaveformCanvas from "./WaveformCanvas";
 import SignalSearch from "./SignalSearch";
 import WaveformAnnotations, { type Annotation } from "./WaveformAnnotations";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { WaveformData } from '@/hooks/useSimulation';
 
 interface WaveformViewerProps {
-  waveformData: any;
+  waveformData: WaveformData;
   isComplete: boolean;
 }
 
@@ -47,7 +48,7 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
   // Initialize visible signals when waveform data changes
   useEffect(() => {
     if (waveformData?.traces) {
-      const allSignals = waveformData.traces.map((trace: any) => trace.name);
+      const allSignals = waveformData.traces.map((trace) => trace.name);
       setVisibleSignals(new Set(allSignals));
     }
   }, [waveformData]);
@@ -309,7 +310,7 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
           <>
             <div className="w-80 flex-shrink-0">
               <SignalSearch
-                signals={waveformData.traces.map((trace: any) => trace.name)}
+                signals={waveformData.traces.map((trace) => trace.name)}
                 selectedSignals={selectedSignal ? [selectedSignal] : []}
                 highlightedSignals={highlightedSignals}
                 visibleSignals={visibleSignals}
@@ -328,7 +329,7 @@ const WaveformViewer = ({ waveformData, isComplete }: WaveformViewerProps) => {
             <WaveformCanvas 
               waveformData={{
                 ...waveformData,
-                traces: waveformData.traces.filter((trace: any) => visibleSignals.has(trace.name))
+                traces: waveformData.traces.filter((trace) => visibleSignals.has(trace.name))
               }}
               zoomLevel={zoomLevel}
               timeOffset={timeOffset}

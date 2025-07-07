@@ -6,16 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Play, Square, RotateCcw, Settings, Clock, Zap } from "lucide-react";
+import type { SimulationConfig } from '@/components/design-editor/types';
 
 interface SimulationConfigProps {
-  onRunSimulation: (config: any) => void;
+  onRunSimulation: (config: SimulationConfig) => void;
   onCancelSimulation?: () => void;
   isRunning: boolean;
   initialHdlCode?: string;
 }
 
 const SimulationConfig = ({ onRunSimulation, onCancelSimulation, isRunning, initialHdlCode }: SimulationConfigProps) => {
-  const [config, setConfig] = useState({
+  const [config, setConfig] = useState<SimulationConfig>({
     clockFreq: "100",
     simulationTime: "1000",
     inputVectors: `// Input test vectors
