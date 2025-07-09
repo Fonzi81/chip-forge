@@ -18,7 +18,12 @@ import UsageDashboard from "./pages/UsageDashboard";
 import CollaboratorMode from "./pages/CollaboratorMode";
 import LearningPanel from "./pages/LearningPanel";
 import ChipForgeSimulation from "./pages/ChipForgeSimulation";
+import Synthesis from "./pages/Synthesis";
+import PlaceAndRoute from "./pages/PlaceAndRoute";
+import LayoutViewer from "./components/chipforge/LayoutViewer";
+import TestbenchEditor from "./components/chipforge/TestbenchEditor";
 import HDLReflexionAgent from "./pages/HDLReflexionAgent";
+import HDLTest from "./pages/HDLTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,8 +35,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/landing" element={<Index />} />
           <Route path="/new-project" element={<NewProject />} />
           <Route path="/design-editor" element={<DesignEditor />} />
           <Route path="/workspace" element={<ChipForgeWorkspace />} />
@@ -43,7 +49,12 @@ const App = () => (
           <Route path="/collaborator-mode" element={<CollaboratorMode />} />
           <Route path="/learning-panel" element={<LearningPanel />} />
           <Route path="/chipforge-simulation" element={<ChipForgeSimulation />} />
+          <Route path="/synthesis" element={<Synthesis />} />
+          <Route path="/place-and-route" element={<PlaceAndRoute />} />
+          <Route path="/layout-viewer" element={<LayoutViewer />} />
+          <Route path="/testbench" element={<TestbenchEditor />} />
           <Route path="/hdl-reflexion-agent" element={<HDLReflexionAgent />} />
+          <Route path="/hdl-test" element={<HDLTest />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
