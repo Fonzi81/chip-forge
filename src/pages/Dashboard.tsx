@@ -1,237 +1,380 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Upload, Library, Clock, Cpu, Zap, Settings, User, LogOut, BookOpen, Activity, Download, FileCode, BarChart3, Users, GraduationCap, Menu } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-const Dashboard = () => {
-  const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const recentProjects = [{
-    id: 1,
-    name: "4-bit ALU Design",
-    status: "completed",
-    tags: ["ALU", "Arithmetic"],
-    lastModified: "2 hours ago",
-    description: "Basic arithmetic logic unit with carry-out"
-  }, {
-    id: 2,
-    name: "UART Controller",
-    status: "simulation",
-    tags: ["Communication", "Serial"],
-    lastModified: "1 day ago",
-    description: "Universal asynchronous receiver-transmitter"
-  }, {
-    id: 3,
-    name: "Memory Controller",
-    status: "design",
-    tags: ["Memory", "DDR"],
-    lastModified: "3 days ago",
-    description: "DDR3 memory interface controller"
-  }];
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      case 'simulation':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'design':
-        return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-      default:
-        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+import { 
+  Brain, 
+  Play, 
+  Layout, 
+  Download, 
+  BookOpen, 
+  Plus, 
+  Clock, 
+  Code,
+  Settings,
+  BarChart3,
+  FolderOpen,
+  Sparkles,
+  Home,
+  Cpu
+} from "lucide-react";
+import { listHDLDesigns, HDLDesign } from '../utils/localStorage';
+
+export default function Dashboard() {
+  const [recentDesigns, setRecentDesigns] = useState<HDLDesign[]>([]);
+  const [stats, setStats] = useState({
+    totalDesigns: 0,
+    totalModules: 0,
+    lastUpdated: null as string | null
+  });
+
+  useEffect(() => {
+    const designs = listHDLDesigns();
+    setRecentDesigns(designs.slice(0, 3)); // Show last 3 designs
+    setStats({
+      totalDesigns: designs.length,
+      totalModules: designs.reduce((sum, design) => sum + design.io.length, 0),
+      lastUpdated: designs.length > 0 ? designs[0].updatedAt : null
+    });
+  }, []);
+
+  const quickActions = [
+    {
+      title: "Create New HDL Module",
+      description: "Generate Verilog code with AI assistance",
+      icon: <Brain className="h-6 w-6" />,
+      link: "/hdl-test",
+      color: "from-cyan-500 to-blue-500"
+    },
+    {
+      title: "Open Workspace",
+      description: "Full-featured chip design environment",
+      icon: <Code className="h-6 w-6" />,
+      link: "/workspace",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      title: "Run Simulation",
+      description: "Test your designs with waveform analysis",
+      icon: <Play className="h-6 w-6" />,
+      link: "/chipforge-simulation",
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      title: "Synthesis",
+      description: "Convert HDL to gate-level netlist",
+      icon: <Layout className="h-6 w-6" />,
+      link: "/synthesis",
+      color: "from-orange-500 to-red-500"
+    },
+    {
+      title: "Place & Route",
+      description: "Physical layout and routing tools",
+      icon: <Layout className="h-6 w-6" />,
+      link: "/place-and-route",
+      color: "from-indigo-500 to-purple-500"
+    },
+    {
+      title: "Layout Viewer",
+      description: "Interactive 2D chip layout visualization",
+      icon: <Layout className="h-6 w-6" />,
+      link: "/layout-viewer",
+      color: "from-teal-500 to-cyan-500"
     }
-  };
-  return <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Header */}
+  ];
+
+  const tools = [
+    {
+      title: "HDL Editor",
+      description: "AI-powered Verilog generation",
+      icon: <Brain className="h-5 w-5" />,
+      link: "/hdl-test",
+      status: "Ready"
+    },
+    {
+      title: "Simulation",
+      description: "Waveform analysis and testing",
+      icon: <Play className="h-5 w-5" />,
+      link: "/chipforge-simulation",
+      status: "Ready"
+    },
+    {
+      title: "Synthesis",
+      description: "Gate-level netlist generation",
+      icon: <Layout className="h-5 w-5" />,
+      link: "/synthesis",
+      status: "Ready"
+    },
+    {
+      title: "Place & Route",
+      description: "Physical layout optimization",
+      icon: <Layout className="h-5 w-5" />,
+      link: "/place-and-route",
+      status: "Ready"
+    },
+    {
+      title: "Layout Viewer",
+      description: "Interactive 2D layout visualization",
+      icon: <Layout className="h-5 w-5" />,
+      link: "/layout-viewer",
+      status: "Ready"
+    },
+    {
+      title: "Learning Hub",
+      description: "Tutorials and documentation",
+      icon: <BookOpen className="h-5 w-5" />,
+      link: "/learning-panel",
+      status: "Available"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100">
+      {/* Navigation Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Link to="/landing" className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors">
+              <Home className="h-5 w-5" />
+              <span className="font-medium">Home</span>
+            </Link>
+            <div className="h-6 w-px bg-slate-700"></div>
             <div className="flex items-center gap-2">
-              <Cpu className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-400" />
-              <span className="text-xl sm:text-2xl font-bold gradient-text">ChipForge</span>
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+                <Cpu className="h-4 w-4 text-slate-900" />
+              </div>
+              <span className="text-xl font-bold">ChipForge</span>
             </div>
-            <div className="hidden sm:block h-6 w-px bg-slate-700"></div>
-            <span className="hidden sm:inline text-slate-400 text-sm">AI-Native Chip Design Platform</span>
           </div>
           
-          {/* Mobile menu button */}
-          <div className="sm:hidden">
-            <Button variant="ghost" size="sm" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-slate-400 hover:text-slate-200 hover:bg-slate-800">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Desktop menu */}
-          <div className="hidden sm:flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+          <div className="flex items-center gap-4">
+            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+              <Sparkles className="h-3 w-3 mr-1" />
+              AI-Powered
+            </Badge>
+            <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Button>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800">
-              <User className="h-4 w-4 mr-2" />
-              Profile
-            </Button>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800" onClick={() => navigate('/')}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && <div className="sm:hidden border-t border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-            <div className="px-4 py-2 space-y-1">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-slate-400 hover:text-slate-200 hover:bg-slate-800">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-              <Button variant="ghost" size="sm" className="w-full justify-start text-slate-400 hover:text-slate-200 hover:bg-slate-800">
-                <User className="h-4 w-4 mr-2" />
-                Profile
-              </Button>
-              <Button variant="ghost" size="sm" className="w-full justify-start text-slate-400 hover:text-slate-200 hover:bg-slate-800" onClick={() => navigate('/')}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>}
       </header>
 
-      <div className="p-4 sm:p-6">
-        {/* Welcome Section */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-4xl font-bold mb-2">Welcome back to ChipForge</h1>
-          <p className="text-slate-400 text-base sm:text-lg">Design digital chips using plain English or HDL. Let AI handle the complexity.</p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <Button onClick={() => navigate('/new-project')} variant="outline" size="lg" className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-cyan-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2">
-            <Plus className="h-6 w-6 sm:h-8 sm:w-8" />
-            <span className="text-xs sm:text-base">New Design</span>
-          </Button>
-          
-          <Button variant="outline" size="lg" className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-blue-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2">
-            <Upload className="h-6 w-6 sm:h-8 sm:w-8" />
-            <span className="text-xs sm:text-base">Upload HDL</span>
-          </Button>
-          
-          <Button onClick={() => navigate('/templates')} variant="outline" size="lg" className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-emerald-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2">
-            <Library className="h-6 w-6 sm:h-8 sm:w-8" />
-            <span className="text-xs sm:text-base">Browse Templates</span>
-          </Button>
-
-          <Button onClick={() => navigate('/workspace')} variant="outline" size="lg" className="h-24 sm:h-32 bg-emerald-800 border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-purple-500 font-semibold px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 sm:space-y-2">
-            <Activity className="h-6 w-6 sm:h-8 sm:w-8" />
-            <span className="text-xs sm:text-base">ChipForge IDE</span>
-          </Button>
-        </div>
-
-        {/* AI Tools & Features */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-slate-200">AI-Powered Tools</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-            <Button onClick={() => navigate('/hdl-reflexion-agent')} variant="outline" size="lg" className="h-32 sm:h-36 border-slate-600 text-slate-300 hover:border-emerald-500 font-semibold px-4 sm:px-6 py-4 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2 bg-gradient-to-br from-emerald-900/50 to-cyan-900/50 hover:from-emerald-800/50 hover:to-cyan-800/50">
-              <Zap className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-400" />
-              <div className="text-center">
-                <div className="text-sm sm:text-base font-bold">HDL Reflexion Agent</div>
-                <div className="text-xs text-slate-400 mt-1">AI generates & improves HDL code through iterative feedback</div>
-              </div>
-            </Button>
-
-            <Button onClick={() => navigate('/chipforge-simulation')} variant="outline" size="lg" className="h-32 sm:h-36 border-slate-600 text-slate-300 hover:border-purple-500 font-semibold px-4 sm:px-6 py-4 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2 bg-gradient-to-br from-purple-900/50 to-blue-900/50 hover:from-purple-800/50 hover:to-blue-800/50">
-              <Activity className="h-8 w-8 sm:h-10 sm:w-10 text-purple-400" />
-              <div className="text-center">
-                <div className="text-sm sm:text-base font-bold">Advanced Simulation</div>
-                <div className="text-xs text-slate-400 mt-1">Full-featured HDL simulation with waveform analysis</div>
-              </div>
-            </Button>
-
-            <Button onClick={() => navigate('/learning-panel')} variant="outline" size="lg" className="h-32 sm:h-36 border-slate-600 text-slate-300 hover:border-amber-500 font-semibold px-4 sm:px-6 py-4 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-2 bg-gradient-to-br from-amber-900/50 to-orange-900/50 hover:from-amber-800/50 hover:to-orange-800/50">
-              <GraduationCap className="h-8 w-8 sm:h-10 sm:w-10 text-amber-400" />
-              <div className="text-center">
-                <div className="text-sm sm:text-base font-bold">Learning Center</div>
-                <div className="text-xs text-slate-400 mt-1">Interactive tutorials and HDL documentation</div>
-              </div>
+      <div className="container mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Chip Forge Dashboard
+            </h1>
+            <p className="text-slate-400 mt-2">
+              Complete chip design toolchain with AI assistance
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Badge variant="outline" className="text-emerald-400 border-emerald-400">
+              <Sparkles className="h-3 w-3 mr-1" />
+              AI-Powered
+            </Badge>
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
             </Button>
           </div>
         </div>
 
-        {/* Collaboration & Utilities */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-slate-200">Collaboration & Utilities</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <Button onClick={() => navigate('/usage-dashboard')} variant="outline" size="lg" className="h-20 sm:h-24 border-slate-600 text-slate-300 hover:border-purple-500 font-semibold px-3 sm:px-6 py-2 sm:py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 bg-cyan-800 hover:bg-cyan-700">
-              <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="text-xs sm:text-sm">Usage Dashboard</span>
-            </Button>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Total Designs</p>
+                  <p className="text-2xl font-bold text-cyan-400">{stats.totalDesigns}</p>
+                </div>
+                <FolderOpen className="h-8 w-8 text-slate-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Total Modules</p>
+                  <p className="text-2xl font-bold text-blue-400">{stats.totalModules}</p>
+                </div>
+                <Code className="h-8 w-8 text-slate-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Last Updated</p>
+                  <p className="text-sm font-medium text-slate-200">
+                    {stats.lastUpdated ? new Date(stats.lastUpdated).toLocaleDateString() : 'Never'}
+                  </p>
+                </div>
+                <Clock className="h-8 w-8 text-slate-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            <Button onClick={() => navigate('/collaborator-mode')} variant="outline" size="lg" className="h-20 sm:h-24 border-slate-600 text-slate-300 hover:border-blue-500 font-semibold px-3 sm:px-6 py-2 sm:py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 bg-cyan-800 hover:bg-cyan-700">
-              <Users className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="text-xs sm:text-sm">Collaborator Mode</span>
-            </Button>
-
-            <Button onClick={() => navigate('/learning-panel')} variant="outline" size="lg" className="h-20 sm:h-24 border-slate-600 text-slate-300 hover:border-amber-500 font-semibold px-3 sm:px-6 py-2 sm:py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 bg-cyan-800 hover:bg-cyan-700">
-              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="text-xs sm:text-sm">Learning Center</span>
-            </Button>
-
-            <Button onClick={() => navigate('/constraints')} variant="outline" size="lg" className="h-20 sm:h-24 border-slate-600 text-slate-300 hover:border-cyan-500 font-semibold px-3 sm:px-6 py-2 sm:py-3 transition-all duration-200 hover:scale-105 flex flex-col items-center justify-center space-y-1 bg-cyan-800 hover:bg-cyan-700">
-              <FileCode className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="text-xs sm:text-sm">Constraints</span>
-            </Button>
+        {/* Quick Actions */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Plus className="h-5 w-5 text-cyan-400" />
+            Quick Actions
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickActions.map((action, index) => (
+              <Card 
+                key={index} 
+                className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-colors cursor-pointer group"
+              >
+                <Link to={action.link}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`p-2 rounded-lg bg-gradient-to-r ${action.color}`}>
+                        {action.icon}
+                      </div>
+                    </div>
+                    <h3 className="font-semibold text-slate-200 group-hover:text-cyan-400 transition-colors">
+                      {action.title}
+                    </h3>
+                    <p className="text-sm text-slate-400 mt-1">
+                      {action.description}
+                    </p>
+                  </CardContent>
+                </Link>
+              </Card>
+            ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-slate-900/30 border border-slate-700 rounded-lg p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
-              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
-              Recent Activity
+        {/* Recent Designs */}
+        {recentDesigns.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <FolderOpen className="h-5 w-5 text-cyan-400" />
+              Recent Designs
             </h2>
-            <Button onClick={() => navigate('/audit-trail')} variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800">
-              View All
-            </Button>
-          </div>
-
-          <div className="grid gap-3 sm:gap-4">
-            {recentProjects.map(project => <Card key={project.id} className="p-4 sm:p-6 bg-slate-900/50 border-slate-700 hover:border-slate-600 transition-all duration-200 cursor-pointer">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-                  <div className="flex-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-slate-200">{project.name}</h3>
-                      <Badge className={getStatusColor(project.status)}>
-                        {project.status}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentDesigns.map((design) => (
+                <Card key={design.id} className="bg-slate-800 border-slate-700">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg text-slate-200">{design.name}</CardTitle>
+                      <Badge variant="outline" className="text-xs">
+                        {design.io.length} ports
                       </Badge>
                     </div>
-                    <p className="text-slate-400 mb-3">{project.description}</p>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                        {project.lastModified}
+                    <CardDescription className="text-slate-400">
+                      {design.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
+                      <span>Updated: {new Date(design.updatedAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`/hdl-test?load=${design.id}`}>
+                          <FolderOpen className="h-3 w-3 mr-1" />
+                          Open
+                        </Link>
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Play className="h-3 w-3 mr-1" />
+                        Simulate
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tool Chain */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-cyan-400" />
+            Design Toolchain
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tools.map((tool, index) => (
+              <Card key={index} className="bg-slate-800 border-slate-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-slate-700">
+                        {tool.icon}
                       </div>
-                      <div className="flex gap-2">
-                        {project.tags.map(tag => <Badge key={tag} variant="outline" className="text-xs border-slate-600 text-slate-400">
-                            {tag}
-                          </Badge>)}
+                      <div>
+                        <h3 className="font-semibold text-slate-200">{tool.title}</h3>
+                        <p className="text-sm text-slate-400">{tool.description}</p>
                       </div>
                     </div>
+                    <Badge variant="outline" className="text-emerald-400 border-emerald-400">
+                      {tool.status}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-2 sm:flex-col sm:gap-2 lg:flex-row">
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800 text-xs sm:text-sm">
-                      <Zap className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                      Simulate
-                    </Button>
-                    <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-cyan-500 text-xs sm:text-sm">
-                      Open
-                    </Button>
-                  </div>
-                </div>
-              </Card>)}
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Link to={tool.link}>
+                      Open {tool.title}
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
+
+        {/* Design Workflow */}
+        <Card className="bg-gradient-to-r from-slate-800 to-slate-700 border-slate-600">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-lg bg-cyan-500/20">
+                <Sparkles className="h-6 w-6 text-cyan-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-slate-200 mb-2">
+                  Complete Design Workflow
+                </h3>
+                <p className="text-slate-400 mb-4">
+                  Follow these steps to create, simulate, synthesize, and visualize your chip design:
+                </p>
+                <ul className="space-y-2 mb-4">
+                  <li><Link to="/workspace" className="text-blue-400 hover:text-blue-300 transition-colors">1. HDL Editor</Link></li>
+                  <li><Link to="/chipforge-simulation" className="text-blue-400 hover:text-blue-300 transition-colors">2. Simulate</Link></li>
+                  <li><Link to="/synthesis" className="text-blue-400 hover:text-blue-300 transition-colors">3. Synthesis</Link></li>
+                  <li><Link to="/place-and-route" className="text-blue-400 hover:text-blue-300 transition-colors">4. Place & Route</Link></li>
+                  <li><Link to="/layout-viewer" className="text-blue-400 hover:text-blue-300 transition-colors">5. Layout Viewer</Link></li>
+                  <li><Link to="/testbench" className="text-blue-400 hover:text-blue-300 transition-colors">🧪 Testbench Generator</Link></li>
+                </ul>
+                <div className="flex gap-2">
+                  <Button asChild>
+                    <Link to="/hdl-test">
+                      <Brain className="h-4 w-4 mr-2" />
+                      Start Design
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link to="/learning-panel">
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Learn More
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>;
-};
-export default Dashboard;
+    </div>
+  );
+}

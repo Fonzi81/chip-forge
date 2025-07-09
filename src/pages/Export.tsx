@@ -16,7 +16,8 @@ import {
   Settings,
   ChevronRight,
   Play,
-  Pause
+  Pause,
+  Grid3X3
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -188,6 +189,16 @@ const Export = () => {
                 </div>
               </Card>
             ))}
+          </div>
+
+          {/* Link to Interactive Layout Viewer */}
+          <div className="my-6 flex justify-center">
+            <Button variant="outline" size="lg" className="border-indigo-500 text-indigo-400 hover:bg-slate-800" asChild>
+              <a href="/layout-viewer">
+                <Grid3X3 className="h-5 w-5 mr-2" />
+                Open Interactive Layout Viewer
+              </a>
+            </Button>
           </div>
 
           {/* Controls */}

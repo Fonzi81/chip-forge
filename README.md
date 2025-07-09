@@ -1,49 +1,74 @@
+# ChipForge - AI-Powered Chip Design Platform
 
-# RTL Design Platform
+A comprehensive, AI-driven platform for digital circuit design, simulation, and verification. ChipForge combines modern web technologies with advanced AI capabilities to provide an intuitive and powerful environment for chip design, from concept to implementation.
 
-A comprehensive web-based platform for RTL (Register Transfer Level) design, simulation, and collaboration. Built with modern web technologies to provide an intuitive interface for digital circuit design and verification.
+## 🚀 Core Features
 
-## 🚀 Features
+### 🤖 AI-Powered HDL Generation
+- **Natural Language to Verilog**: Describe circuits in plain English, get working Verilog code
+- **Enhanced Safe Generation**: Multi-level validation, security checks, and retry logic
+- **Smart Pattern Recognition**: Automatically detects counters, FSMs, ALUs, memory, and multiplexers
+- **Constraint-Aware Generation**: Support for timing, area, and IO constraints
+- **Reflexion Loop**: AI-powered feedback and iterative improvement
+- **Module Name Extraction**: Intelligent naming from descriptions
+- **Comprehensive Validation**: Syntax, security, and performance analysis
 
-### Core Design Tools
-- **Visual RTL Editor**: Drag-and-drop interface for creating digital circuits
-- **Real-time Simulation**: Interactive waveform viewer and signal analysis
-- **Template Library**: 24+ pre-built templates including ALUs, counters, FSMs, and communication interfaces
-- **Code Generation**: Export to Verilog, VHDL, and SystemVerilog
+### 🧪 Professional Simulation Engine
+- **Automatic Test Bench Generation**: Comprehensive testing of generated designs
+- **Waveform Visualization**: Real-time signal analysis with timing diagrams
+- **Performance Metrics**: Frequency, power, and area analysis
+- **Pass/Fail Validation**: Automated verification with detailed feedback
+- **Export Capabilities**: Waveform data export for external analysis
 
-### Advanced Capabilities
-- **Constraint Editor**: Timing and placement constraints management
-- **Design Rule Checking**: Automated validation and optimization
-- **Multi-format Export**: Support for various industry-standard formats
-- **Audit Trail**: Complete design history and version tracking
+### ⚡ Advanced Synthesis Engine
+- **Logic Synthesis**: Transform HDL to optimized gate-level netlists
+- **Timing Analysis**: Setup/hold violations, critical path analysis
+- **Area Analysis**: Silicon area estimation and utilization metrics
+- **Power Analysis**: Dynamic, static, and switching power breakdown
+- **Professional Reports**: Comprehensive synthesis reports and netlist export
 
-### Collaboration & Learning
-- **Team Collaboration**: Real-time collaborative editing with inline comments
-- **Learning Panel**: Interactive courses and AI-powered assistance
-- **Usage Analytics**: Comprehensive dashboard for tracking design metrics
-- **Template Sharing**: Community-driven template marketplace
+### 🎯 Complete Design Workflow
+- **Design Input**: Natural language descriptions or structured I/O configuration
+- **AI Generation**: LLM-powered Verilog code generation
+- **Simulation**: Automatic test bench execution and validation
+- **Synthesis**: Logic optimization and gate-level netlist generation
+- **Reflexion**: AI feedback for failed tests with improvement suggestions
+- **Iteration**: Regenerate with enhanced prompts based on feedback
+- **Export**: Professional file management and sharing
+
+### 📊 Project Management
+- **localStorage Integration**: Persistent design storage and management
+- **Design History**: Complete version tracking and audit trails
+- **Quick Actions**: Save, load, export, and share designs
+- **Statistics Dashboard**: Real-time project metrics and analytics
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **State Management**: TanStack Query
-- **Routing**: React Router DOM
-- **Icons**: Lucide React
-- **Charts**: Recharts
+### Frontend
+- **React 18** + **TypeScript** for type-safe development
+- **Vite** for fast build and development
+- **Tailwind CSS** + **shadcn/ui** for modern, responsive UI
+- **React Router DOM** for client-side routing
+- **Lucide React** for consistent iconography
 
-## 📱 Mobile Support
+### Backend Engines
+- **HDL Generation**: AI-powered Verilog synthesis
+- **Simulation**: Test bench execution and validation
+- **Synthesis**: Logic optimization and gate-level mapping
+- **Place & Route**: Physical design automation
+- **Layout**: GDSII generation and visualization
+- **Reflexion**: AI feedback and improvement loops
 
-Fully responsive design optimized for:
-- Desktop workstations
-- Tablets for design review
-- Mobile devices for quick edits and monitoring
+### AI Integration
+- **LLM HDL Generator**: Natural language to Verilog conversion
+- **Test Bench Simulator**: Automated verification and testing
+- **Reflexion Reviewer**: AI-powered code analysis and suggestions
+- **Pattern Recognition**: Intelligent circuit type detection
 
 ## 🏃‍♂️ Quick Start
 
 ### Prerequisites
-- Node.js 16+ and npm
+- Node.js 18+ and npm
 - Modern web browser with JavaScript enabled
 
 ### Installation
@@ -51,7 +76,7 @@ Fully responsive design optimized for:
 ```bash
 # Clone the repository
 git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
+cd chip-forge
 
 # Install dependencies
 npm install
@@ -74,24 +99,117 @@ npm run preview
 
 ## 📚 Usage Guide
 
-### Getting Started
-1. **Dashboard**: Overview of recent projects and system status
-2. **New Project**: Create designs from scratch or use templates
-3. **Templates**: Browse and customize pre-built components
-4. **Simulation**: Test and verify your designs with interactive tools
+### 🎯 Getting Started
 
-### Template Categories
-- **Arithmetic**: ALUs, multipliers, adders
-- **Memory**: RAM, ROM, caches
-- **Control Logic**: FSMs, counters, encoders
-- **Interfaces**: UART, SPI, I2C
-- **DSP**: Filters, transforms
+1. **Dashboard**: Overview of projects, statistics, and quick actions
+2. **AI HDL Generator**: Create designs from natural language descriptions
+3. **Simulation**: Test and validate your designs with professional tools
+4. **Learning Panel**: Interactive courses and AI assistance
 
-### Collaboration Features
-- Invite team members to projects
-- Add inline comments and suggestions
-- Track changes with automatic changelog
-- Real-time collaborative editing
+### 🤖 AI HDL Generation Workflow
+
+#### 1. Design Input
+```typescript
+// Natural language description
+"8-bit synchronous counter with reset"
+
+// Optional constraints
+"timing: 100MHz, area: minimize gates"
+```
+
+#### 2. AI Generation
+- **Pattern Detection**: Automatically identifies circuit types
+- **Code Synthesis**: Generates working Verilog code
+- **Module Extraction**: Intelligent naming and structure
+- **Safe Generation**: Enhanced validation with security checks and retry logic
+
+#### 3. Simulation & Validation
+- **Test Bench Creation**: Automatic test case generation
+- **Signal Analysis**: Comprehensive waveform visualization
+- **Performance Metrics**: Timing, power, and area analysis
+
+#### 4. Synthesis & Optimization
+- **Logic Synthesis**: Transform HDL to gate-level netlists
+- **Timing Analysis**: Setup/hold violations, critical path optimization
+- **Area Analysis**: Silicon area estimation and utilization
+- **Power Analysis**: Dynamic, static, and switching power breakdown
+
+#### 5. Reflexion Loop
+- **AI Feedback**: Detailed code review when tests fail
+- **Improvement Suggestions**: Actionable advice for enhancement
+- **Iterative Regeneration**: Improved code based on feedback
+
+### 🛡️ Enhanced Safe Generation
+
+#### Validation Features
+- **Multi-level Validation**: Basic, strict, and comprehensive validation levels
+- **Security Checks**: Detection of dangerous constructs and system tasks
+- **Performance Analysis**: Complexity metrics and performance warnings
+- **Syntax Validation**: Comprehensive Verilog syntax checking
+- **Semantic Analysis**: Logic and design rule validation
+
+#### Safety Features
+- **Input Sanitization**: Protection against malicious inputs
+- **Code Size Limits**: Prevention of excessively large code blocks
+- **Timeout Protection**: Configurable generation timeouts
+- **Retry Logic**: Automatic retry with different approaches
+- **Fallback Code**: Error templates when generation fails
+
+#### Validation Results
+- **Visual Indicators**: Color-coded status and severity levels
+- **Complexity Metrics**: Lines of code, gates, signals, and modules
+- **Detailed Feedback**: Specific error messages and suggestions
+- **Auto-switching**: Automatic tab switching for validation issues
+
+### 🧪 Simulation Features
+
+#### Waveform Analysis
+- **Signal Extraction**: Automatic parsing of Verilog signals
+- **Timing Diagrams**: Visual representation of signal behavior
+- **Clock & Reset Detection**: Special handling for control signals
+- **Export Capabilities**: JSON format for external analysis
+
+#### Performance Metrics
+- **Signal Count**: Total number of signals in design
+- **Simulation Cycles**: Number of test cycles executed
+- **Maximum Frequency**: Estimated operating frequency
+- **Power Estimation**: Power consumption analysis
+- **Area Estimation**: Gate count and silicon area
+
+### ⚡ Synthesis Features
+
+#### Logic Synthesis
+- **Gate-Level Netlists**: Optimized Verilog netlist generation
+- **Technology Mapping**: Library-specific gate optimization
+- **Constraint Optimization**: Timing and area constraint handling
+- **Multi-Level Optimization**: Combinational and sequential optimization
+
+#### Analysis & Reporting
+- **Timing Analysis**: Setup/hold violations, critical path analysis
+- **Area Analysis**: Silicon area estimation and utilization metrics
+- **Power Analysis**: Dynamic, static, and switching power breakdown
+- **Professional Reports**: Comprehensive synthesis reports and exports
+
+### 📊 Project Management
+
+#### Design Storage
+```typescript
+interface HDLDesign {
+  id: string;
+  name: string;
+  description: string;
+  verilog: string;
+  io: IOPort[];
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+#### Quick Actions
+- **Save Design**: Persistent storage in localStorage
+- **Load Design**: Retrieve and continue previous work
+- **Export Code**: Download Verilog files
+- **Share Projects**: Export for collaboration
 
 ## 🔧 Development
 
@@ -99,11 +217,26 @@ npm run preview
 ```
 src/
 ├── components/          # Reusable UI components
-│   └── ui/             # shadcn/ui base components
+│   ├── chipforge/      # ChipForge-specific components
+│   ├── ui/             # shadcn/ui base components
+│   └── design-editor/  # Design editor components
 ├── pages/              # Route components
+│   ├── Dashboard.tsx   # Main dashboard
+│   ├── HDLTest.tsx     # HDL generation testing
+│   ├── ChipForgeSimulation.tsx # Simulation interface
+│   ├── Synthesis.tsx   # Synthesis engine
+│   └── ChipForgeWorkspace.tsx # Complete workspace
+├── backend/            # Backend engines
+│   ├── hdl-gen/        # HDL generation engine
+│   ├── sim/            # Simulation engine
+│   ├── synth/          # Synthesis engine
+│   ├── place-route/    # Place & route engine
+│   ├── layout/         # Layout engine
+│   ├── reflexion/      # AI reflexion engine
+│   └── common/         # Shared utilities
 ├── hooks/              # Custom React hooks
-├── lib/                # Utility functions
-└── main.tsx           # Application entry point
+├── utils/              # Utility functions
+└── services/           # External service integrations
 ```
 
 ### Available Scripts
@@ -118,78 +251,85 @@ src/
 - Tailwind CSS for styling
 - ESLint for code quality
 
-## 🚀 Deployment
+## 🎓 Learning Resources
 
-### Lovable Platform (Recommended)
-1. Open your project in [Lovable](https://lovable.dev)
-2. Click "Share" → "Publish"
-3. Your app will be deployed automatically
+### Built-in Learning Panel
+- **Progress Tracking**: Monitor learning progress
+- **Structured Courses**: Step-by-step chip design tutorials
+- **Interactive Lessons**: Hands-on exercises and examples
+- **Resource Library**: Comprehensive documentation and guides
+- **Community Features**: Discussion forums and collaboration
+- **Quick Start Links**: Direct access to tools and features
 
-### Custom Domain
-1. Navigate to Project → Settings → Domains
-2. Click "Connect Domain"
-3. Follow the DNS configuration steps
-
-### Self-Hosting
-The built application is a standard static site that can be deployed to:
-- Vercel, Netlify, or similar platforms
-- AWS S3 + CloudFront
-- Traditional web servers
-- Docker containers
+### AI-Powered Assistance
+- **Contextual Help**: AI assistance based on current task
+- **Code Review**: Automated analysis and suggestions
+- **Best Practices**: AI-guided design recommendations
+- **Error Resolution**: Intelligent troubleshooting
 
 ## 🔗 Integration
 
-### GitHub Integration
-- Automatic bidirectional sync with GitHub
-- Branch support for feature development
-- CI/CD pipeline integration
-- Code review workflows
+### LLM Integration
+The platform is designed for easy integration with various LLM providers:
 
-### API Integration
-- RESTful API for external tool integration
-- Webhook support for automation
-- Export APIs for design data
-- Real-time collaboration APIs
+```typescript
+// Example LLM integration
+export async function callLLMHDLGenerator(description: string, constraints: string): Promise<string> {
+  // TODO: Connect to your LLM (e.g., local model or OpenAI call)
+  // Replace with your preferred LLM implementation
+  return generatedVerilogCode;
+}
+```
+
+### Supported LLM Providers
+- **OpenAI**: GPT-4, GPT-3.5-turbo
+- **Anthropic**: Claude models
+- **Local Models**: Ollama, LM Studio
+- **Custom Models**: Fine-tuned models for chip design
 
 ## 📊 Analytics & Monitoring
 
-The platform includes comprehensive analytics:
-- Design creation and modification metrics
-- Simulation usage and performance
-- Template popularity and usage
-- User engagement and collaboration stats
-- Export and sharing activities
+### Design Metrics
+- **Generation Success Rate**: AI generation effectiveness
+- **Simulation Pass Rate**: Test validation success
+- **Synthesis Success Rate**: Logic synthesis completion rate
+- **Iteration Count**: Average improvements needed
+- **Design Complexity**: Lines of code, signal count, gate count
+- **Performance Metrics**: Frequency, power, area trends
+- **Timing Analysis**: Setup/hold violations, critical path metrics
 
-## 🎓 Learning Resources
-
-### Built-in Learning
-- Interactive tutorials for beginners
-- "Chip Design with No Experience" course
-- AI-powered design assistant
-- Contextual help and documentation
-
-### Community
-- Template sharing and collaboration
-- Design pattern library
-- Best practices documentation
-- Community forums and support
+### User Analytics
+- **Feature Usage**: Most popular tools and workflows
+- **Learning Progress**: Course completion and engagement
+- **Collaboration Stats**: Team usage and sharing
+- **Export Patterns**: File format preferences
 
 ## 🔒 Security & Privacy
 
-- Secure authentication and authorization
-- Project-level access controls
-- Data encryption in transit and at rest
-- GDPR compliance for user data
-- Regular security audits
+- **Local Processing**: All AI operations can run locally
+- **Data Privacy**: No sensitive design data sent to external services
+- **Secure Storage**: Encrypted localStorage for design persistence
+- **Export Control**: User-controlled data sharing
 
 ## 📈 Roadmap
 
 ### Upcoming Features
-- Advanced synthesis optimization
-- Physical design tools integration
-- Machine learning-powered design suggestions
-- Enhanced collaboration features
-- Mobile app for iOS and Android
+- **Advanced Synthesis**: Multi-level optimization and technology mapping
+- **Physical Design**: GDSII generation and visualization
+- **Place & Route**: Automated physical design automation
+- **Machine Learning**: Enhanced pattern recognition and optimization
+- **Collaboration**: Real-time multi-user editing
+- **Mobile App**: iOS and Android applications
+- **Cloud Integration**: Remote processing and storage
+- **Industry Standards**: Support for additional HDL formats (VHDL, SystemVerilog)
+
+### AI Enhancements
+- **Multi-language Support**: VHDL and SystemVerilog generation
+- **Advanced Constraints**: Complex timing and power constraints
+- **Design Optimization**: AI-powered performance improvements
+- **Synthesis Optimization**: AI-guided logic optimization
+- **Bug Detection**: Automated error identification and fixes
+- **Timing Optimization**: AI-powered critical path optimization
 
 ## 🤝 Contributing
 
@@ -199,28 +339,30 @@ We welcome contributions! Please see our contributing guidelines and code of con
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Submit a pull request
+4. Add tests for new functionality
+5. Submit a pull request
+
+### Areas for Contribution
+- **AI Models**: Integration with new LLM providers
+- **Simulation**: Enhanced test bench generation
+- **Synthesis**: Advanced logic optimization algorithms
+- **UI/UX**: Improved user interface and experience
+- **Documentation**: Tutorials and guides
+- **Testing**: Comprehensive test coverage
+- **Timing Analysis**: Advanced timing optimization tools
 
 ## 📄 License
 
-This project is proprietary software. See LICENSE file for details.
-
-## 🆘 Support
-
-- **Documentation**: [docs.lovable.dev](https://docs.lovable.dev)
-- **Community**: [Discord](https://discord.com/channels/1119885301872070706/1280461670979993613)
-- **Issues**: GitHub Issues
-- **Email**: support@lovable.dev
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
-Built with ❤️ using:
-- React and the amazing React ecosystem
-- Tailwind CSS for beautiful, responsive design
-- shadcn/ui for consistent, accessible components
-- Lucide for comprehensive iconography
-- The open-source community for countless tools and libraries
+- **shadcn/ui** for the excellent component library
+- **Lucide** for the beautiful icon set
+- **Tailwind CSS** for the utility-first styling
+- **Vite** for the fast build tooling
+- **React** for the amazing framework
 
 ---
 
-**Ready to start designing?** Launch the platform and explore our template library to get started with your first RTL design project!
+**ChipForge** - Empowering the future of chip design with AI-powered tools and intuitive workflows.

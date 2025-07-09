@@ -137,4 +137,45 @@ endmodule`;
   }
 }
 
-export const logicSynthesizer = new LogicSynthesizer(); 
+export const logicSynthesizer = new LogicSynthesizer();
+
+// Main synthesis function for frontend integration
+export async function synthesizeHDL(
+  hdlCode: string,
+  constraints?: Partial<SynthesisConstraints>
+): Promise<SynthesisResult> {
+  const defaultConstraints: SynthesisConstraints = {
+    maxDelay: 10.0,
+    maxArea: 1000.0,
+    maxPower: 1.0,
+    targetLibrary: 'tsmc_28nm',
+    optimizationLevel: 'balanced'
+  };
+
+  const finalConstraints = { ...defaultConstraints, ...constraints };
+  
+  try {
+    const result = await logicSynthesizer.synthesize(hdlCode, finalConstraints);
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      netlist: '',
+      statistics: {
+        totalGates: 0,
+        totalArea: 0,
+        maxDelay: 0,
+        estimatedPower: 0,
+        utilization: 0
+      },
+      timing: {
+        criticalPath: [],
+        slack: 0,
+        violations: []
+      },
+      errors: [error instanceof Error ? error.message : 'Unknown synthesis error'],
+      warnings: [],
+      executionTime: 0
+    };
+  }
+} 

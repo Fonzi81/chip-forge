@@ -1,538 +1,694 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { 
+  ZoomIn, 
+  ZoomOut, 
+  RefreshCw, 
   Layers, 
   Eye, 
   EyeOff, 
-  ZoomIn, 
-  ZoomOut, 
-  RotateCcw,
-  Download,
-  Upload,
+  Maximize2, 
+  Minimize2,
   Grid3X3,
-  Ruler,
-  Palette,
-  Info
+  Cpu,
+  Info,
+  Settings,
+  Download
 } from "lucide-react";
 
-interface LayerMapping {
-  name: string;
-  number: number;
-  dataType: number;
-  color: string;
-  visible: boolean;
-}
-
-interface GDSIIElement {
-  type: 'boundary' | 'path' | 'text' | 'box' | 'node';
-  layer: number;
-  dataType: number;
-  coordinates: Point[];
-  properties?: { [key: string]: any };
-}
-
-interface Point {
-  x: number;
+type Cell = { 
+  name: string; 
+  type: string; 
+  x: number; 
   y: number;
-}
+  pins?: { name: string; x: number; y: number; direction: 'input' | 'output' }[];
+  width?: number;
+  height?: number;
+  selected?: boolean;
+};
 
-interface LayoutData {
-  structures: {
-    name: string;
-    elements: GDSIIElement[];
-  }[];
-  metadata: {
-    version: number;
-    unit: number;
-    precision: number;
-    timestamp: Date;
-  };
-  statistics: {
-    totalElements: number;
-    totalArea: number;
-    layerCount: number;
-    fileSize: number;
-  };
-}
+type Wire = { 
+  from: string; 
+  to: string;
+  layer?: 'metal1' | 'metal2' | 'metal3';
+  net?: string;
+  selected?: boolean;
+};
 
-const LayoutViewer = () => {
-  const [layoutData, setLayoutData] = useState<LayoutData | null>(null);
-  const [activeTab, setActiveTab] = useState("viewer");
-  const [zoom, setZoom] = useState(1);
+type LayoutData = {
+  cells: Cell[];
+  wires: Wire[];
+  layers: {
+    metal1: boolean;
+    metal2: boolean;
+    metal3: boolean;
+    poly: boolean;
+    diffusion: boolean;
+  };
+};
+
+const layoutData: LayoutData = {
+  cells: [
+    { 
+      name: 'U1', 
+      type: 'AND2_X1', 
+      x: 2, 
+      y: 2,
+      width: 80,
+      height: 60,
+      pins: [
+        { name: 'A', x: 0, y: 15, direction: 'input' },
+        { name: 'B', x: 0, y: 45, direction: 'input' },
+        { name: 'Z', x: 80, y: 30, direction: 'output' }
+      ]
+    },
+    { 
+      name: 'U2', 
+      type: 'INV_X1', 
+      x: 5, 
+      y: 2,
+      width: 60,
+      height: 40,
+      pins: [
+        { name: 'A', x: 0, y: 20, direction: 'input' },
+        { name: 'Z', x: 60, y: 20, direction: 'output' }
+      ]
+    },
+    { 
+      name: 'U3', 
+      type: 'NAND2_X1', 
+      x: 8, 
+      y: 4,
+      width: 80,
+      height: 60,
+      pins: [
+        { name: 'A', x: 0, y: 15, direction: 'input' },
+        { name: 'B', x: 0, y: 45, direction: 'input' },
+        { name: 'Z', x: 80, y: 30, direction: 'output' }
+      ]
+    }
+  ],
+  wires: [
+    { from: 'U1.Z', to: 'U2.A', layer: 'metal1', net: 'net1' },
+    { from: 'U2.Z', to: 'U3.A', layer: 'metal2', net: 'net2' },
+    { from: 'U1.A', to: 'U3.B', layer: 'metal1', net: 'net3' }
+  ],
+  layers: {
+    metal1: true,
+    metal2: true,
+    metal3: true,
+    poly: true,
+    diffusion: true
+  }
+};
+
+const CELL_WIDTH = 80;
+const CELL_HEIGHT = 60;
+const GRID_SIZE = 20;
+const LAYER_COLORS = {
+  metal1: '#ef4444',
+  metal2: '#3b82f6',
+  metal3: '#10b981',
+  poly: '#f59e0b',
+  diffusion: '#8b5cf6'
+};
+
+type LayoutViewerProps = {
+  layoutString?: string;
+};
+
+export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const minimapRef = useRef<HTMLCanvasElement>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [selectedLayers, setSelectedLayers] = useState<Set<number>>(new Set([1, 2, 3, 4, 5]));
-  const [showGrid, setShowGrid] = useState(true);
-  const [showRulers, setShowRulers] = useState(true);
-  const [activeStructure, setActiveStructure] = useState<string>('TOP');
+  const [zoom, setZoom] = useState(1);
+  const [layers, setLayers] = useState(layoutData.layers);
+  const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
+  const [hoveredCell, setHoveredCell] = useState<Cell | null>(null);
+  const [showMinimap, setShowMinimap] = useState(true);
+  const [activeTab, setActiveTab] = useState('viewer');
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  const defaultLayers: LayerMapping[] = [
-    { name: 'Metal1', number: 1, dataType: 0, color: '#ff6b6b', visible: true },
-    { name: 'Metal2', number: 2, dataType: 0, color: '#4ecdc4', visible: true },
-    { name: 'Metal3', number: 3, dataType: 0, color: '#45b7d1', visible: true },
-    { name: 'Poly', number: 4, dataType: 0, color: '#96ceb4', visible: true },
-    { name: 'Diffusion', number: 5, dataType: 0, color: '#feca57', visible: true },
-    { name: 'Via1', number: 6, dataType: 0, color: '#ff9ff3', visible: true },
-    { name: 'Via2', number: 7, dataType: 0, color: '#54a0ff', visible: true },
-    { name: 'Text', number: 8, dataType: 0, color: '#ffffff', visible: true }
-  ];
+  // Parse layoutString if provided, otherwise use default
+  let parsedLayout: LayoutData = layoutData;
+  if (layoutString) {
+    try {
+      parsedLayout = JSON.parse(layoutString);
+    } catch (e) {
+      // fallback to default if parsing fails
+      parsedLayout = layoutData;
+    }
+  }
 
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev * 1.2, 10));
-  };
+  const drawLayout = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    canvas.width = 1200;
+    canvas.height = 800;
 
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev / 1.2, 0.1));
-  };
+    // Clear and set background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const handleResetView = () => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  };
+    // Apply zoom and pan transforms
+    ctx.setTransform(zoom, 0, 0, zoom, pan.x, pan.y);
 
-  const toggleLayer = (layerNumber: number) => {
-    setSelectedLayers(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(layerNumber)) {
-        newSet.delete(layerNumber);
-      } else {
-        newSet.add(layerNumber);
+    // Draw grid
+    if (layers.poly) {
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let x = -2000; x < 2000; x += GRID_SIZE) {
+        ctx.beginPath();
+        ctx.moveTo(x, -2000);
+        ctx.lineTo(x, 2000);
+        ctx.stroke();
       }
-      return newSet;
+      for (let y = -2000; y < 2000; y += GRID_SIZE) {
+        ctx.beginPath();
+        ctx.moveTo(-2000, y);
+        ctx.lineTo(2000, y);
+        ctx.stroke();
+      }
+    }
+
+    // Draw cells
+    parsedLayout.cells.forEach(cell => {
+      const px = cell.x * CELL_WIDTH;
+      const py = cell.y * CELL_HEIGHT;
+      const cellWidth = cell.width || CELL_WIDTH;
+      const cellHeight = cell.height || CELL_HEIGHT;
+
+      // Cell background
+      if (cell.selected) {
+        ctx.fillStyle = '#3b82f6';
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 3;
+      } else if (cell === hoveredCell) {
+        ctx.fillStyle = '#1e40af';
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+      } else {
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1;
+      }
+
+      ctx.fillRect(px, py, cellWidth, cellHeight);
+      ctx.strokeRect(px, py, cellWidth, cellHeight);
+
+      // Cell text
+      ctx.font = '12px JetBrains Mono, monospace';
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillText(cell.name, px + 8, py + 20);
+      ctx.fillText(cell.type, px + 8, py + 38);
+
+      // Draw pins
+      if (cell.pins) {
+        cell.pins.forEach(pin => {
+          const pinX = px + pin.x;
+          const pinY = py + pin.y;
+          
+          ctx.fillStyle = pin.direction === 'input' ? '#10b981' : '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(pinX, pinY, 3, 0, 2 * Math.PI);
+          ctx.fill();
+          
+          // Pin label
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '10px JetBrains Mono, monospace';
+          ctx.fillText(pin.name, pinX + 5, pinY - 5);
+        });
+      }
     });
+
+    // Draw wires
+    parsedLayout.wires.forEach(wire => {
+      const [fromCellName, fromPin] = wire.from.split('.');
+      const [toCellName, toPin] = wire.to.split('.');
+
+      const fromCell = parsedLayout.cells.find(c => c.name === fromCellName);
+      const toCell = parsedLayout.cells.find(c => c.name === toCellName);
+      if (!fromCell || !toCell) return;
+
+      const fromPinData = fromCell.pins?.find(p => p.name === fromPin);
+      const toPinData = toCell.pins?.find(p => p.name === toPin);
+
+      if (!fromPinData || !toPinData) return;
+
+      const fx = fromCell.x * CELL_WIDTH + fromPinData.x;
+      const fy = fromCell.y * CELL_HEIGHT + fromPinData.y;
+      const tx = toCell.x * CELL_WIDTH + toPinData.x;
+      const ty = toCell.y * CELL_HEIGHT + toPinData.y;
+
+      // Wire color based on layer
+      const wireColor = wire.layer ? LAYER_COLORS[wire.layer] : '#f59e0b';
+      ctx.strokeStyle = wire.selected ? '#60a5fa' : wireColor;
+      ctx.lineWidth = wire.selected ? 4 : 3;
+
+      // Orthogonal wire routing
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      
+      // Horizontal then vertical routing
+      const midX = (fx + tx) / 2;
+      ctx.lineTo(midX, fy);
+      ctx.lineTo(midX, ty);
+      ctx.lineTo(tx, ty);
+      
+      ctx.stroke();
+
+      // Wire label
+      if (wire.net) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillText(wire.net, midX + 5, (fy + ty) / 2 - 5);
+      }
+    });
+
+    // Reset transform
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }, [zoom, pan, layers, selectedCell, hoveredCell]);
+
+  const drawMinimap = useCallback(() => {
+    const canvas = minimapRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    canvas.width = 200;
+    canvas.height = 150;
+
+    // Background
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Scale factor for minimap
+    const scaleX = canvas.width / 1200;
+    const scaleY = canvas.height / 800;
+
+    // Draw cells in minimap
+    ctx.fillStyle = '#475569';
+    parsedLayout.cells.forEach(cell => {
+      const px = cell.x * CELL_WIDTH * scaleX;
+      const py = cell.y * CELL_HEIGHT * scaleY;
+      const cellWidth = (cell.width || CELL_WIDTH) * scaleX;
+      const cellHeight = (cell.height || CELL_HEIGHT) * scaleY;
+
+      ctx.fillRect(px, py, cellWidth, cellHeight);
+    });
+
+    // Draw viewport rectangle
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 2;
+    const viewportX = (-pan.x / zoom) * scaleX;
+    const viewportY = (-pan.y / zoom) * scaleY;
+    const viewportWidth = (1200 / zoom) * scaleX;
+    const viewportHeight = (800 / zoom) * scaleY;
+    ctx.strokeRect(viewportX, viewportY, viewportWidth, viewportHeight);
+  }, [pan, zoom]);
+
+  useEffect(() => {
+    drawLayout();
+    drawMinimap();
+  }, [drawLayout, drawMinimap]);
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - pan.x) / zoom;
+    const y = (e.clientY - rect.top - pan.y) / zoom;
+
+    // Check if clicked on a cell
+    const clickedCell = parsedLayout.cells.find(cell => {
+      const px = cell.x * CELL_WIDTH;
+      const py = cell.y * CELL_HEIGHT;
+      const cellWidth = cell.width || CELL_WIDTH;
+      const cellHeight = cell.height || CELL_HEIGHT;
+      
+      return x >= px && x <= px + cellWidth && y >= py && y <= py + cellHeight;
+    });
+
+    setSelectedCell(clickedCell || null);
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Simulate loading GDSII file
-      const mockLayoutData: LayoutData = {
-        structures: [
-          {
-            name: 'TOP',
-            elements: [
-              {
-                type: 'boundary',
-                layer: 1,
-                dataType: 0,
-                coordinates: [
-                  { x: 0, y: 0 },
-                  { x: 100, y: 0 },
-                  { x: 100, y: 100 },
-                  { x: 0, y: 100 }
-                ]
-              },
-              {
-                type: 'path',
-                layer: 2,
-                dataType: 0,
-                coordinates: [
-                  { x: 10, y: 10 },
-                  { x: 90, y: 10 },
-                  { x: 90, y: 90 },
-                  { x: 10, y: 90 }
-                ]
-              },
-              {
-                type: 'text',
-                layer: 8,
-                dataType: 0,
-                coordinates: [{ x: 50, y: 50 }],
-                properties: { text: 'TOP' }
-              }
-            ]
-          }
-        ],
-        metadata: {
-          version: 3,
-          unit: 1e-6,
-          precision: 1e-9,
-          timestamp: new Date()
-        },
-        statistics: {
-          totalElements: 3,
-          totalArea: 10000,
-          layerCount: 8,
-          fileSize: 1024
-        }
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - pan.x) / zoom;
+    const y = (e.clientY - rect.top - pan.y) / zoom;
+    setMousePos({ x, y });
+
+    // Check if hovering over a cell
+    const hovered = parsedLayout.cells.find(cell => {
+      const px = cell.x * CELL_WIDTH;
+      const py = cell.y * CELL_HEIGHT;
+      const cellWidth = cell.width || CELL_WIDTH;
+      const cellHeight = cell.height || CELL_HEIGHT;
+      
+      return x >= px && x <= px + cellWidth && y >= py && y <= py + cellHeight;
+    });
+
+    setHoveredCell(hovered || null);
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    setZoom(z => Math.max(0.5, Math.min(3, z + (e.deltaY < 0 ? 0.1 : -0.1))));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (e.button === 0) { // Left click
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startPan = { ...pan };
+      
+      const onMove = (ev: MouseEvent) => {
+        setPan({
+          x: startPan.x + ev.clientX - startX,
+          y: startPan.y + ev.clientY - startY
+        });
       };
-
-      setLayoutData(mockLayoutData);
+      
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
     }
-  };
-
-  const handleDownloadGDSII = () => {
-    if (layoutData) {
-      // Simulate GDSII file download
-      const blob = new Blob(['Mock GDSII data'], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'layout.gds';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
-
-  const getLayerColor = (layerNumber: number) => {
-    const layer = defaultLayers.find(l => l.number === layerNumber);
-    return layer?.color || '#ffffff';
   };
 
   return (
-    <div className="h-full flex flex-col bg-slate-900 text-slate-100">
-      <div className="flex items-center justify-between p-4 border-b border-slate-700">
-        <div className="flex items-center gap-3">
-          <Layers className="h-6 w-6 text-cyan-400" />
-          <h2 className="text-xl font-semibold">Layout Viewer</h2>
-          <Badge variant="secondary" className="bg-purple-800 text-purple-200">
-            GDSII Viewer
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          {layoutData && (
-            <>
-              <Badge variant="outline" className="text-emerald-400 border-emerald-400">
-                {layoutData.statistics.totalElements} elements
-              </Badge>
-              <Badge variant="outline" className="text-blue-400 border-blue-400">
-                {layoutData.statistics.totalArea.toLocaleString()} μm²
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadGDSII}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export GDSII
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="flex-1 flex">
-        <div className="w-1/4 p-4 border-r border-slate-700">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="viewer">Viewer</TabsTrigger>
-              <TabsTrigger value="layers">Layers</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="viewer" className="h-full mt-4">
-              <Card className="h-full bg-slate-800 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5 text-cyan-400" />
-                    View Controls
-                  </CardTitle>
-                  <CardDescription>
-                    Control layout visualization
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Zoom Level</Label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleZoomOut}
-                        disabled={zoom <= 0.1}
-                      >
-                        <ZoomOut className="h-4 w-4" />
-                      </Button>
-                      <div className="flex-1 text-center text-sm font-mono">
-                        {Math.round(zoom * 100)}%
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleZoomIn}
-                        disabled={zoom >= 10}
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <Slider
-                      value={[zoom]}
-                      onValueChange={([value]) => setZoom(value)}
-                      min={0.1}
-                      max={10}
-                      step={0.1}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>View Options</Label>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="showGrid"
-                          checked={showGrid}
-                          onChange={(e) => setShowGrid(e.target.checked)}
-                          className="rounded border-slate-600 bg-slate-900"
-                        />
-                        <Label htmlFor="showGrid" className="text-sm">Show Grid</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="showRulers"
-                          checked={showRulers}
-                          onChange={(e) => setShowRulers(e.target.checked)}
-                          className="rounded border-slate-600 bg-slate-900"
-                        />
-                        <Label htmlFor="showRulers" className="text-sm">Show Rulers</Label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={handleResetView}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Reset View
-                  </Button>
-
-                  <div className="space-y-2">
-                    <Label>File Operations</Label>
-                    <Button variant="outline" className="w-full" asChild>
-                      <label>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Load GDSII
-                        <input
-                          type="file"
-                          accept=".gds,.gdsii"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </Button>
-                  </div>
-
-                  {layoutData && (
-                    <div className="space-y-2">
-                      <Label>Statistics</Label>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="bg-slate-700 p-2 rounded">
-                          <div className="text-slate-400">Elements</div>
-                          <div className="font-mono">{layoutData.statistics.totalElements}</div>
-                        </div>
-                        <div className="bg-slate-700 p-2 rounded">
-                          <div className="text-slate-400">Layers</div>
-                          <div className="font-mono">{layoutData.statistics.layerCount}</div>
-                        </div>
-                        <div className="bg-slate-700 p-2 rounded">
-                          <div className="text-slate-400">Area</div>
-                          <div className="font-mono">{layoutData.statistics.totalArea.toLocaleString()}</div>
-                        </div>
-                        <div className="bg-slate-700 p-2 rounded">
-                          <div className="text-slate-400">File Size</div>
-                          <div className="font-mono">{layoutData.statistics.fileSize} KB</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="layers" className="h-full mt-4">
-              <Card className="h-full bg-slate-800 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5 text-cyan-400" />
-                    Layer Control
-                  </CardTitle>
-                  <CardDescription>
-                    Toggle layer visibility and colors
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {defaultLayers.map(layer => (
-                    <div
-                      key={layer.number}
-                      className="flex items-center space-x-3 p-2 rounded hover:bg-slate-700 cursor-pointer"
-                      onClick={() => toggleLayer(layer.number)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedLayers.has(layer.number)}
-                        onChange={() => {}}
-                        className="rounded border-slate-600 bg-slate-900"
-                      />
-                      <div
-                        className="w-4 h-4 rounded border border-slate-600"
-                        style={{ backgroundColor: layer.color }}
-                      />
-                      <Label className="flex-1 cursor-pointer text-sm">{layer.name}</Label>
-                      <Badge variant="outline" className="text-xs">
-                        {layer.number}
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+    <div className="min-h-screen bg-slate-900 text-slate-100">
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Layout Viewer
+            </h1>
+            <p className="text-slate-400 mt-2">
+              Interactive 2D chip layout visualization with multi-layer support
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Badge variant="outline" className="text-emerald-400 border-emerald-400">
+              <Cpu className="h-3 w-3 mr-1" />
+              Interactive
+            </Badge>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
         </div>
 
-        <div className="w-3/4 p-4">
-          <div className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Grid3X3 className="h-5 w-5 text-cyan-400" />
-                Layout Canvas
-              </h3>
-              {layoutData && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-slate-400">
-                    Zoom: {Math.round(zoom * 100)}%
-                  </Badge>
-                  <Badge variant="outline" className="text-slate-400">
-                    {selectedLayers.size} layers visible
-                  </Badge>
-                </div>
-              )}
-            </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3 bg-slate-800">
+            <TabsTrigger value="viewer" className="data-[state=active]:bg-slate-700">
+              <Grid3X3 className="h-4 w-4 mr-2" />
+              Layout Viewer
+            </TabsTrigger>
+            <TabsTrigger value="layers" className="data-[state=active]:bg-slate-700">
+              <Layers className="h-4 w-4 mr-2" />
+              Layer Control
+            </TabsTrigger>
+            <TabsTrigger value="info" className="data-[state=active]:bg-slate-700">
+              <Info className="h-4 w-4 mr-2" />
+              Information
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-4 relative overflow-hidden">
-              {layoutData ? (
-                <div className="h-full relative">
-                  {/* Mock layout canvas */}
-                  <div 
-                    className="w-full h-full bg-slate-800 rounded border border-slate-600 relative"
-                    style={{
-                      transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-                      transformOrigin: 'center'
-                    }}
-                  >
-                    {showGrid && (
-                      <div className="absolute inset-0 opacity-20">
-                        <svg className="w-full h-full">
-                          <defs>
-                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#4a5568" strokeWidth="1"/>
-                            </pattern>
-                          </defs>
-                          <rect width="100%" height="100%" fill="url(#grid)" />
-                        </svg>
-                      </div>
-                    )}
-
-                    {/* Render layout elements */}
-                    {layoutData.structures
-                      .find(s => s.name === activeStructure)
-                      ?.elements.map((element, index) => {
-                        if (!selectedLayers.has(element.layer)) return null;
-
-                        const color = getLayerColor(element.layer);
-                        
-                        switch (element.type) {
-                          case 'boundary':
-                            return (
-                              <polygon
-                                key={index}
-                                points={element.coordinates.map(p => `${p.x},${p.y}`).join(' ')}
-                                fill={color}
-                                fillOpacity="0.3"
-                                stroke={color}
-                                strokeWidth="1"
-                                className="hover:fill-opacity-50 transition-all"
-                              />
-                            );
-                          case 'path':
-                            return (
-                              <polyline
-                                key={index}
-                                points={element.coordinates.map(p => `${p.x},${p.y}`).join(' ')}
-                                fill="none"
-                                stroke={color}
-                                strokeWidth="2"
-                                className="hover:stroke-width-3 transition-all"
-                              />
-                            );
-                          case 'text':
-                            return (
-                              <text
-                                key={index}
-                                x={element.coordinates[0].x}
-                                y={element.coordinates[0].y}
-                                fill={color}
-                                fontSize="12"
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                className="font-mono"
-                              >
-                                {element.properties?.text || 'TEXT'}
-                              </text>
-                            );
-                          default:
-                            return null;
-                        }
-                      })}
-
-                    {/* Rulers */}
-                    {showRulers && (
-                      <>
-                        <div className="absolute top-0 left-0 w-full h-6 bg-slate-700 border-b border-slate-600 flex items-center justify-center text-xs">
-                          <Ruler className="h-3 w-3 mr-1" />
-                          Scale: 1μm = {Math.round(20 / zoom)}px
-                        </div>
-                        <div className="absolute top-0 left-0 w-6 h-full bg-slate-700 border-r border-slate-600 flex items-center justify-center text-xs rotate-90">
-                          <Ruler className="h-3 w-3 mr-1" />
-                          Scale: 1μm = {Math.round(20 / zoom)}px
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Overlay controls */}
-                  <div className="absolute top-4 right-4 flex flex-col gap-2">
+          <TabsContent value="viewer" className="space-y-4">
+            {/* Toolbar */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleZoomIn}
-                      disabled={zoom >= 10}
+                      onClick={() => setZoom(z => Math.min(3, z + 0.1))}
+                      title="Zoom In"
                     >
                       <ZoomIn className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleZoomOut}
-                      disabled={zoom <= 0.1}
+                      onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+                      title="Zoom Out"
                     >
                       <ZoomOut className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
+                      title="Reset View"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    <div className="h-6 w-px bg-slate-600 mx-2"></div>
+                    <span className="text-sm text-slate-400">
+                      Zoom: {Math.round(zoom * 100)}%
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMinimap(!showMinimap)}
+                    >
+                      {showMinimap ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                      {showMinimap ? 'Hide' : 'Show'} Minimap
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Settings className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-400">
-                  <div className="text-center">
-                    <Layers className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No layout data available</p>
-                    <p className="text-sm">Load a GDSII file to view layout</p>
-                  </div>
-                </div>
-              )}
+              </CardContent>
+            </Card>
+
+            {/* Main Layout Area */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Canvas */}
+              <div className="lg:col-span-3">
+                <Card className="bg-slate-800 border-slate-700">
+                  <CardContent className="p-4">
+                    <div className="relative">
+                      <canvas
+                        ref={canvasRef}
+                        className="border border-slate-600 rounded bg-slate-900 cursor-crosshair"
+                        style={{ cursor: selectedCell ? "pointer" : "grab" }}
+                        onWheel={handleWheel}
+                        onMouseDown={handleMouseDown}
+                        onClick={handleCanvasClick}
+                        onMouseMove={handleCanvasMouseMove}
+                      />
+                      
+                      {/* Tooltip */}
+                      {hoveredCell && (
+                        <div 
+                          className="absolute bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg z-10"
+                          style={{
+                            left: mousePos.x + 10,
+                            top: mousePos.y - 10,
+                            pointerEvents: 'none'
+                          }}
+                        >
+                          <div className="text-sm font-medium text-slate-200">{hoveredCell.name}</div>
+                          <div className="text-xs text-slate-400">{hoveredCell.type}</div>
+                          <div className="text-xs text-slate-400">
+                            Position: ({hoveredCell.x}, {hoveredCell.y})
+                          </div>
+                          {hoveredCell.pins && (
+                            <div className="text-xs text-slate-400">
+                              Pins: {hoveredCell.pins.length}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-4">
+                {/* Minimap */}
+                {showMinimap && (
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Minimap</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2">
+                      <canvas
+                        ref={minimapRef}
+                        className="border border-slate-600 rounded bg-slate-900 w-full"
+                        style={{ height: '150px' }}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Selected Cell Info */}
+                {selectedCell && (
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Selected Cell</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3">
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-xs text-slate-400">Name:</span>
+                          <div className="text-sm font-medium text-slate-200">{selectedCell.name}</div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-slate-400">Type:</span>
+                          <div className="text-sm font-medium text-slate-200">{selectedCell.type}</div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-slate-400">Position:</span>
+                          <div className="text-sm font-medium text-slate-200">
+                            ({selectedCell.x}, {selectedCell.y})
+                          </div>
+                        </div>
+                        {selectedCell.pins && (
+                          <div>
+                            <span className="text-xs text-slate-400">Pins:</span>
+                            <div className="space-y-1 mt-1">
+                              {selectedCell.pins.map((pin, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full ${
+                                    pin.direction === 'input' ? 'bg-green-400' : 'bg-yellow-400'
+                                  }`} />
+                                  <span className="text-xs text-slate-300">{pin.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Layer Legend */}
+                <Card className="bg-slate-800 border-slate-700">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Layer Legend</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3">
+                    <div className="space-y-2">
+                      {Object.entries(LAYER_COLORS).map(([layer, color]) => (
+                        <div key={layer} className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="text-xs text-slate-300 capitalize">{layer}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="layers" className="space-y-4">
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="h-5 w-5 text-cyan-400" />
+                  Layer Control
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(layers).map(([layer, visible]) => (
+                    <div key={layer} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-4 h-4 rounded"
+                          style={{ backgroundColor: LAYER_COLORS[layer as keyof typeof LAYER_COLORS] }}
+                        />
+                        <span className="text-sm font-medium capitalize">{layer}</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLayers(l => ({ ...l, [layer]: !l[layer as keyof typeof l] }))}
+                      >
+                        {visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="info" className="space-y-4">
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-cyan-400" />
+                  Layout Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium text-slate-200 mb-3">Statistics</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-400">Total Cells:</span>
+                        <span className="text-sm font-medium">{parsedLayout.cells.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-400">Total Wires:</span>
+                        <span className="text-sm font-medium">{parsedLayout.wires.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-400">Active Layers:</span>
+                        <span className="text-sm font-medium">
+                          {Object.values(layers).filter(Boolean).length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-slate-200 mb-3">Controls</h4>
+                    <div className="space-y-2 text-sm text-slate-400">
+                      <div>• Mouse wheel: Zoom in/out</div>
+                      <div>• Left click + drag: Pan view</div>
+                      <div>• Click cell: Select for details</div>
+                      <div>• Hover cell: Show tooltip</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
-};
-
-export default LayoutViewer; 
+} 
