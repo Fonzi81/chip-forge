@@ -121,8 +121,10 @@ type LayoutViewerProps = {
 };
 
 export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const minimapRef = useRef<HTMLCanvasElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [layers, setLayers] = useState(layoutData.layers);
@@ -143,6 +145,20 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
     }
   }
 
+  useEffect(() => {
+    function updateSize() {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    }
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
   const drawLayout = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -150,8 +166,8 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    canvas.width = 1200;
-    canvas.height = 800;
+    canvas.width = dimensions.width;
+    canvas.height = dimensions.height;
 
     // Clear and set background
     ctx.fillStyle = '#0f172a';
@@ -274,7 +290,7 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
 
     // Reset transform
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }, [zoom, pan, layers, selectedCell, hoveredCell]);
+  }, [zoom, pan, layers, selectedCell, hoveredCell, dimensions]);
 
   const drawMinimap = useCallback(() => {
     const canvas = minimapRef.current;
@@ -492,38 +508,42 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
                 <Card className="bg-slate-800 border-slate-700">
                   <CardContent className="p-4">
                     <div className="relative">
-                      <canvas
-                        ref={canvasRef}
-                        className="border border-slate-600 rounded bg-slate-900 cursor-crosshair"
-                        style={{ cursor: selectedCell ? "pointer" : "grab" }}
-                        onWheel={handleWheel}
-                        onMouseDown={handleMouseDown}
-                        onClick={handleCanvasClick}
-                        onMouseMove={handleCanvasMouseMove}
-                      />
-                      
-                      {/* Tooltip */}
-                      {hoveredCell && (
-                        <div 
-                          className="absolute bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg z-10"
-                          style={{
-                            left: mousePos.x + 10,
-                            top: mousePos.y - 10,
-                            pointerEvents: 'none'
-                          }}
-                        >
-                          <div className="text-sm font-medium text-slate-200">{hoveredCell.name}</div>
-                          <div className="text-xs text-slate-400">{hoveredCell.type}</div>
-                          <div className="text-xs text-slate-400">
-                            Position: ({hoveredCell.x}, {hoveredCell.y})
-                          </div>
-                          {hoveredCell.pins && (
+                      <div className="layout-viewer-container" ref={containerRef}>
+                        <canvas
+                          ref={canvasRef}
+                          className="layout-viewer-canvas border border-slate-600 rounded bg-slate-900 cursor-crosshair"
+                          width={dimensions.width}
+                          height={dimensions.height}
+                          style={{ cursor: selectedCell ? "pointer" : "grab" }}
+                          onWheel={handleWheel}
+                          onMouseDown={handleMouseDown}
+                          onClick={handleCanvasClick}
+                          onMouseMove={handleCanvasMouseMove}
+                        />
+                        
+                        {/* Tooltip */}
+                        {hoveredCell && (
+                          <div 
+                            className="absolute bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg z-10"
+                            style={{
+                              left: mousePos.x + 10,
+                              top: mousePos.y - 10,
+                              pointerEvents: 'none'
+                            }}
+                          >
+                            <div className="text-sm font-medium text-slate-200">{hoveredCell.name}</div>
+                            <div className="text-xs text-slate-400">{hoveredCell.type}</div>
                             <div className="text-xs text-slate-400">
-                              Pins: {hoveredCell.pins.length}
+                              Position: ({hoveredCell.x}, {hoveredCell.y})
                             </div>
-                          )}
-                        </div>
-                      )}
+                            {hoveredCell.pins && (
+                              <div className="text-xs text-slate-400">
+                                Pins: {hoveredCell.pins.length}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
