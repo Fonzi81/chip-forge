@@ -23,6 +23,7 @@ import {
   Users,
   Award
 } from "lucide-react";
+import TopNav from "../components/chipforge/TopNav";
 
 export default function LearningPanel() {
   const [activeTab, setActiveTab] = useState("courses");
@@ -154,244 +155,247 @@ export default function LearningPanel() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
-      <div className="container mx-auto p-6 space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Learning Hub
-            </h1>
-            <p className="text-slate-400 mt-2">
-              Master chip design with interactive tutorials and AI assistance
-            </p>
+    <>
+      <TopNav />
+      <div className="min-h-screen bg-slate-900 text-slate-100">
+        <div className="container mx-auto p-6 space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                Learning Hub
+              </h1>
+              <p className="text-slate-400 mt-2">
+                Master chip design with interactive tutorials and AI assistance
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="text-emerald-400 border-emerald-400">
+                <GraduationCap className="h-3 w-3 mr-1" />
+                {totalProgress}% Complete
+              </Badge>
+              <Button variant="outline" size="sm">
+                <Award className="h-4 w-4 mr-2" />
+                Certificates
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Badge variant="outline" className="text-emerald-400 border-emerald-400">
-              <GraduationCap className="h-3 w-3 mr-1" />
-              {totalProgress}% Complete
-            </Badge>
-            <Button variant="outline" size="sm">
-              <Award className="h-4 w-4 mr-2" />
-              Certificates
-            </Button>
-          </div>
-        </div>
 
-        {/* Progress Overview */}
-        <Card className="bg-slate-800 border-slate-700">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold">Overall Progress</h3>
-                <p className="text-slate-400">Complete all courses to master chip design</p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-cyan-400">{totalProgress}%</div>
-                <div className="text-sm text-slate-400">
-                  {completedLessons.length} of {courses.reduce((sum, course) => sum + course.lessons.length, 0)} lessons
+          {/* Progress Overview */}
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Overall Progress</h3>
+                  <p className="text-slate-400">Complete all courses to master chip design</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-cyan-400">{totalProgress}%</div>
+                  <div className="text-sm text-slate-400">
+                    {completedLessons.length} of {courses.reduce((sum, course) => sum + course.lessons.length, 0)} lessons
+                  </div>
                 </div>
               </div>
+              <Progress value={totalProgress} className="h-3" />
+            </CardContent>
+          </Card>
+
+          {/* Quick Start */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-cyan-400" />
+              Quick Start
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {quickStart.map((item, index) => (
+                <Card 
+                  key={index} 
+                  className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-colors cursor-pointer group"
+                >
+                  <Link to={item.link}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`p-2 rounded-lg bg-gradient-to-r ${item.color}`}>
+                          {item.icon}
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-slate-200 group-hover:text-cyan-400 transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-slate-400 mt-1">
+                        {item.description}
+                      </p>
+                    </CardContent>
+                  </Link>
+                </Card>
+              ))}
             </div>
-            <Progress value={totalProgress} className="h-3" />
-          </CardContent>
-        </Card>
-
-        {/* Quick Start */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-cyan-400" />
-            Quick Start
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {quickStart.map((item, index) => (
-              <Card 
-                key={index} 
-                className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-colors cursor-pointer group"
-              >
-                <Link to={item.link}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2 rounded-lg bg-gradient-to-r ${item.color}`}>
-                        {item.icon}
-                      </div>
-                    </div>
-                    <h3 className="font-semibold text-slate-200 group-hover:text-cyan-400 transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-slate-400 mt-1">
-                      {item.description}
-                    </p>
-                  </CardContent>
-                </Link>
-              </Card>
-            ))}
           </div>
-        </div>
 
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800">
-            <TabsTrigger value="courses" className="data-[state=active]:bg-slate-700">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Courses
-            </TabsTrigger>
-            <TabsTrigger value="resources" className="data-[state=active]:bg-slate-700">
-              <FileText className="h-4 w-4 mr-2" />
-              Resources
-            </TabsTrigger>
-            <TabsTrigger value="community" className="data-[state=active]:bg-slate-700">
-              <Users className="h-4 w-4 mr-2" />
-              Community
-            </TabsTrigger>
-          </TabsList>
+          {/* Main Content Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 bg-slate-800">
+              <TabsTrigger value="courses" className="data-[state=active]:bg-slate-700">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Courses
+              </TabsTrigger>
+              <TabsTrigger value="resources" className="data-[state=active]:bg-slate-700">
+                <FileText className="h-4 w-4 mr-2" />
+                Resources
+              </TabsTrigger>
+              <TabsTrigger value="community" className="data-[state=active]:bg-slate-700">
+                <Users className="h-4 w-4 mr-2" />
+                Community
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="courses" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {courses.map((course) => (
-                <Card key={course.id} className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg bg-gradient-to-r ${course.color}`}>
-                          {course.icon}
+            <TabsContent value="courses" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {courses.map((course) => (
+                  <Card key={course.id} className="bg-slate-800 border-slate-700">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg bg-gradient-to-r ${course.color}`}>
+                            {course.icon}
+                          </div>
+                          <div>
+                            <CardTitle className="text-slate-200">{course.title}</CardTitle>
+                            <CardDescription className="text-slate-400">
+                              {course.description}
+                            </CardDescription>
+                          </div>
                         </div>
-                        <div>
-                          <CardTitle className="text-slate-200">{course.title}</CardTitle>
-                          <CardDescription className="text-slate-400">
-                            {course.description}
-                          </CardDescription>
-                        </div>
+                        <Badge variant="outline" className="text-emerald-400 border-emerald-400">
+                          {course.progress}%
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-emerald-400 border-emerald-400">
-                        {course.progress}%
-                      </Badge>
-                    </div>
-                    <Progress value={course.progress} className="h-2" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {course.lessons.map((lesson) => (
-                        <div
-                          key={lesson.id}
-                          className="flex items-center justify-between p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors cursor-pointer"
-                          onClick={() => handleLessonComplete(lesson.id)}
-                        >
-                          <div className="flex items-center gap-3">
-                            {lesson.completed ? (
-                              <CheckCircle className="h-4 w-4 text-emerald-400" />
-                            ) : (
-                              <div className="h-4 w-4 rounded-full border-2 border-slate-500" />
-                            )}
-                            <div>
-                              <div className="font-medium text-slate-200">{lesson.title}</div>
-                              <div className="text-sm text-slate-400 flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {lesson.duration}
+                      <Progress value={course.progress} className="h-2" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {course.lessons.map((lesson) => (
+                          <div
+                            key={lesson.id}
+                            className="flex items-center justify-between p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors cursor-pointer"
+                            onClick={() => handleLessonComplete(lesson.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              {lesson.completed ? (
+                                <CheckCircle className="h-4 w-4 text-emerald-400" />
+                              ) : (
+                                <div className="h-4 w-4 rounded-full border-2 border-slate-500" />
+                              )}
+                              <div>
+                                <div className="font-medium text-slate-200">{lesson.title}</div>
+                                <div className="text-sm text-slate-400 flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {lesson.duration}
+                                </div>
                               </div>
                             </div>
+                            <Button variant="ghost" size="sm">
+                              <ArrowRight className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <Button variant="ghost" size="sm">
-                            <ArrowRight className="h-4 w-4" />
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="resources" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {resources.map((resource, index) => (
+                  <Card key={index} className="bg-slate-800 border-slate-700">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 rounded-lg bg-slate-700">
+                          {resource.icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-slate-200">{resource.title}</h3>
+                            <Badge variant="outline" className="text-xs">
+                              {resource.type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-400 mb-3">{resource.description}</p>
+                          <Button variant="outline" size="sm">
+                            <Download className="h-3 w-3 mr-1" />
+                            Download
                           </Button>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="resources" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {resources.map((resource, index) => (
-                <Card key={index} className="bg-slate-800 border-slate-700">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-lg bg-slate-700">
-                        {resource.icon}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-slate-200">{resource.title}</h3>
-                          <Badge variant="outline" className="text-xs">
-                            {resource.type}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-slate-400 mb-3">{resource.description}</p>
-                        <Button variant="outline" size="sm">
-                          <Download className="h-3 w-3 mr-1" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
 
-          <TabsContent value="community" className="space-y-6">
-            <Card className="bg-slate-800 border-slate-700">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-                  <h3 className="text-lg font-semibold mb-2">Join the Community</h3>
+            <TabsContent value="community" className="space-y-6">
+              <Card className="bg-slate-800 border-slate-700">
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+                    <h3 className="text-lg font-semibold mb-2">Join the Community</h3>
+                    <p className="text-slate-400 mb-4">
+                      Connect with other chip designers, share projects, and get help from experts.
+                    </p>
+                    <div className="flex gap-2 justify-center">
+                      <Button variant="outline">
+                        <Target className="h-4 w-4 mr-2" />
+                        Discord
+                      </Button>
+                      <Button variant="outline">
+                        <Users className="h-4 w-4 mr-2" />
+                        Forum
+                      </Button>
+                      <Button variant="outline">
+                        <Video className="h-4 w-4 mr-2" />
+                        Office Hours
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {/* Getting Help */}
+          <Card className="bg-gradient-to-r from-slate-800 to-slate-700 border-slate-600">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-lg bg-cyan-500/20">
+                  <GraduationCap className="h-6 w-6 text-cyan-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-slate-200 mb-2">
+                    Need Help Getting Started?
+                  </h3>
                   <p className="text-slate-400 mb-4">
-                    Connect with other chip designers, share projects, and get help from experts.
+                    Start with the HDL Fundamentals course to learn the basics, then practice with our AI-powered tools.
                   </p>
-                  <div className="flex gap-2 justify-center">
-                    <Button variant="outline">
-                      <Target className="h-4 w-4 mr-2" />
-                      Discord
+                  <div className="flex gap-2">
+                    <Button asChild>
+                      <Link to="/hdl-test">
+                        <Brain className="h-4 w-4 mr-2" />
+                        Try AI Generator
+                      </Link>
                     </Button>
                     <Button variant="outline">
                       <Users className="h-4 w-4 mr-2" />
-                      Forum
-                    </Button>
-                    <Button variant="outline">
-                      <Video className="h-4 w-4 mr-2" />
-                      Office Hours
+                      Ask Community
                     </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Getting Help */}
-        <Card className="bg-gradient-to-r from-slate-800 to-slate-700 border-slate-600">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-cyan-500/20">
-                <GraduationCap className="h-6 w-6 text-cyan-400" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-200 mb-2">
-                  Need Help Getting Started?
-                </h3>
-                <p className="text-slate-400 mb-4">
-                  Start with the HDL Fundamentals course to learn the basics, then practice with our AI-powered tools.
-                </p>
-                <div className="flex gap-2">
-                  <Button asChild>
-                    <Link to="/hdl-test">
-                      <Brain className="h-4 w-4 mr-2" />
-                      Try AI Generator
-                    </Link>
-                  </Button>
-                  <Button variant="outline">
-                    <Users className="h-4 w-4 mr-2" />
-                    Ask Community
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -31,6 +31,7 @@ import { loadDesign } from '../utils/localStorage';
 // @ts-expect-error: performPlaceAndRoute module may not have type declarations
 import { performPlaceAndRoute } from '../backend/place-route/placeAndRoute';
 import LayoutViewer from "../components/chipforge/LayoutViewer";
+import TopNav from "../components/chipforge/TopNav";
 
 interface PlaceRouteResult {
   layout: string;
@@ -316,400 +317,403 @@ ${placeRouteResult.warnings.map(w => `- ${w}`).join('\n')}
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-              Place & Route Engine
-            </h1>
-            <p className="text-slate-400 mt-2">
-              Transform netlists into physical chip layouts with automated placement and routing
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Badge variant="outline" className="text-indigo-400 border-indigo-400">
-              <Grid3X3 className="h-3 w-3 mr-1" />
-              Physical Design
-            </Badge>
-            {netlist && (
-              <Badge variant="secondary">
-                Netlist Loaded
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Status Bar */}
-        <Card className="bg-slate-800 border-slate-700">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={getStatusColor(status)}>
-                  {getStatusIcon(status)}
-                </div>
-                <div>
-                  <div className="font-medium text-slate-200">
-                    {status === 'idle' && 'Ready to place & route'}
-                    {status === 'loading' && 'Loading netlist...'}
-                    {status === 'placing' && 'Placing cells...'}
-                    {status === 'routing' && 'Routing nets...'}
-                    {status === 'done' && 'Place & Route completed! ✅'}
-                    {status === 'error' && 'Place & Route failed - Review errors'}
-                  </div>
-                  <div className="text-sm text-slate-400">
-                    {placeRouteResult && `Total time: ${placeRouteResult.statistics.placementTime + placeRouteResult.statistics.routingTime}ms`}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handlePlaceRoute}
-                  disabled={!netlist.trim() || status === 'placing' || status === 'routing'}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  Run Place & Route
-                </Button>
-                {placeRouteResult && (
-                  <>
-                    <Button variant="outline" size="sm" onClick={exportLayout}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Layout
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={exportReport}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Export Report
-                    </Button>
-                  </>
-                )}
-              </div>
+    <>
+      <TopNav />
+      <div className="min-h-screen bg-slate-900 text-slate-100">
+        <div className="container mx-auto p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+                Place & Route Engine
+              </h1>
+              <p className="text-slate-400 mt-2">
+                Transform netlists into physical chip layouts with automated placement and routing
+              </p>
             </div>
-            {(status === 'placing' || status === 'routing') && (
-              <Progress value={75} className="mt-3" />
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Panel - Netlist */}
-          <div className="lg:col-span-1">
-            <Card className="bg-slate-800 border-slate-700 h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5 text-indigo-400" />
-                  Input Netlist
-                </CardTitle>
-                <CardDescription>
-                  Synthesized netlist for placement and routing
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {netlist ? (
-                  <div className="bg-slate-900 rounded p-4 overflow-auto max-h-96">
-                    <pre className="text-sm font-mono text-slate-200 whitespace-pre-wrap">
-                      {netlist}
-                    </pre>
-                  </div>
-                ) : (
-                  <div className="text-center text-slate-400 py-8">
-                    <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No netlist loaded</p>
-                    <p className="text-sm">Run synthesis first to generate netlist</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="text-indigo-400 border-indigo-400">
+                <Grid3X3 className="h-3 w-3 mr-1" />
+                Physical Design
+              </Badge>
+              {netlist && (
+                <Badge variant="secondary">
+                  Netlist Loaded
+                </Badge>
+              )}
+            </div>
           </div>
 
-          {/* Right Panel - Results */}
-          <div className="lg:col-span-2">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5 bg-slate-800">
-                <TabsTrigger value="overview" className="data-[state=active]:bg-slate-700">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger value="layout" className="data-[state=active]:bg-slate-700">
-                  <Grid3X3 className="h-4 w-4 mr-2" />
-                  Layout
-                </TabsTrigger>
-                <TabsTrigger value="timing" className="data-[state=active]:bg-slate-700">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Timing
-                </TabsTrigger>
-                <TabsTrigger value="congestion" className="data-[state=active]:bg-slate-700">
-                  <Map className="h-4 w-4 mr-2" />
-                  Congestion
-                </TabsTrigger>
-                <TabsTrigger value="power" className="data-[state=active]:bg-slate-700">
-                  <Zap className="h-4 w-4 mr-2" />
-                  Power
-                </TabsTrigger>
-              </TabsList>
+          {/* Status Bar */}
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={getStatusColor(status)}>
+                    {getStatusIcon(status)}
+                  </div>
+                  <div>
+                    <div className="font-medium text-slate-200">
+                      {status === 'idle' && 'Ready to place & route'}
+                      {status === 'loading' && 'Loading netlist...'}
+                      {status === 'placing' && 'Placing cells...'}
+                      {status === 'routing' && 'Routing nets...'}
+                      {status === 'done' && 'Place & Route completed! ✅'}
+                      {status === 'error' && 'Place & Route failed - Review errors'}
+                    </div>
+                    <div className="text-sm text-slate-400">
+                      {placeRouteResult && `Total time: ${placeRouteResult.statistics.placementTime + placeRouteResult.statistics.routingTime}ms`}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handlePlaceRoute}
+                    disabled={!netlist.trim() || status === 'placing' || status === 'routing'}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Run Place & Route
+                  </Button>
+                  {placeRouteResult && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={exportLayout}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Layout
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={exportReport}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Export Report
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+              {(status === 'placing' || status === 'routing') && (
+                <Progress value={75} className="mt-3" />
+              )}
+            </CardContent>
+          </Card>
 
-              <TabsContent value="overview" className="space-y-4">
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-indigo-400" />
-                      Place & Route Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {placeRouteResult ? (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-4 bg-slate-700 rounded">
-                          <div className="text-2xl font-bold text-emerald-400">
-                            {placeRouteResult.statistics.placedCells}
-                          </div>
-                          <div className="text-sm text-slate-400">Placed Cells</div>
-                        </div>
-                        <div className="text-center p-4 bg-slate-700 rounded">
-                          <div className="text-2xl font-bold text-blue-400">
-                            {placeRouteResult.statistics.routedNets}
-                          </div>
-                          <div className="text-sm text-slate-400">Routed Nets</div>
-                        </div>
-                        <div className="text-center p-4 bg-slate-700 rounded">
-                          <div className="text-2xl font-bold text-purple-400">
-                            {placeRouteResult.statistics.totalWirelength}μm
-                          </div>
-                          <div className="text-sm text-slate-400">Wirelength</div>
-                        </div>
-                        <div className="text-center p-4 bg-slate-700 rounded">
-                          <div className="text-2xl font-bold text-pink-400">
-                            {placeRouteResult.power.totalPower}mW
-                          </div>
-                          <div className="text-sm text-slate-400">Total Power</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-slate-400 py-8">
-                        <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No place & route data available</p>
-                        <p className="text-sm">Run place & route to see overview</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Panel - Netlist */}
+            <div className="lg:col-span-1">
+              <Card className="bg-slate-800 border-slate-700 h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-indigo-400" />
+                    Input Netlist
+                  </CardTitle>
+                  <CardDescription>
+                    Synthesized netlist for placement and routing
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {netlist ? (
+                    <div className="bg-slate-900 rounded p-4 overflow-auto max-h-96">
+                      <pre className="text-sm font-mono text-slate-200 whitespace-pre-wrap">
+                        {netlist}
+                      </pre>
+                    </div>
+                  ) : (
+                    <div className="text-center text-slate-400 py-8">
+                      <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No netlist loaded</p>
+                      <p className="text-sm">Run synthesis first to generate netlist</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
-              <TabsContent value="layout" className="space-y-4">
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Grid3X3 className="h-5 w-5 text-indigo-400" />
-                      Chip Layout
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {placeRouteResult?.layout ? (
-                      <LayoutViewer layoutString={placeRouteResult.layout} />
-                    ) : (
-                      <div className="text-center text-slate-400 py-8">
-                        <Grid3X3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No layout available</p>
-                        <p className="text-sm">Run place & route to generate layout</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
+            {/* Right Panel - Results */}
+            <div className="lg:col-span-2">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+                <TabsList className="grid w-full grid-cols-5 bg-slate-800">
+                  <TabsTrigger value="overview" className="data-[state=active]:bg-slate-700">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="layout" className="data-[state=active]:bg-slate-700">
+                    <Grid3X3 className="h-4 w-4 mr-2" />
+                    Layout
+                  </TabsTrigger>
+                  <TabsTrigger value="timing" className="data-[state=active]:bg-slate-700">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Timing
+                  </TabsTrigger>
+                  <TabsTrigger value="congestion" className="data-[state=active]:bg-slate-700">
+                    <Map className="h-4 w-4 mr-2" />
+                    Congestion
+                  </TabsTrigger>
+                  <TabsTrigger value="power" className="data-[state=active]:bg-slate-700">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Power
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="timing" className="space-y-4">
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-indigo-400" />
-                      Timing Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {placeRouteResult ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-blue-400">
-                              {placeRouteResult.timing.maxDelay}ns
-                            </div>
-                            <div className="text-sm text-slate-400">Max Delay</div>
-                          </div>
-                          <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-green-400">
-                              {placeRouteResult.timing.slack}ns
-                            </div>
-                            <div className="text-sm text-slate-400">Slack</div>
-                          </div>
-                          <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-yellow-400">
-                              {placeRouteResult.timing.setupViolations}
-                            </div>
-                            <div className="text-sm text-slate-400">Setup Violations</div>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-slate-900 rounded p-4">
-                          <h4 className="font-medium text-slate-200 mb-2">Timing Summary:</h4>
-                          <ul className="space-y-1 text-sm text-slate-300">
-                            <li>• Clock Period: {placeRouteResult.timing.clockPeriod}ns</li>
-                            <li>• Hold Violations: {placeRouteResult.timing.holdViolations}</li>
-                            <li>• Min Delay: {placeRouteResult.timing.minDelay}ns</li>
-                            <li>• Max Frequency: {placeRouteResult.statistics.maxFrequency}MHz</li>
-                          </ul>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-slate-400 py-8">
-                        <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No timing data available</p>
-                        <p className="text-sm">Run place & route to see timing analysis</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="congestion" className="space-y-4">
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Map className="h-5 w-5 text-indigo-400" />
-                      Congestion Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {placeRouteResult ? (
-                      <div className="space-y-4">
+                <TabsContent value="overview" className="space-y-4">
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-indigo-400" />
+                        Place & Route Overview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {placeRouteResult ? (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-emerald-400">
-                              {placeRouteResult.congestion.totalTracks}
+                            <div className="text-2xl font-bold text-emerald-400">
+                              {placeRouteResult.statistics.placedCells}
                             </div>
-                            <div className="text-sm text-slate-400">Total Tracks</div>
+                            <div className="text-sm text-slate-400">Placed Cells</div>
                           </div>
                           <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-blue-400">
-                              {placeRouteResult.congestion.usedTracks}
+                            <div className="text-2xl font-bold text-blue-400">
+                              {placeRouteResult.statistics.routedNets}
                             </div>
-                            <div className="text-sm text-slate-400">Used Tracks</div>
+                            <div className="text-sm text-slate-400">Routed Nets</div>
                           </div>
                           <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-purple-400">
-                              {placeRouteResult.congestion.congestionRatio}%
+                            <div className="text-2xl font-bold text-purple-400">
+                              {placeRouteResult.statistics.totalWirelength}μm
                             </div>
-                            <div className="text-sm text-slate-400">Congestion</div>
+                            <div className="text-sm text-slate-400">Wirelength</div>
                           </div>
                           <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-pink-400">
-                              {placeRouteResult.congestion.hotSpots}
-                            </div>
-                            <div className="text-sm text-slate-400">Hot Spots</div>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-slate-900 rounded p-4">
-                          <h4 className="font-medium text-slate-200 mb-2">Congestion Details:</h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-slate-300">Track Utilization:</span>
-                              <span className="text-slate-200">{Math.round(placeRouteResult.congestion.usedTracks / placeRouteResult.congestion.totalTracks * 100)}%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-300">Overflow Tracks:</span>
-                              <span className="text-slate-200">{placeRouteResult.congestion.overflowTracks}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-300">Congestion Status:</span>
-                              <span className={`${placeRouteResult.congestion.congestionRatio > 90 ? 'text-red-400' : placeRouteResult.congestion.congestionRatio > 80 ? 'text-yellow-400' : 'text-green-400'}`}>
-                                {placeRouteResult.congestion.congestionRatio > 90 ? 'High' : placeRouteResult.congestion.congestionRatio > 80 ? 'Medium' : 'Low'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-slate-400 py-8">
-                        <Map className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No congestion data available</p>
-                        <p className="text-sm">Run place & route to see congestion analysis</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="power" className="space-y-4">
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-indigo-400" />
-                      Power Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {placeRouteResult ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-yellow-400">
+                            <div className="text-2xl font-bold text-pink-400">
                               {placeRouteResult.power.totalPower}mW
                             </div>
                             <div className="text-sm text-slate-400">Total Power</div>
                           </div>
-                          <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-blue-400">
-                              {placeRouteResult.power.dynamicPower}mW
+                        </div>
+                      ) : (
+                        <div className="text-center text-slate-400 py-8">
+                          <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No place & route data available</p>
+                          <p className="text-sm">Run place & route to see overview</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="layout" className="space-y-4">
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Grid3X3 className="h-5 w-5 text-indigo-400" />
+                        Chip Layout
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {placeRouteResult?.layout ? (
+                        <LayoutViewer layoutString={placeRouteResult.layout} />
+                      ) : (
+                        <div className="text-center text-slate-400 py-8">
+                          <Grid3X3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No layout available</p>
+                          <p className="text-sm">Run place & route to generate layout</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="timing" className="space-y-4">
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-indigo-400" />
+                        Timing Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {placeRouteResult ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-blue-400">
+                                {placeRouteResult.timing.maxDelay}ns
+                              </div>
+                              <div className="text-sm text-slate-400">Max Delay</div>
                             </div>
-                            <div className="text-sm text-slate-400">Dynamic</div>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-green-400">
+                                {placeRouteResult.timing.slack}ns
+                              </div>
+                              <div className="text-sm text-slate-400">Slack</div>
+                            </div>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-yellow-400">
+                                {placeRouteResult.timing.setupViolations}
+                              </div>
+                              <div className="text-sm text-slate-400">Setup Violations</div>
+                            </div>
                           </div>
-                          <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-purple-400">
-                              {placeRouteResult.power.staticPower}mW
-                            </div>
-                            <div className="text-sm text-slate-400">Static</div>
-                          </div>
-                          <div className="text-center p-4 bg-slate-700 rounded">
-                            <div className="text-xl font-bold text-green-400">
-                              {placeRouteResult.power.switchingPower}mW
-                            </div>
-                            <div className="text-sm text-slate-400">Switching</div>
+                          
+                          <div className="bg-slate-900 rounded p-4">
+                            <h4 className="font-medium text-slate-200 mb-2">Timing Summary:</h4>
+                            <ul className="space-y-1 text-sm text-slate-300">
+                              <li>• Clock Period: {placeRouteResult.timing.clockPeriod}ns</li>
+                              <li>• Hold Violations: {placeRouteResult.timing.holdViolations}</li>
+                              <li>• Min Delay: {placeRouteResult.timing.minDelay}ns</li>
+                              <li>• Max Frequency: {placeRouteResult.statistics.maxFrequency}MHz</li>
+                            </ul>
                           </div>
                         </div>
-                        
-                        <div className="bg-slate-900 rounded p-4">
-                          <h4 className="font-medium text-slate-200 mb-2">Power Breakdown:</h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-slate-300">Dynamic Power:</span>
-                              <span className="text-slate-200">{Math.round(placeRouteResult.power.dynamicPower / placeRouteResult.power.totalPower * 100)}%</span>
+                      ) : (
+                        <div className="text-center text-slate-400 py-8">
+                          <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No timing data available</p>
+                          <p className="text-sm">Run place & route to see timing analysis</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="congestion" className="space-y-4">
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Map className="h-5 w-5 text-indigo-400" />
+                        Congestion Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {placeRouteResult ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-emerald-400">
+                                {placeRouteResult.congestion.totalTracks}
+                              </div>
+                              <div className="text-sm text-slate-400">Total Tracks</div>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-300">Static Power:</span>
-                              <span className="text-slate-200">{Math.round(placeRouteResult.power.staticPower / placeRouteResult.power.totalPower * 100)}%</span>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-blue-400">
+                                {placeRouteResult.congestion.usedTracks}
+                              </div>
+                              <div className="text-sm text-slate-400">Used Tracks</div>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-300">Leakage Power:</span>
-                              <span className="text-slate-200">{placeRouteResult.power.leakagePower}mW</span>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-purple-400">
+                                {placeRouteResult.congestion.congestionRatio}%
+                              </div>
+                              <div className="text-sm text-slate-400">Congestion</div>
+                            </div>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-pink-400">
+                                {placeRouteResult.congestion.hotSpots}
+                              </div>
+                              <div className="text-sm text-slate-400">Hot Spots</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-slate-900 rounded p-4">
+                            <h4 className="font-medium text-slate-200 mb-2">Congestion Details:</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-slate-300">Track Utilization:</span>
+                                <span className="text-slate-200">{Math.round(placeRouteResult.congestion.usedTracks / placeRouteResult.congestion.totalTracks * 100)}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-300">Overflow Tracks:</span>
+                                <span className="text-slate-200">{placeRouteResult.congestion.overflowTracks}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-300">Congestion Status:</span>
+                                <span className={`${placeRouteResult.congestion.congestionRatio > 90 ? 'text-red-400' : placeRouteResult.congestion.congestionRatio > 80 ? 'text-yellow-400' : 'text-green-400'}`}>
+                                  {placeRouteResult.congestion.congestionRatio > 90 ? 'High' : placeRouteResult.congestion.congestionRatio > 80 ? 'Medium' : 'Low'}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-slate-400 py-8">
-                        <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No power data available</p>
-                        <p className="text-sm">Run place & route to see power analysis</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                      ) : (
+                        <div className="text-center text-slate-400 py-8">
+                          <Map className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No congestion data available</p>
+                          <p className="text-sm">Run place & route to see congestion analysis</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="power" className="space-y-4">
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-indigo-400" />
+                        Power Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {placeRouteResult ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-yellow-400">
+                                {placeRouteResult.power.totalPower}mW
+                              </div>
+                              <div className="text-sm text-slate-400">Total Power</div>
+                            </div>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-blue-400">
+                                {placeRouteResult.power.dynamicPower}mW
+                              </div>
+                              <div className="text-sm text-slate-400">Dynamic</div>
+                            </div>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-purple-400">
+                                {placeRouteResult.power.staticPower}mW
+                              </div>
+                              <div className="text-sm text-slate-400">Static</div>
+                            </div>
+                            <div className="text-center p-4 bg-slate-700 rounded">
+                              <div className="text-xl font-bold text-green-400">
+                                {placeRouteResult.power.switchingPower}mW
+                              </div>
+                              <div className="text-sm text-slate-400">Switching</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-slate-900 rounded p-4">
+                            <h4 className="font-medium text-slate-200 mb-2">Power Breakdown:</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-slate-300">Dynamic Power:</span>
+                                <span className="text-slate-200">{Math.round(placeRouteResult.power.dynamicPower / placeRouteResult.power.totalPower * 100)}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-300">Static Power:</span>
+                                <span className="text-slate-200">{Math.round(placeRouteResult.power.staticPower / placeRouteResult.power.totalPower * 100)}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-300">Leakage Power:</span>
+                                <span className="text-slate-200">{placeRouteResult.power.leakagePower}mW</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center text-slate-400 py-8">
+                          <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No power data available</p>
+                          <p className="text-sm">Run place & route to see power analysis</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 } 

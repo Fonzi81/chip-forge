@@ -25,6 +25,7 @@ import TestbenchEditor from "./components/chipforge/TestbenchEditor";
 import HDLReflexionAgent from "./pages/HDLReflexionAgent";
 import HDLTest from "./pages/HDLTest";
 import NotFound from "./pages/NotFound";
+import Chip3DViewer from "./components/chipforge/Chip3DViewer";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
           <Route path="/testbench" element={<TestbenchEditor />} />
           <Route path="/hdl-reflexion-agent" element={<HDLReflexionAgent />} />
           <Route path="/hdl-test" element={<HDLTest />} />
+          <Route path="/chip3d-viewer" element={<Chip3DViewer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
