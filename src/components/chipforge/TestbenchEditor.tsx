@@ -184,7 +184,7 @@ export default function TestbenchEditor({ onTestbenchGenerated, initialHdlCode }
               <CardContent className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium">Module Type</Label>
-                  <Select value={moduleType} onValueChange={(value: any) => setModuleType(value)}>
+                  <Select value={moduleType} onValueChange={(value: 'auto' | 'alu' | 'counter' | 'memory' | 'multiplexer' | 'fsm' | 'generic') => setModuleType(value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>

@@ -9,6 +9,7 @@ const navLinks = [
   { to: "/synthesis", label: "Synthesis" },
   { to: "/place-and-route", label: "Place & Route" },
   { to: "/layout-viewer", label: "Layout Viewer" },
+  { to: "/simple-layout-editor", label: "Simple Layout" },
   { to: "/chip3d-viewer", label: "3D Chip Viewer" },
   { to: "/learning-panel", label: "Learning" },
 ];

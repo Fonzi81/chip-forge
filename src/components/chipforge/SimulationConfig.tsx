@@ -7,8 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Play, Square, RotateCcw, Settings, Clock, Zap } from "lucide-react";
 
+interface SimulationConfig {
+  clockFreq: string;
+  simulationTime: string;
+  inputVectors: string;
+  hdlCode: string;
+}
+
 interface SimulationConfigProps {
-  onRunSimulation: (config: any) => void;
+  onRunSimulation: (config: SimulationConfig) => void;
   onCancelSimulation?: () => void;
   isRunning: boolean;
   initialHdlCode?: string;

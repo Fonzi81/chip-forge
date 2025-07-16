@@ -24,11 +24,32 @@ export interface HDLGenerationResult {
     warnings: string[];
     suggestions: string[];
   };
-  ast?: any; // Abstract Syntax Tree
+  ast?: HDLAbstractSyntaxTree; // Abstract Syntax Tree
+}
+
+export interface HDLAbstractSyntaxTree {
+  type: string;
+  name?: string;
+  children?: HDLAbstractSyntaxTree[];
+  value?: string | number;
+  properties?: Record<string, string | number>;
+}
+
+export interface AIModel {
+  generate(prompt: string, constraints: Record<string, unknown>): Promise<string>;
+  optimize(code: string, feedback: string[]): Promise<string>;
+}
+
+export interface OptimizationConstraints {
+  maxGates: number;
+  targetFrequency: number;
+  powerBudget: number;
+  areaBudget: number;
+  timingConstraints: Record<string, number>;
 }
 
 export class HDLGenerator {
-  private aiModel: any;
+  private aiModel: AIModel | null;
 
   constructor() {
     // Initialize AI model for code generation
@@ -73,7 +94,7 @@ endmodule`;
     };
   }
 
-  async optimizeHDL(code: string, constraints: any): Promise<string> {
+  async optimizeHDL(code: string, constraints: OptimizationConstraints): Promise<string> {
     // TODO: Implement HDL optimization
     return code;
   }

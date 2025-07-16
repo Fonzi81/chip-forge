@@ -38,9 +38,33 @@ export interface Gate {
   area: number;
 }
 
+export interface TechnologyLibrary {
+  name: string;
+  version: string;
+  gates: Gate[];
+  processNode: string;
+  voltage: number;
+}
+
+export interface Optimizer {
+  name: string;
+  algorithm: string;
+  parameters: Record<string, number | string>;
+}
+
+export interface DesignSpecification {
+  moduleName: string;
+  ports: {
+    name: string;
+    direction: 'input' | 'output' | 'inout';
+    width: number;
+  }[];
+  constraints: Partial<SynthesisConstraints>;
+}
+
 export class LogicSynthesizer {
-  private technologyLibrary: any;
-  private optimizer: any;
+  private technologyLibrary: TechnologyLibrary | null;
+  private optimizer: Optimizer | null;
 
   constructor() {
     // Initialize technology library and optimizer
@@ -125,7 +149,7 @@ endmodule`;
     };
   }
 
-  async generateConstraints(design: any): Promise<SynthesisConstraints> {
+  async generateConstraints(design: DesignSpecification): Promise<SynthesisConstraints> {
     // TODO: Implement automatic constraint generation
     return {
       maxDelay: 10.0,

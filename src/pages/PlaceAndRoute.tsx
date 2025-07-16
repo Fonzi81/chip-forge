@@ -32,6 +32,8 @@ import { loadDesign } from '../utils/localStorage';
 import { performPlaceAndRoute } from '../backend/place-route/placeAndRoute';
 import LayoutViewer from "../components/chipforge/LayoutViewer";
 import TopNav from "../components/chipforge/TopNav";
+import WorkflowNav from "../components/chipforge/WorkflowNav";
+import { useWorkflowStore } from "../state/workflowState";
 
 interface PlaceRouteResult {
   layout: string;
@@ -79,6 +81,7 @@ interface PowerAnalysis {
 }
 
 export default function PlaceAndRoute() {
+  const { markComplete, setStage } = useWorkflowStore();
   const [netlist, setNetlist] = useState('');
   const [placeRouteResult, setPlaceRouteResult] = useState<PlaceRouteResult | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'placing' | 'routing' | 'done' | 'error'>('idle');
@@ -93,8 +96,9 @@ export default function PlaceAndRoute() {
   });
 
   useEffect(() => {
+    setStage('PlaceRoute');
     loadActiveNetlist();
-  }, []);
+  }, [setStage]);
 
   const loadActiveNetlist = () => {
     setStatus('loading');
@@ -143,6 +147,7 @@ export default function PlaceAndRoute() {
       
       setPlaceRouteResult(fullResult);
       setStatus('done');
+      markComplete('PlaceRoute');
     } catch (error) {
       console.error('Place & Route failed:', error);
       setStatus('error');
@@ -319,6 +324,7 @@ ${placeRouteResult.warnings.map(w => `- ${w}`).join('\n')}
   return (
     <>
       <TopNav />
+      <WorkflowNav />
       <div className="min-h-screen bg-slate-900 text-slate-100">
         <div className="container mx-auto p-6 space-y-6">
           {/* Header */}

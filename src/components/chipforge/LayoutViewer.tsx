@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TopNav from "./TopNav";
+import WorkflowNav from "./WorkflowNav";
+import { useWorkflowStore } from "../../state/workflowState";
 import { 
   ZoomIn, 
   ZoomOut, 
@@ -122,6 +124,7 @@ type LayoutViewerProps = {
 };
 
 export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
+  const { markComplete, setStage } = useWorkflowStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const minimapRef = useRef<HTMLCanvasElement>(null);
@@ -159,6 +162,12 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
     window.addEventListener("resize", updateSize);
     return () => window.removeEventListener("resize", updateSize);
   }, []);
+
+  // Set current stage and mark Layout stage as complete when component loads
+  useEffect(() => {
+    setStage('Layout');
+    markComplete('Layout');
+  }, [setStage, markComplete]);
 
   const drawLayout = useCallback(() => {
     const canvas = canvasRef.current;
@@ -291,7 +300,7 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
 
     // Reset transform
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }, [zoom, pan, layers, selectedCell, hoveredCell, dimensions]);
+  }, [zoom, pan, layers, selectedCell, hoveredCell, dimensions, parsedLayout.cells, parsedLayout.wires]);
 
   const drawMinimap = useCallback(() => {
     const canvas = minimapRef.current;
@@ -330,7 +339,7 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
     const viewportWidth = (1200 / zoom) * scaleX;
     const viewportHeight = (800 / zoom) * scaleY;
     ctx.strokeRect(viewportX, viewportY, viewportWidth, viewportHeight);
-  }, [pan, zoom]);
+  }, [pan, zoom, parsedLayout.cells]);
 
   useEffect(() => {
     drawLayout();
@@ -411,6 +420,7 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
   return (
     <>
       <TopNav />
+      <WorkflowNav />
       <div className="min-h-screen bg-slate-900 text-slate-100">
         <div className="container mx-auto p-6 space-y-6">
         {/* Header */}

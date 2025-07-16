@@ -24,6 +24,8 @@ import { getReflexionAdvice } from '../backend/reflexion/reviewer';
 import { runReflexionIteration } from '../backend/reflexion';
 import { HDLDesign } from '../utils/localStorage';
 import TopNav from "../components/chipforge/TopNav";
+import WorkflowNav from "../components/chipforge/WorkflowNav";
+import { useWorkflowStore } from "../state/workflowState";
 
 // Error Boundary Component
 class SimulationErrorBoundary extends React.Component<
@@ -69,15 +71,23 @@ class SimulationErrorBoundary extends React.Component<
 }
 
 export default function ChipForgeSimulation() {
+  const { markComplete, setStage } = useWorkflowStore();
   const [status, setStatus] = useState<'idle' | 'loading' | 'running' | 'failed' | 'passed'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [currentDesign, setCurrentDesign] = useState<HDLDesign | null>(null);
-  const [simulationResult, setSimulationResult] = useState<any>(null);
+  const [simulationResult, setSimulationResult] = useState<{
+    passed: boolean;
+    feedback: string;
+    simulationTime: number;
+    errors?: string[];
+    warnings?: string[];
+  } | null>(null);
   const [advice, setAdvice] = useState<string | null>(null);
   const [isReflexionRunning, setIsReflexionRunning] = useState(false);
   const [reflexionCount, setReflexionCount] = useState(0);
 
   useEffect(() => {
+    setStage('Simulation');
     setStatus('loading');
     setError(null);
     try {
@@ -92,7 +102,7 @@ export default function ChipForgeSimulation() {
       setError('Failed to load design from storage');
       setStatus('idle');
     }
-  }, []);
+  }, [setStage]);
 
   const runSimulation = async () => {
     if (!currentDesign?.verilog) {
@@ -110,6 +120,7 @@ export default function ChipForgeSimulation() {
       
       if (result.passed) {
         setStatus('passed');
+        markComplete('Simulation');
       } else {
         setStatus('failed');
         // Get AI advice for failed simulation
@@ -173,6 +184,7 @@ export default function ChipForgeSimulation() {
     <SimulationErrorBoundary>
       <div className="min-h-screen bg-slate-900 text-slate-100">
         <TopNav />
+        <WorkflowNav />
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>

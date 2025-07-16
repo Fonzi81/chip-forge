@@ -13,10 +13,23 @@ export interface SimulationProgress {
   message: string;
 }
 
+export interface WaveformData {
+  signals: string[];
+  timeScale: string;
+  duration: number;
+  traces: {
+    name: string;
+    type: 'clock' | 'bus' | 'signal';
+    width?: number;
+    values: string[];
+    transitions?: number[];
+  }[];
+}
+
 export interface SimulationResult {
   id: string;
   status: 'success' | 'error' | 'timeout';
-  waveformData?: any;
+  waveformData?: WaveformData;
   logs: string[];
   metrics?: {
     duration: string;
@@ -109,7 +122,7 @@ export const useSimulation = () => {
           timeScale: 'ns',
           duration: parseInt(config.simulationTime) || 1000,
           traces: [
-            { name: 'clk', type: 'clock', transitions: [] },
+            { name: 'clk', type: 'clock', values: ['0', '1', '0', '1'], transitions: [] },
             { name: 'a[3:0]', type: 'bus', width: 4, values: ['0000', '0001', '0010', '0011'] },
             { name: 'b[3:0]', type: 'bus', width: 4, values: ['0001', '0010', '0011', '0100'] },
             { name: 'result[3:0]', type: 'bus', width: 4, values: ['0001', '0011', '0101', '0111'] },

@@ -1,9 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye } from "lucide-react";
+import type { WaveformData } from "../../types/backend";
+
+interface WaveformTrace {
+  name: string;
+  type: 'clock' | 'bus' | 'digital';
+  values: string[];
+  width?: number;
+}
+
+interface WaveformCanvasData {
+  traces: WaveformTrace[];
+}
 
 interface WaveformCanvasProps {
-  waveformData: any;
+  waveformData: WaveformCanvasData | null;
   zoomLevel: number;
   timeOffset: number;
   selectedSignal: string | null;
@@ -45,11 +57,7 @@ const WaveformCanvas = ({
   const LABEL_WIDTH = 120;
   const TIME_SCALE = 100; // pixels per time unit
 
-  useEffect(() => {
-    drawWaveforms();
-  }, [waveformData, zoomLevel, timeOffset, timeCursor, measurementStart, measurementEnd, highlightedSignals, selectedSignal]);
-
-  const drawWaveforms = () => {
+  const drawWaveforms = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !waveformData) return;
 
@@ -64,7 +72,7 @@ const WaveformCanvas = ({
     ctx.fillRect(0, 0, width, height);
 
     // Draw signals with highlighting
-    waveformData.traces.forEach((trace: any, index: number) => {
+    waveformData.traces.forEach((trace: WaveformTrace, index: number) => {
       const y = index * SIGNAL_SPACING + 30;
       const isHighlighted = highlightedSignals.has(trace.name);
       const isSelected = selectedSignal === trace.name;
@@ -144,9 +152,13 @@ const WaveformCanvas = ({
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  };
+  }, [waveformData, zoomLevel, timeOffset, timeCursor, measurementStart, measurementEnd, highlightedSignals, selectedSignal, hoveredTime]);
 
-  const drawClockSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+  useEffect(() => {
+    drawWaveforms();
+  }, [drawWaveforms]);
+
+  const drawClockSignal = (ctx: CanvasRenderingContext2D, trace: WaveformTrace, y: number, timeScale: number, offset: number, highlighted = false) => {
     ctx.strokeStyle = highlighted ? '#14f195' : '#10b981'; // brighter if highlighted
     ctx.lineWidth = highlighted ? 3 : 2;
     
@@ -169,7 +181,7 @@ const WaveformCanvas = ({
     ctx.stroke();
   };
 
-  const drawBusSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+  const drawBusSignal = (ctx: CanvasRenderingContext2D, trace: WaveformTrace, y: number, timeScale: number, offset: number, highlighted = false) => {
     ctx.strokeStyle = highlighted ? '#a855f7' : '#8b5cf6'; // brighter if highlighted
     ctx.fillStyle = highlighted ? '#a855f7' : '#8b5cf6';
     ctx.lineWidth = highlighted ? 3 : 2;
@@ -205,7 +217,7 @@ const WaveformCanvas = ({
     });
   };
 
-  const drawDigitalSignal = (ctx: CanvasRenderingContext2D, trace: any, y: number, timeScale: number, offset: number, highlighted = false) => {
+  const drawDigitalSignal = (ctx: CanvasRenderingContext2D, trace: WaveformTrace, y: number, timeScale: number, offset: number, highlighted = false) => {
     ctx.strokeStyle = highlighted ? '#22d3ee' : '#06b6d4'; // brighter if highlighted
     ctx.lineWidth = highlighted ? 3 : 2;
     
@@ -302,7 +314,7 @@ const WaveformCanvas = ({
         </div>
         <ScrollArea className="h-full">
           <div className="p-2 space-y-2">
-            {waveformData?.traces.map((trace: any, index: number) => (
+            {waveformData?.traces.map((trace: WaveformTrace, index: number) => (
               <div
                 key={trace.name}
                 onClick={() => handleSignalClick(trace.name)}

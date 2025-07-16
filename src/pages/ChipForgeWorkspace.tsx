@@ -31,6 +31,8 @@ import { runTestBench } from '../backend/sim/testBench';
 import { getReflexionAdvice } from '../backend/reflexion/reviewer';
 import { saveHDLDesign, HDLDesign } from '../utils/localStorage';
 import TopNav from "../components/chipforge/TopNav";
+import WorkflowNav from "../components/chipforge/WorkflowNav";
+import { useWorkflowStore } from "../state/workflowState";
 
 interface TestResult {
   passed: boolean;
@@ -48,6 +50,7 @@ interface ReflexionAdvice {
 }
 
 export default function ChipForgeWorkspace() {
+  const { markComplete } = useWorkflowStore();
   const [moduleName, setModuleName] = useState('');
   const [description, setDescription] = useState('');
   const [io, setIo] = useState([{ name: '', direction: 'input' as 'input' | 'output', width: 1 }]);
@@ -92,6 +95,7 @@ export default function ChipForgeWorkspace() {
       if (result.passed) {
         setStatus('passed');
         setAdvice(null);
+        markComplete('HDL');
       } else {
         // Get reflexion advice
         setStatus('reviewing');
@@ -176,6 +180,7 @@ export default function ChipForgeWorkspace() {
   return (
     <>
       <TopNav />
+      <WorkflowNav />
       <div className="min-h-screen bg-slate-900 text-slate-100">
         <div className="container mx-auto p-6 space-y-6">
           {/* Header */}

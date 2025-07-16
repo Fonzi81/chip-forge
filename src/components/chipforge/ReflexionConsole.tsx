@@ -20,7 +20,7 @@ import {
   History,
   RefreshCw,
   Play,
-  Stop
+  Square
 } from "lucide-react";
 
 interface ReflexionSuggestion {
@@ -286,8 +286,8 @@ endmodule`,
               >
                 {isRunning ? (
                   <>
-                    <Stop className="h-4 w-4 mr-2" />
-                    Stop
+                                    <Square className="h-4 w-4 mr-2" />
+                Stop
                   </>
                 ) : (
                   <>
@@ -384,7 +384,7 @@ endmodule`,
                   <div className="space-y-2">
                     <Label>Filters</Label>
                     <div className="space-y-2">
-                      <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+                      <Select value={filterType} onValueChange={(value: string) => setFilterType(value as typeof filterType)}>
                         <SelectTrigger className="bg-slate-900 border-slate-600">
                           <SelectValue />
                         </SelectTrigger>
@@ -397,7 +397,7 @@ endmodule`,
                         </SelectContent>
                       </Select>
 
-                      <Select value={filterPriority} onValueChange={(value: any) => setFilterPriority(value)}>
+                      <Select value={filterPriority} onValueChange={(value: string) => setFilterPriority(value as typeof filterPriority)}>
                         <SelectTrigger className="bg-slate-900 border-slate-600">
                           <SelectValue />
                         </SelectTrigger>

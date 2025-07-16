@@ -29,7 +29,7 @@ const MetricCard = ({
   description, 
   variant = "default" 
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   description: string;

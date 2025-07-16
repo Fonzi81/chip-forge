@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,14 +21,22 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TopNav from "../components/chipforge/TopNav";
+import WorkflowNav from "../components/chipforge/WorkflowNav";
+import { useWorkflowStore } from "../state/workflowState";
 
 const Export = () => {
   const navigate = useNavigate();
+  const { markComplete, setStage } = useWorkflowStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [targetPlatform, setTargetPlatform] = useState("FPGA");
   const [stepStatus, setStepStatus] = useState([
     "current", "pending", "pending", "pending", "pending"
   ]);
+
+  // Set current stage when component loads
+  useEffect(() => {
+    setStage('Export');
+  }, [setStage]);
 
   const steps = [
     {
@@ -91,6 +99,9 @@ const Export = () => {
         finalStatus[currentStep + 1] = "current";
         setCurrentStep(currentStep + 1);
         setStepStatus(finalStatus);
+      } else {
+        // Mark Export stage as complete when all steps are done
+        markComplete('Export');
       }
     }, 2000);
   };
@@ -107,6 +118,7 @@ const Export = () => {
   return (
     <>
       <TopNav />
+      <WorkflowNav />
       <div className="min-h-screen bg-slate-950 text-slate-100">
         {/* Header */}
         <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">

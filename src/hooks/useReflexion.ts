@@ -132,7 +132,7 @@ export const useReflexion = () => {
       timestamp: new Date(),
       tokensUsed: 1000 // Mock token count - would be real in production
     };
-  }, [simulate, updateState]);
+  }, [updateState]);
 
   const startReflexion = useCallback(async (description: string, testbench: string) => {
     if (state.isRunning) return;
