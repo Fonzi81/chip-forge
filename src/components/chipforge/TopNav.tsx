@@ -5,6 +5,7 @@ const navLinks = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/workspace", label: "Workspace" },
   { to: "/chipforge-simulation", label: "Simulation" },
+  { to: "/hdl-reflexion-agent", label: "Reflexion Agent" },
   { to: "/synthesis", label: "Synthesis" },
   { to: "/place-and-route", label: "Place & Route" },
   { to: "/layout-viewer", label: "Layout Viewer" },

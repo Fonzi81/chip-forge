@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { 
   BookOpen, 
   Play, 
@@ -21,13 +22,19 @@ import {
   Video,
   Target,
   Users,
-  Award
+  Award,
+  Search,
+  ExternalLink,
+  Book,
+  Globe
 } from "lucide-react";
 import TopNav from "../components/chipforge/TopNav";
+import GlossaryTab from "../components/learning/GlossaryTab";
 
 export default function LearningPanel() {
   const [activeTab, setActiveTab] = useState("courses");
   const [completedLessons, setCompletedLessons] = useState<string[]>(["hdl-basics", "simulation-intro"]);
+  const [resourceSearchQuery, setResourceSearchQuery] = useState("");
 
   const courses = [
     {
@@ -92,31 +99,67 @@ export default function LearningPanel() {
   const resources = [
     {
       title: "Verilog Quick Reference",
-      type: "PDF",
+      type: "Documentation",
       icon: <FileText className="h-4 w-4" />,
       description: "Essential Verilog syntax and examples",
-      link: "#"
+      link: "https://www.verilog.com/verilog-quick-reference",
+      category: "syntax"
     },
     {
-      title: "Simulation Tutorial",
-      type: "Video",
-      icon: <Video className="h-4 w-4" />,
-      description: "Step-by-step simulation guide",
-      link: "#"
+      title: "SystemVerilog LRM",
+      type: "Standard",
+      icon: <Book className="h-4 w-4" />,
+      description: "IEEE 1800-2017 SystemVerilog Language Reference Manual",
+      link: "https://ieeexplore.ieee.org/document/8299595",
+      category: "standard"
     },
     {
-      title: "Layout Best Practices",
-      type: "PDF",
+      title: "VHDL Language Reference",
+      type: "Documentation",
       icon: <FileText className="h-4 w-4" />,
-      description: "Physical design guidelines",
-      link: "#"
+      description: "Complete VHDL language reference and examples",
+      link: "https://www.vhdl.org/vhdl-standards/",
+      category: "syntax"
     },
     {
-      title: "AI Design Patterns",
-      type: "Video",
+      title: "FPGA Design Best Practices",
+      type: "Guide",
+      icon: <Target className="h-4 w-4" />,
+      description: "Xilinx FPGA design guidelines and optimization techniques",
+      link: "https://www.xilinx.com/support/documentation-navigation/design-hubs/dh0013-fpga-design-best-practices-hub.html",
+      category: "design"
+    },
+    {
+      title: "Digital Design Tutorial",
+      type: "Tutorial",
       icon: <Video className="h-4 w-4" />,
-      description: "Using AI effectively in design",
-      link: "#"
+      description: "Comprehensive digital design fundamentals",
+      link: "https://www.allaboutcircuits.com/textbook/digital/",
+      category: "tutorial"
+    },
+    {
+      title: "ASIC Design Flow",
+      type: "Guide",
+      icon: <Layout className="h-4 w-4" />,
+      description: "Complete ASIC design methodology and tools",
+      link: "https://www.synopsys.com/implementation-and-signoff/asic-design.html",
+      category: "design"
+    },
+    {
+      title: "Timing Analysis Guide",
+      type: "Documentation",
+      icon: <Clock className="h-4 w-4" />,
+      description: "Static timing analysis concepts and techniques",
+      link: "https://www.synopsys.com/implementation-and-signoff/signoff/timing-analysis.html",
+      category: "timing"
+    },
+    {
+      title: "Testbench Methodology",
+      type: "Guide",
+      icon: <Code className="h-4 w-4" />,
+      description: "UVM and SystemVerilog testbench best practices",
+      link: "https://www.accellera.org/downloads/standards/uvm",
+      category: "verification"
     }
   ];
 
@@ -152,6 +195,13 @@ export default function LearningPanel() {
 
   const totalProgress = Math.round(
     courses.reduce((sum, course) => sum + course.progress, 0) / courses.length
+  );
+
+  // Filter resources based on search query
+  const filteredResources = resources.filter(resource =>
+    resource.title.toLowerCase().includes(resourceSearchQuery.toLowerCase()) ||
+    resource.description.toLowerCase().includes(resourceSearchQuery.toLowerCase()) ||
+    resource.type.toLowerCase().includes(resourceSearchQuery.toLowerCase())
   );
 
   return (
@@ -234,7 +284,7 @@ export default function LearningPanel() {
 
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-slate-800">
+            <TabsList className="grid w-full grid-cols-4 bg-slate-800">
               <TabsTrigger value="courses" className="data-[state=active]:bg-slate-700">
                 <BookOpen className="h-4 w-4 mr-2" />
                 Courses
@@ -242,6 +292,10 @@ export default function LearningPanel() {
               <TabsTrigger value="resources" className="data-[state=active]:bg-slate-700">
                 <FileText className="h-4 w-4 mr-2" />
                 Resources
+              </TabsTrigger>
+              <TabsTrigger value="glossary" className="data-[state=active]:bg-slate-700">
+                <Book className="h-4 w-4 mr-2" />
+                Glossary
               </TabsTrigger>
               <TabsTrigger value="community" className="data-[state=active]:bg-slate-700">
                 <Users className="h-4 w-4 mr-2" />
@@ -307,8 +361,24 @@ export default function LearningPanel() {
             </TabsContent>
 
             <TabsContent value="resources" className="space-y-6">
+              {/* Search Bar */}
+              <Card className="bg-slate-800 border-slate-700">
+                <CardContent className="p-6">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search resources by title, description, or type..."
+                      value={resourceSearchQuery}
+                      onChange={(e) => setResourceSearchQuery(e.target.value)}
+                      className="pl-10 bg-slate-700 border-slate-600 text-slate-200"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Resources Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {resources.map((resource, index) => (
+                {filteredResources.map((resource, index) => (
                   <Card key={index} className="bg-slate-800 border-slate-700">
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
@@ -323,9 +393,20 @@ export default function LearningPanel() {
                             </Badge>
                           </div>
                           <p className="text-sm text-slate-400 mb-3">{resource.description}</p>
-                          <Button variant="outline" size="sm">
-                            <Download className="h-3 w-3 mr-1" />
-                            Download
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            asChild
+                          >
+                            <a 
+                              href={resource.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center"
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              View Documentation
+                            </a>
                           </Button>
                         </div>
                       </div>
@@ -333,6 +414,20 @@ export default function LearningPanel() {
                   </Card>
                 ))}
               </div>
+
+              {filteredResources.length === 0 && (
+                <Card className="bg-slate-800 border-slate-700">
+                  <CardContent className="p-8 text-center">
+                    <Search className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-slate-400 mb-2">No resources found</h3>
+                    <p className="text-slate-500">Try adjusting your search terms</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="glossary" className="space-y-6">
+              <GlossaryTab />
             </TabsContent>
 
             <TabsContent value="community" className="space-y-6">

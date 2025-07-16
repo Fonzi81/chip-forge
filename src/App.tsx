@@ -26,6 +26,31 @@ import HDLReflexionAgent from "./pages/HDLReflexionAgent";
 import HDLTest from "./pages/HDLTest";
 import NotFound from "./pages/NotFound";
 import Chip3DViewer from "./components/chipforge/Chip3DViewer";
+import { Input } from "@/components/ui/input";
+import { 
+  BookOpen, 
+  Play, 
+  Code, 
+  Layout, 
+  Download, 
+  Brain, 
+  GraduationCap,
+  Clock,
+  CheckCircle,
+  ArrowRight,
+  Sparkles,
+  FileText,
+  Video,
+  Target,
+  Users,
+  Award,
+  Search,
+  ExternalLink,
+  Book,
+  Globe
+} from "lucide-react";
+import TopNav from "../components/chipforge/TopNav";
+import GlossaryTab from "../components/learning/GlossaryTab";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +61,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/landing" element={<Index />} />
           <Route path="/new-project" element={<NewProject />} />

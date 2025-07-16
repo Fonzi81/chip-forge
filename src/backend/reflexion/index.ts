@@ -1,6 +1,8 @@
 // Reflexion loop engine for automated corrections
 // This module provides AI-powered feedback and correction capabilities
 
+export { runReflexionIteration } from './reflexionLoop';
+
 export interface ReflexionContext {
   code: string;
   errors: string[];
