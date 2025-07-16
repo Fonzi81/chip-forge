@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { reflexionAI } from '@/services/reflexionAI';
 import { useSimulation } from '@/hooks/useSimulation';
+import { runReflexionIteration } from '@/backend/reflexion';
 
 export interface ReflexionIteration {
   id: string;
@@ -67,15 +68,36 @@ export const useReflexion = () => {
   ): Promise<ReflexionIteration> => {
     const iterationId = `iter_${iteration}_${Date.now()}`;
     
-    // Generate code
+    // Generate code using the new reflexion loop
     updateState({ currentStage: 'generating' });
-    const generatedCode = await reflexionAI.generateCode(
-      description,
-      previousCode,
-      reviewerFeedback
-    );
+    let generatedCode: string;
+    
+    if (iteration === 1) {
+      // First iteration - generate initial code
+      generatedCode = await reflexionAI.generateCode(
+        description,
+        previousCode,
+        reviewerFeedback
+      );
+    } else {
+      // Subsequent iterations - use reflexion loop for improvement
+      const feedback = reviewerFeedback || 'No previous feedback available';
+      const advice = await reflexionAI.reviewCode(
+        previousCode || '',
+        ['Previous iteration failed'],
+        'Simulation failed',
+        description
+      );
+      
+      generatedCode = await runReflexionIteration(
+        description,
+        previousCode || '',
+        feedback,
+        advice
+      );
+    }
 
-    // Test the code (mock for now since simulate returns void)
+    // Test the code
     updateState({ currentStage: 'testing' });
     
     // Mock simulation delay

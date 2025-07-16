@@ -19,6 +19,9 @@ A comprehensive, AI-driven platform for digital circuit design, simulation, and 
 - **Performance Metrics**: Frequency, power, and area analysis
 - **Pass/Fail Validation**: Automated verification with detailed feedback
 - **Export Capabilities**: Waveform data export for external analysis
+- **AI-Powered Iterative Improvement**: One-click code enhancement with reflexion loops
+- **Reflexion Count Tracking**: Visual monitoring of AI improvement iterations
+- **Automatic Error Analysis**: AI-generated improvement suggestions for failed tests
 
 ### ⚡ Advanced Synthesis Engine
 - **Logic Synthesis**: Transform HDL to optimized gate-level netlists
@@ -31,9 +34,9 @@ A comprehensive, AI-driven platform for digital circuit design, simulation, and 
 - **Design Input**: Natural language descriptions or structured I/O configuration
 - **AI Generation**: LLM-powered Verilog code generation
 - **Simulation**: Automatic test bench execution and validation
+- **AI Reflexion**: Automatic feedback and one-click code improvement when tests fail
+- **Iterative Enhancement**: Track AI improvement iterations and apply multiple refinements
 - **Synthesis**: Logic optimization and gate-level netlist generation
-- **Reflexion**: AI feedback for failed tests with improvement suggestions
-- **Iteration**: Regenerate with enhanced prompts based on feedback
 - **Export**: Professional file management and sharing
 
 ### 📊 Project Management
@@ -147,6 +150,20 @@ npm run preview
 - **Performance Analysis**: Complexity metrics and performance warnings
 - **Syntax Validation**: Comprehensive Verilog syntax checking
 - **Semantic Analysis**: Logic and design rule validation
+
+### 🔄 AI Reflexion & Iterative Improvement
+
+#### Reflexion Count Tracking
+- **Visual Indicators**: Badge showing "X AI Iterations" in simulation interface
+- **Iteration Monitoring**: Track how many times AI has improved the code
+- **Progress Tracking**: Monitor iterative improvement process
+- **Quality Assurance**: Ensure code quality through multiple refinement cycles
+
+#### One-Click Improvement
+- **Automatic Analysis**: AI analyzes failed simulations and generates improvement advice
+- **Instant Application**: Click "Apply Advice & Regenerate HDL" to improve code immediately
+- **Seamless Integration**: Improved code automatically replaces current design
+- **Persistent Storage**: Enhanced designs saved to localStorage for future use
 
 #### Safety Features
 - **Input Sanitization**: Protection against malicious inputs
@@ -266,6 +283,317 @@ src/
 - **Code Review**: Automated analysis and suggestions
 - **Best Practices**: AI-guided design recommendations
 - **Error Resolution**: Intelligent troubleshooting
+
+## 📖 Detailed Feature Guide
+
+### 🏠 Dashboard (`/dashboard`)
+**Purpose**: Central hub for project management and quick access to all tools.
+
+**Key Features**:
+- **Project Overview**: View recent designs, total projects, and last updated timestamps
+- **Quick Actions**: Direct access to create new HDL modules, open workspace, run simulation, synthesis, place & route, and layout viewers
+- **Tool Status**: Real-time status indicators for all major tools (Ready, Beta, Available)
+- **Statistics**: Track total designs, modules, and project metrics
+- **Navigation**: Easy access to landing page and settings
+
+**How to Use**:
+1. Start here to get an overview of your projects
+2. Use quick action buttons to jump directly to specific tools
+3. Check tool status before starting complex workflows
+4. Access learning resources and settings from the header
+
+### 🤖 HDL Test (`/hdl-test`)
+**Purpose**: AI-powered HDL code generation from natural language descriptions.
+
+**Key Features**:
+- **Natural Language Input**: Describe circuits in plain English
+- **AI Code Generation**: Automatic Verilog code synthesis
+- **Enhanced Safe Generation**: Multi-level validation with security checks
+- **Pattern Recognition**: Detects counters, FSMs, ALUs, memory, and multiplexers
+- **Constraint Support**: Timing, area, and IO constraint handling
+- **Module Extraction**: Intelligent naming and structure detection
+- **Validation Levels**: Basic, strict, and comprehensive validation
+
+**How to Use**:
+1. Enter a natural language description (e.g., "8-bit synchronous counter with reset")
+2. Optionally add constraints (e.g., "timing: 100MHz, area: minimize")
+3. Click "Generate HDL" to create Verilog code
+4. Review validation results and complexity metrics
+5. Save, export, or continue to simulation
+
+**Example Input**:
+```
+Description: "4-bit up/down counter with synchronous reset and enable"
+Constraints: "timing: 50MHz, area: optimize for minimum gates"
+```
+
+### 🧪 ChipForge Simulation (`/chipforge-simulation`)
+**Purpose**: Professional simulation and testing of HDL designs with AI-powered iterative improvement.
+
+**Key Features**:
+- **Automatic Test Bench**: Generates comprehensive test vectors
+- **Waveform Visualization**: Real-time signal analysis with timing diagrams
+- **Performance Metrics**: Frequency, power, and area analysis
+- **Error Handling**: Robust error boundaries and user-friendly error messages
+- **Export Capabilities**: Waveform data export in JSON format
+- **AI Reflexion Integration**: Automatic feedback and one-click code improvement
+- **Reflexion Count Tracking**: Visual indicator of AI improvement iterations
+- **Iterative Enhancement**: Apply AI advice to automatically regenerate improved HDL code
+
+**How to Use**:
+1. Load a design (automatically loads the most recent design)
+2. Click "Run Simulation" to execute test bench
+3. View comprehensive results including:
+   - **Simulation Status**: Real-time status with visual indicators
+   - **Performance Metrics**: Signal count, simulation time, frequency estimates
+   - **Test Results**: Pass/fail status with detailed feedback
+   - **Error Analysis**: Specific error messages and warnings
+   - **AI Advice**: Automatic improvement suggestions for failed tests
+4. **Apply AI Improvements**: Click "Apply Advice & Regenerate HDL" to automatically improve code
+5. **Track Iterations**: Monitor reflexion count badge showing AI improvement iterations
+6. Re-simulate to test improved code
+
+**What You'll See**:
+- **Status Indicators**: Color-coded icons for different simulation states (idle, running, passed, failed)
+- **Progress Tracking**: Visual progress bar during simulation
+- **Reflexion Count Badge**: Shows "X AI Iterations" after applying improvements
+- **Comprehensive Results**: Detailed simulation feedback, errors, and warnings
+- **AI Advice Panel**: Contextual improvement suggestions when tests fail
+- **Code Viewer**: Current HDL code display for reference
+- **One-Click Improvement**: "Apply Advice & Regenerate HDL" button for automatic code enhancement
+
+**AI Integration Workflow**:
+1. **Simulation Fails** → AI automatically analyzes code and generates improvement advice
+2. **Apply AI Fix** → Click button to run reflexion iteration and improve code
+3. **Code Updates** → Improved HDL code replaces current design
+4. **Re-simulate** → Test the enhanced code immediately
+5. **Iterate** → Repeat process until simulation passes or desired quality achieved
+
+### ⚡ Synthesis (`/synthesis`)
+**Purpose**: Transform HDL code into optimized gate-level netlists with comprehensive analysis.
+
+**Key Features**:
+- **Logic Synthesis**: HDL to gate-level netlist conversion
+- **Timing Analysis**: Setup/hold violations and critical path analysis
+- **Area Analysis**: Silicon area estimation and utilization metrics
+- **Power Analysis**: Dynamic, static, and switching power breakdown
+- **Technology Mapping**: Library-specific gate optimization
+- **Constraint Optimization**: Timing and area constraint handling
+
+**How to Use**:
+1. Load HDL code (automatically from recent designs)
+2. Click "Run Synthesis" to start the process
+3. View comprehensive reports including:
+   - Gate count and area utilization
+   - Timing violations and critical paths
+   - Power consumption breakdown
+   - Optimization recommendations
+4. Export netlists and reports
+
+### 🎯 Place & Route (`/place-and-route`)
+**Purpose**: Physical design automation for chip layout and routing.
+
+**Key Features**:
+- **Physical Placement**: Automatic component placement on silicon
+- **Routing**: Signal routing between components
+- **Timing Optimization**: Physical timing analysis and optimization
+- **Area Optimization**: Efficient space utilization
+- **Layout Integration**: 2D layout viewer integration
+- **Constraint Handling**: Physical design constraints
+
+**How to Use**:
+1. Load synthesized netlist
+2. Configure placement and routing parameters
+3. Run place and route process
+4. View results in integrated 2D layout viewer
+5. Analyze timing and area metrics
+
+### 🏗️ Layout Viewer (`/layout-viewer`)
+**Purpose**: Interactive 2D visualization of chip layouts with detailed analysis.
+
+**Key Features**:
+- **Interactive Canvas**: Zoom, pan, and explore chip layouts
+- **Layer Control**: Toggle visibility of different fabrication layers
+- **Cell Information**: Detailed information about placed cells
+- **Signal Routing**: Visual representation of signal paths
+- **Minimap**: Overview navigation for large designs
+- **Export Capabilities**: Layout data export
+
+**How to Use**:
+1. Load a layout (from place and route or import)
+2. Use mouse wheel to zoom in/out
+3. Click and drag to pan around the layout
+4. Toggle layers in the sidebar to show/hide different fabrication layers
+5. Click on cells to see detailed information
+6. Use the minimap for quick navigation
+
+### 🧠 HDL Reflexion Agent (`/hdl-reflexion-agent`)
+**Purpose**: AI-powered iterative HDL improvement with feedback loops.
+
+**Key Features**:
+- **Iterative Improvement**: AI feedback and code regeneration
+- **Multi-panel Interface**: Input, process, and results panels
+- **Real-time Progress**: Live iteration tracking and status updates
+- **Comprehensive Metrics**: Success rates, token usage, and timing
+- **Error Recovery**: Automatic retry with different approaches
+
+**How to Use**:
+1. **Input Configuration** (Left Panel):
+   - Enter module description
+   - Optionally provide testbench
+   - Click "Start Reflexion"
+2. **Reflexion Process** (Center Panel):
+   - Watch real-time iteration progress
+   - See current stage (generating, testing, reviewing)
+   - Monitor iteration count (1-5)
+3. **Results & Metrics** (Right Panel):
+   - View final generated code
+   - Analyze success metrics
+   - Review iteration history
+
+**Process Flow**:
+1. **Generation**: AI creates initial HDL code
+2. **Testing**: Code is simulated and validated
+3. **Review**: If tests fail, AI analyzes and provides feedback
+4. **Improvement**: Code is regenerated with improvements
+5. **Repeat**: Process continues until success or max iterations
+
+### 🎨 3D Chip Viewer (`/chip3d-viewer`)
+**Purpose**: Three-dimensional visualization of chip layouts and structures.
+
+**Key Features**:
+- **3D Rendering**: Interactive 3D chip visualization
+- **Layer Stacking**: Visual representation of fabrication layers
+- **Rotation & Zoom**: Full 3D navigation controls
+- **Cross-section Views**: Internal structure analysis
+- **Material Properties**: Different materials and colors
+- **Export Options**: 3D model export capabilities
+
+**How to Use**:
+1. Load a 3D chip model
+2. Use mouse to rotate the view
+3. Scroll to zoom in/out
+4. Use controls to toggle different layers
+5. View cross-sections for internal analysis
+
+### 📚 Learning Panel (`/learning-panel`)
+**Purpose**: Comprehensive learning resources and AI-powered assistance.
+
+**Key Features**:
+- **Structured Courses**: Step-by-step chip design tutorials
+- **Interactive Lessons**: Hands-on exercises with real examples
+- **AI Assistant**: Contextual help and guidance
+- **Progress Tracking**: Monitor learning achievements
+- **Resource Library**: Documentation, guides, and references
+- **Community Features**: Discussion forums and collaboration
+
+**How to Use**:
+1. **Courses Tab**: Follow structured learning paths
+2. **AI Assistant Tab**: Get contextual help and answers
+3. **Resources Tab**: Access documentation and guides
+4. **Glossary Tab**: Look up technical terms and concepts
+
+### 🏭 Workspace (`/workspace`)
+**Purpose**: Complete integrated development environment for chip design.
+
+**Key Features**:
+- **Multi-tool Integration**: All tools in one interface
+- **Real-time Collaboration**: Multi-user editing capabilities
+- **Project Management**: Complete project lifecycle management
+- **Version Control**: Design version tracking and history
+- **Export Suite**: Comprehensive export options
+
+**How to Use**:
+1. Create or load a project
+2. Use integrated tools for the complete design flow
+3. Collaborate with team members in real-time
+4. Track changes and maintain version history
+5. Export final designs and documentation
+
+### 📊 Usage Dashboard (`/usage-dashboard`)
+**Purpose**: Analytics and metrics tracking for design projects.
+
+**Key Features**:
+- **Design Analytics**: Success rates, complexity metrics
+- **Performance Tracking**: Timing, power, and area trends
+- **User Statistics**: Feature usage and learning progress
+- **Collaboration Metrics**: Team usage and sharing patterns
+- **Export Analytics**: File format and sharing preferences
+
+**How to Use**:
+1. View comprehensive project statistics
+2. Analyze design performance trends
+3. Track learning and collaboration metrics
+4. Monitor tool usage patterns
+5. Export analytics reports
+
+### 🔧 Constraint Editor (`/constraints`)
+**Purpose**: Define and manage design constraints for timing, area, and power.
+
+**Key Features**:
+- **Timing Constraints**: Clock frequencies, setup/hold times
+- **Area Constraints**: Maximum area utilization
+- **Power Constraints**: Power budgets and limits
+- **IO Constraints**: Pin assignments and requirements
+- **Constraint Validation**: Automatic constraint checking
+
+**How to Use**:
+1. Define timing requirements (clock frequencies, delays)
+2. Set area and power budgets
+3. Configure IO pin assignments
+4. Validate constraints against design
+5. Apply constraints to synthesis and place & route
+
+### 📁 Templates Library (`/templates`)
+**Purpose**: Pre-built design templates and examples for common circuits.
+
+**Key Features**:
+- **Circuit Templates**: Common digital circuit designs
+- **Parameterized Templates**: Configurable design templates
+- **Example Projects**: Complete project examples
+- **Best Practices**: Industry-standard design patterns
+- **Quick Start**: Rapid prototyping with templates
+
+**How to Use**:
+1. Browse available circuit templates
+2. Select and customize template parameters
+3. Generate complete designs from templates
+4. Use as starting points for custom designs
+5. Learn from example implementations
+
+### 📤 Export (`/export`)
+**Purpose**: Comprehensive export and sharing capabilities for designs.
+
+**Key Features**:
+- **Multiple Formats**: Verilog, VHDL, SystemVerilog, GDSII
+- **Documentation Export**: PDF reports, datasheets
+- **Simulation Data**: Waveform exports, test benches
+- **Layout Data**: GDSII, LEF/DEF files
+- **Project Archives**: Complete project packages
+
+**How to Use**:
+1. Select design to export
+2. Choose export format and options
+3. Configure export settings
+4. Generate export files
+5. Download or share exported data
+
+### 🔍 Audit Trail (`/audit-trail`)
+**Purpose**: Complete design history and change tracking.
+
+**Key Features**:
+- **Version History**: Complete design evolution tracking
+- **Change Logging**: Detailed change records
+- **Collaboration History**: Team member contributions
+- **Approval Workflows**: Design review and approval tracking
+- **Compliance Reporting**: Regulatory compliance documentation
+
+**How to Use**:
+1. View complete design history
+2. Track changes and modifications
+3. Review collaboration contributions
+4. Generate compliance reports
+5. Export audit documentation
 
 ## 🔗 Integration
 

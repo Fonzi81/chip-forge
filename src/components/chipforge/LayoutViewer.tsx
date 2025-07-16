@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TopNav from "./TopNav";
 import { 
   ZoomIn, 
   ZoomOut, 
@@ -408,8 +409,10 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
-      <div className="container mx-auto p-6 space-y-6">
+    <>
+      <TopNav />
+      <div className="min-h-screen bg-slate-900 text-slate-100">
+        <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -710,5 +713,6 @@ export default function LayoutViewer({ layoutString }: LayoutViewerProps) {
         </Tabs>
       </div>
     </div>
+    </>
   );
 } 
