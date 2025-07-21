@@ -29,6 +29,7 @@ import { synthesizeHDL } from '../backend/synth';
 import TopNav from "../components/chipforge/TopNav";
 import WorkflowNav from "../components/chipforge/WorkflowNav";
 import { useWorkflowStore } from "../state/workflowState";
+import { useHDLDesignStore } from '../state/hdlDesignStore';
 
 interface SynthesisResult {
   netlist: string;
@@ -77,6 +78,7 @@ interface PowerAnalysis {
 
 export default function Synthesis() {
   const { markComplete, setStage } = useWorkflowStore();
+  const { design, loadFromLocalStorage } = useHDLDesignStore();
   const [hdl, setHdl] = useState('');
   const [synthesisResult, setSynthesisResult] = useState<SynthesisResult | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'running' | 'done' | 'error'>('idle');
@@ -91,8 +93,14 @@ export default function Synthesis() {
 
   useEffect(() => {
     setStage('Synthesis');
-    loadActiveDesign();
-  }, [setStage]);
+    loadFromLocalStorage();
+  }, [setStage, loadFromLocalStorage]);
+
+  useEffect(() => {
+    if (design?.verilog) {
+      setHdl(design.verilog);
+    }
+  }, [design]);
 
   const loadActiveDesign = () => {
     setStatus('loading');

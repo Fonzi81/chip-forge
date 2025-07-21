@@ -33,6 +33,7 @@ import { saveHDLDesign, HDLDesign } from '../utils/localStorage';
 import TopNav from "../components/chipforge/TopNav";
 import WorkflowNav from "../components/chipforge/WorkflowNav";
 import { useWorkflowStore } from "../state/workflowState";
+import { useHDLDesignStore } from '../state/hdlDesignStore';
 
 interface TestResult {
   passed: boolean;
@@ -50,7 +51,13 @@ interface ReflexionAdvice {
 }
 
 export default function ChipForgeWorkspace() {
-  const { markComplete } = useWorkflowStore();
+  const { markComplete, setStage, getNextStage } = useWorkflowStore();
+  const { setDesign, loadFromLocalStorage } = useHDLDesignStore();
+
+  useEffect(() => {
+    setStage('HDL');
+    loadFromLocalStorage();
+  }, [setStage, loadFromLocalStorage]);
   const [moduleName, setModuleName] = useState('');
   const [description, setDescription] = useState('');
   const [io, setIo] = useState([{ name: '', direction: 'input' as 'input' | 'output', width: 1 }]);
@@ -86,6 +93,7 @@ export default function ChipForgeWorkspace() {
       // Generate Verilog
       const code = generateVerilog({ moduleName, description, io });
       setVerilog(code);
+      setDesign({ moduleName, description, io, verilog: code }); // <-- Save to store
       
       // Run test bench
       setStatus('testing');

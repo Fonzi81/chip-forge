@@ -78,10 +78,10 @@ export default function Dashboard() {
       color: "from-indigo-500 to-purple-500"
     },
     {
-      title: "Layout Viewer",
-      description: "Interactive 2D chip layout visualization",
+      title: "Layout Designer",
+      description: "Professional layout design and verification",
       icon: <Layout className="h-6 w-6" />,
-      link: "/layout-viewer",
+      link: "/layout-designer",
       color: "from-teal-500 to-cyan-500"
     },
     {
@@ -123,10 +123,10 @@ export default function Dashboard() {
       status: "Ready"
     },
     {
-      title: "Layout Viewer",
-      description: "Interactive 2D layout visualization",
+      title: "Layout Designer",
+      description: "Professional layout design and verification",
       icon: <Layout className="h-5 w-5" />,
-      link: "/layout-viewer",
+      link: "/layout-designer",
       status: "Ready"
     },
     {
@@ -367,12 +367,12 @@ export default function Dashboard() {
                     Follow these steps to create, simulate, synthesize, and visualize your chip design:
                   </p>
                   <ul className="space-y-2 mb-4">
-                    <li><Link to="/workspace" className="text-blue-400 hover:text-blue-300 transition-colors">1. HDL Editor</Link></li>
-                    <li><Link to="/chipforge-simulation" className="text-blue-400 hover:text-blue-300 transition-colors">2. Simulate</Link></li>
+                    <li><Link to="/workspace" className="text-blue-400 hover:text-blue-300 transition-colors">1. HDL Design</Link></li>
+                    <li><Link to="/chipforge-simulation" className="text-blue-400 hover:text-blue-300 transition-colors">2. Simulation</Link></li>
                     <li><Link to="/synthesis" className="text-blue-400 hover:text-blue-300 transition-colors">3. Synthesis</Link></li>
                     <li><Link to="/place-and-route" className="text-blue-400 hover:text-blue-300 transition-colors">4. Place & Route</Link></li>
-                    <li><Link to="/layout-viewer" className="text-blue-400 hover:text-blue-300 transition-colors">5. Layout Viewer</Link></li>
-                    <li><Link to="/testbench" className="text-blue-400 hover:text-blue-300 transition-colors">🧪 Testbench Generator</Link></li>
+                    <li><Link to="/layout-designer" className="text-blue-400 hover:text-blue-300 transition-colors">5. Layout Designer</Link></li>
+                    <li><Link to="/export" className="text-blue-400 hover:text-blue-300 transition-colors">6. Export & Fabrication</Link></li>
                   </ul>
                   <div className="flex gap-2">
                     <Button asChild>
