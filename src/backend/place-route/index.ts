@@ -84,10 +84,25 @@ export interface DRCViolation {
   description: string;
 }
 
+export interface Placer {
+  place(cells: string[], constraints: PlacementConstraints): Promise<CellPlacement[]>;
+  optimize(placements: CellPlacement[], constraints: PlacementConstraints): Promise<CellPlacement[]>;
+}
+
+export interface Router {
+  route(nets: string[], constraints: RoutingConstraints): Promise<NetRouting[]>;
+  optimize(routes: NetRouting[], constraints: RoutingConstraints): Promise<NetRouting[]>;
+}
+
+export interface DRCChecker {
+  check(layout: { cells: CellPlacement[]; nets: NetRouting[] }): Promise<DRCViolation[]>;
+  lvs(netlist: string, layout: { cells: CellPlacement[]; nets: NetRouting[] }): Promise<boolean>;
+}
+
 export class PlaceRouter {
-  private placer: any;
-  private router: any;
-  private drcChecker: any;
+  private placer: Placer | null;
+  private router: Router | null;
+  private drcChecker: DRCChecker | null;
 
   constructor() {
     // Initialize placement and routing engines
@@ -164,7 +179,7 @@ export class PlaceRouter {
     return [];
   }
 
-  async checkDRC(layout: any): Promise<{
+  async checkDRC(layout: { cells: CellPlacement[]; nets: NetRouting[] }): Promise<{
     violations: DRCViolation[];
     lvs: boolean;
   }> {

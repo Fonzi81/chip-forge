@@ -27,6 +27,9 @@ import {
 import { loadDesign, saveDesign } from '../utils/localStorage';
 import { synthesizeHDL } from '../backend/synth';
 import TopNav from "../components/chipforge/TopNav";
+import WorkflowNav from "../components/chipforge/WorkflowNav";
+import { useWorkflowStore } from "../state/workflowState";
+import { useHDLDesignStore } from '../state/hdlDesignStore';
 
 interface SynthesisResult {
   netlist: string;
@@ -74,6 +77,8 @@ interface PowerAnalysis {
 }
 
 export default function Synthesis() {
+  const { markComplete, setStage } = useWorkflowStore();
+  const { design, loadFromLocalStorage } = useHDLDesignStore();
   const [hdl, setHdl] = useState('');
   const [synthesisResult, setSynthesisResult] = useState<SynthesisResult | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'running' | 'done' | 'error'>('idle');
@@ -87,8 +92,15 @@ export default function Synthesis() {
   });
 
   useEffect(() => {
-    loadActiveDesign();
-  }, []);
+    setStage('Synthesis');
+    loadFromLocalStorage();
+  }, [setStage, loadFromLocalStorage]);
+
+  useEffect(() => {
+    if (design?.verilog) {
+      setHdl(design.verilog);
+    }
+  }, [design]);
 
   const loadActiveDesign = () => {
     setStatus('loading');
@@ -132,6 +144,7 @@ export default function Synthesis() {
       setSynthesisResult(fullResult);
       saveDesign('netlist-active', backendResult.netlist);
       setStatus('done');
+      markComplete('Synthesis');
     } catch (error) {
       console.error('Synthesis failed:', error);
       setStatus('error');
@@ -287,6 +300,7 @@ ${synthesisResult.warnings.map(w => `- ${w}`).join('\n')}
   return (
     <>
       <TopNav />
+      <WorkflowNav />
       <div className="min-h-screen bg-slate-900 text-slate-100">
         <div className="container mx-auto p-6 space-y-6">
           {/* Header */}

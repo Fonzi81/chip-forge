@@ -179,7 +179,7 @@ function generatePath(source: PlacedComponent, dest: PlacedComponent, options: P
 }
 
 function generateLayout(placement: PlacedComponent[], routing: RoutedNet[], options: PlaceRouteOptions): string {
-  let layout = `// ChipForge Place & Route Layout
+  const layout = `// ChipForge Place & Route Layout
 // Generated with ${options.optimizationMode || 'balanced'} optimization
 // Target Frequency: ${options.targetFrequency || 100} MHz
 // Routing Layers: ${options.routingLayers || 6}

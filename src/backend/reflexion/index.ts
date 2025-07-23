@@ -52,8 +52,14 @@ export interface ReflexionResult {
   executionTime: number;
 }
 
+export interface ReflexionAIModel {
+  analyze(context: ReflexionContext): Promise<ReflexionSuggestion[]>;
+  correct(code: string, suggestions: ReflexionSuggestion[]): Promise<string>;
+  learn(feedback: { suggestion: ReflexionSuggestion; applied: boolean; improvement: number }): Promise<void>;
+}
+
 export class ReflexionEngine {
-  private aiModel: any;
+  private aiModel: ReflexionAIModel | null;
   private iterationLimit: number;
   private improvementThreshold: number;
 

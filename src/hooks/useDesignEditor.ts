@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DesignFile, CompileStatus, DesignMetrics } from "@/components/design-editor/types";
+import { DesignFile, CompileStatus, DesignMetrics, AISuggestion } from "@/components/design-editor/types";
 import { getDefaultFiles, getDefaultAISuggestions } from "@/utils/designEditorDefaults";
 
 export const useDesignEditor = (initialHdlCode?: string) => {
@@ -62,7 +62,7 @@ export const useDesignEditor = (initialHdlCode?: string) => {
     const newFile: DesignFile = {
       id: Date.now().toString(),
       name,
-      type: type as any,
+      type: type as 'verilog' | 'testbench' | 'constraint',
       hasErrors: false,
       path: `src/${name}`,
       content: type === 'verilog' ? '// New Verilog module\nmodule new_module;\n\nendmodule' : ''
@@ -77,7 +77,7 @@ export const useDesignEditor = (initialHdlCode?: string) => {
     }
   };
 
-  const handleApplySuggestion = (suggestion: any) => {
+  const handleApplySuggestion = (suggestion: AISuggestion) => {
     console.log("Applying suggestion:", suggestion);
   };
 

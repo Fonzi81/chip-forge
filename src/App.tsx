@@ -20,37 +20,13 @@ import LearningPanel from "./pages/LearningPanel";
 import ChipForgeSimulation from "./pages/ChipForgeSimulation";
 import Synthesis from "./pages/Synthesis";
 import PlaceAndRoute from "./pages/PlaceAndRoute";
-import LayoutViewer from "./components/chipforge/LayoutViewer";
+import LayoutDesigner from "./pages/LayoutDesigner";
 import TestbenchEditor from "./components/chipforge/TestbenchEditor";
 import HDLReflexionAgent from "./pages/HDLReflexionAgent";
 import HDLTest from "./pages/HDLTest";
 import NotFound from "./pages/NotFound";
 import Chip3DViewer from "./components/chipforge/Chip3DViewer";
-import { Input } from "@/components/ui/input";
-import { 
-  BookOpen, 
-  Play, 
-  Code, 
-  Layout, 
-  Download, 
-  Brain, 
-  GraduationCap,
-  Clock,
-  CheckCircle,
-  ArrowRight,
-  Sparkles,
-  FileText,
-  Video,
-  Target,
-  Users,
-  Award,
-  Search,
-  ExternalLink,
-  Book,
-  Globe
-} from "lucide-react";
-import TopNav from "../components/chipforge/TopNav";
-import GlossaryTab from "../components/learning/GlossaryTab";
+
 
 const queryClient = new QueryClient();
 
@@ -69,7 +45,6 @@ const App = () => (
           <Route path="/workspace" element={<ChipForgeWorkspace />} />
           <Route path="/audit-trail" element={<AuditTrail />} />
           <Route path="/templates" element={<TemplatesLibrary />} />
-          <Route path="/export" element={<Export />} />
           <Route path="/constraints" element={<ConstraintEditor />} />
           <Route path="/usage-dashboard" element={<UsageDashboard />} />
           <Route path="/collaborator-mode" element={<CollaboratorMode />} />
@@ -77,7 +52,9 @@ const App = () => (
           <Route path="/chipforge-simulation" element={<ChipForgeSimulation />} />
           <Route path="/synthesis" element={<Synthesis />} />
           <Route path="/place-and-route" element={<PlaceAndRoute />} />
-          <Route path="/layout-viewer" element={<LayoutViewer />} />
+          <Route path="/layout-designer" element={<LayoutDesigner />} />
+          <Route path="/export" element={<Export />} />
+          {/* Extra/utility pages */}
           <Route path="/testbench" element={<TestbenchEditor />} />
           <Route path="/hdl-reflexion-agent" element={<HDLReflexionAgent />} />
           <Route path="/hdl-test" element={<HDLTest />} />

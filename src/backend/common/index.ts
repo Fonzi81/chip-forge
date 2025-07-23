@@ -1,12 +1,22 @@
 // Shared data formats and utilities for chip design toolchain
 // This module provides common interfaces, types, and utility functions
 
+import type { 
+  HDLGenerationResult, 
+  SimulationResult, 
+  SynthesisResult, 
+  PlaceRouteResult,
+  LayoutData,
+  Result,
+  Logger
+} from '../../types/backend';
+
 // Abstract Syntax Tree (AST) types
 export interface ASTNode {
   type: string;
   location: SourceLocation;
   children?: ASTNode[];
-  value?: any;
+  value?: string | number | boolean | Record<string, unknown>;
 }
 
 export interface SourceLocation {
@@ -35,7 +45,7 @@ export interface IRSignal {
   name: string;
   type: IRType;
   width: number;
-  initialValue?: any;
+  initialValue?: string | number | boolean;
 }
 
 export interface IRProcess {
@@ -47,7 +57,7 @@ export interface IRProcess {
 export interface IRStatement {
   type: 'assignment' | 'if' | 'case' | 'for' | 'while';
   location: SourceLocation;
-  value?: any;
+  value?: string | number | boolean | Record<string, unknown>;
 }
 
 export interface IRInstance {
@@ -74,14 +84,14 @@ export interface NetlistCell {
   name: string;
   type: string;
   pins: { [pin: string]: string };
-  properties: { [key: string]: any };
+  properties: { [key: string]: string | number | boolean };
 }
 
 export interface NetlistNet {
   name: string;
   driver: string;
   loads: string[];
-  properties: { [key: string]: any };
+  properties: { [key: string]: string | number | boolean };
 }
 
 export interface NetlistPort {
@@ -118,7 +128,7 @@ export class DesignUtils {
     };
   }
 
-  static validateDesign(design: any): {
+  static validateDesign(design: IRModule | Netlist): {
     isValid: boolean;
     errors: string[];
     warnings: string[];
@@ -131,7 +141,7 @@ export class DesignUtils {
     };
   }
 
-  static calculateMetrics(design: any): {
+  static calculateMetrics(design: IRModule | Netlist): {
     area: number;
     power: number;
     timing: number;

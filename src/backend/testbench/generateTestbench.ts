@@ -2,6 +2,8 @@
 // AI-based testbench generation from HDL + user description
 // Enhanced testbench generator with comprehensive features
 
+import type { TestbenchResult as BackendTestbenchResult } from '../../types/backend';
+
 export interface TestbenchConfig {
   moduleName: string;
   clockPeriod: number;
@@ -28,6 +30,17 @@ export interface Assertion {
   condition: string;
   message: string;
   severity: 'info' | 'warning' | 'error';
+}
+
+export interface ModuleInfo {
+  name: string;
+  ports: Array<{
+    name: string;
+    direction: 'input' | 'output' | 'inout';
+    width: number;
+    type: 'reg' | 'wire';
+  }>;
+  moduleType: 'sequential' | 'combinational' | 'generic';
 }
 
 export interface TestbenchResult {
@@ -80,7 +93,7 @@ export async function generateTestbench(
 }
 
 // Parse module information from HDL code
-function parseModuleInfo(hdlCode: string) {
+function parseModuleInfo(hdlCode: string): ModuleInfo {
   const moduleMatch = hdlCode.match(/module\s+(\w+)\s*\(/);
   const name = moduleMatch ? moduleMatch[1] : 'dut';
   
@@ -106,7 +119,7 @@ function parseModuleInfo(hdlCode: string) {
   }
   
   // Determine module type based on content
-  let moduleType = 'generic';
+  let moduleType: 'sequential' | 'combinational' | 'generic' = 'generic';
   if (hdlCode.includes('always @(posedge clk') || hdlCode.includes('always @(negedge clk')) {
     moduleType = 'sequential';
   } else if (hdlCode.includes('always @(*)') || hdlCode.includes('assign')) {
@@ -117,7 +130,7 @@ function parseModuleInfo(hdlCode: string) {
 }
 
 // Generate test vectors based on module type
-function generateTestVectors(moduleInfo: any, description: string): TestVector[] {
+function generateTestVectors(moduleInfo: ModuleInfo, description: string): TestVector[] {
   const { ports, moduleType } = moduleInfo;
   const testVectors: TestVector[] = [];
   
@@ -153,7 +166,7 @@ function generateTestVectors(moduleInfo: any, description: string): TestVector[]
 }
 
 // Generate ALU-specific test vectors
-function generateALUTestVectors(ports: any[]): TestVector[] {
+function generateALUTestVectors(ports: ModuleInfo['ports']): TestVector[] {
   const vectors: TestVector[] = [];
   
   // Find ALU operands and operation
@@ -198,7 +211,7 @@ function generateALUTestVectors(ports: any[]): TestVector[] {
 }
 
 // Generate counter-specific test vectors
-function generateCounterTestVectors(ports: any[]): TestVector[] {
+function generateCounterTestVectors(ports: ModuleInfo['ports']): TestVector[] {
   const vectors: TestVector[] = [];
   
   vectors.push({
@@ -223,7 +236,7 @@ function generateCounterTestVectors(ports: any[]): TestVector[] {
 }
 
 // Generate memory-specific test vectors
-function generateMemoryTestVectors(ports: any[]): TestVector[] {
+function generateMemoryTestVectors(ports: ModuleInfo['ports']): TestVector[] {
   const vectors: TestVector[] = [];
   
   vectors.push({
@@ -243,7 +256,7 @@ function generateMemoryTestVectors(ports: any[]): TestVector[] {
 }
 
 // Generate multiplexer-specific test vectors
-function generateMuxTestVectors(ports: any[]): TestVector[] {
+function generateMuxTestVectors(ports: ModuleInfo['ports']): TestVector[] {
   const vectors: TestVector[] = [];
   
   const selectPort = ports.find(p => p.name === 'select' || p.name.includes('sel'));
@@ -252,7 +265,7 @@ function generateMuxTestVectors(ports: any[]): TestVector[] {
     const numInputs = Math.pow(2, selectWidth);
     
     for (let i = 0; i < numInputs; i++) {
-      const inputs: Record<string, any> = { select: i };
+      const inputs: Record<string, string | number> = { select: i };
       
       // Add data inputs
       for (let j = 0; j < numInputs; j++) {
@@ -272,7 +285,7 @@ function generateMuxTestVectors(ports: any[]): TestVector[] {
 }
 
 // Generate generic test vectors
-function generateGenericTestVectors(ports: any[]): TestVector[] {
+function generateGenericTestVectors(ports: ModuleInfo['ports']): TestVector[] {
   const vectors: TestVector[] = [];
   
   // Generate basic test vectors for all inputs
@@ -290,7 +303,7 @@ function generateGenericTestVectors(ports: any[]): TestVector[] {
 }
 
 // Generate coverage goals
-function generateCoverageGoals(moduleInfo: any): CoverageGoal[] {
+function generateCoverageGoals(moduleInfo: ModuleInfo): CoverageGoal[] {
   const goals: CoverageGoal[] = [
     {
       type: 'line',
@@ -313,7 +326,7 @@ function generateCoverageGoals(moduleInfo: any): CoverageGoal[] {
 }
 
 // Generate assertions
-function generateAssertions(moduleInfo: any): Assertion[] {
+function generateAssertions(moduleInfo: ModuleInfo): Assertion[] {
   const assertions: Assertion[] = [];
   
   // Add basic assertions
@@ -336,7 +349,7 @@ function generateAssertions(moduleInfo: any): Assertion[] {
 
 // Generate the complete testbench code
 function generateTestbenchCode(
-  moduleInfo: any,
+  moduleInfo: ModuleInfo,
   testVectors: TestVector[],
   coverageGoals: CoverageGoal[],
   assertions: Assertion[],

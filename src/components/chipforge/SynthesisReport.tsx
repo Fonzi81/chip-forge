@@ -265,7 +265,7 @@ endmodule`,
 
                   <div className="space-y-2">
                     <Label htmlFor="optimization">Optimization Level</Label>
-                    <Select value={constraints.optimizationLevel} onValueChange={(value: any) => setConstraints(prev => ({ ...prev, optimizationLevel: value }))}>
+                    <Select value={constraints.optimizationLevel} onValueChange={(value: 'area' | 'speed' | 'balanced') => setConstraints(prev => ({ ...prev, optimizationLevel: value }))}>
                       <SelectTrigger className="bg-slate-900 border-slate-600">
                         <SelectValue />
                       </SelectTrigger>

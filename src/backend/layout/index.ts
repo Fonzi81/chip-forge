@@ -21,7 +21,7 @@ export interface GDSIIElement {
   layer: number;
   dataType: number;
   coordinates: Point[];
-  properties?: { [key: string]: any };
+  properties?: Record<string, string | number | boolean>;
 }
 
 export interface GDSIIStructure {
@@ -59,6 +59,26 @@ export interface LayoutResult {
   executionTime: number;
 }
 
+export interface LayoutData {
+  structures: GDSIIStructure[];
+  config: GDSIIConfig;
+  metadata: {
+    version: number;
+    unit: number;
+    precision: number;
+    timestamp: Date;
+  };
+}
+
+export interface GDSIIMetadata {
+  version: number;
+  unit: number;
+  precision: number;
+  timestamp: Date;
+  libraryName: string;
+  cellCount: number;
+}
+
 export interface Point {
   x: number;
   y: number;
@@ -74,7 +94,7 @@ export class GDSIIGenerator {
   }
 
   async generateGDSII(
-    layout: any,
+    layout: LayoutData,
     config: GDSIIConfig
   ): Promise<LayoutResult> {
     // TODO: Implement GDSII generation
@@ -177,16 +197,23 @@ export class GDSIIGenerator {
 
   async importGDSII(data: ArrayBuffer): Promise<{
     structures: GDSIIStructure[];
-    metadata: any;
+    metadata: GDSIIMetadata;
   }> {
     // TODO: Implement GDSII file import
     return {
       structures: [],
-      metadata: {}
+      metadata: {
+        version: 3,
+        unit: 1e-6,
+        precision: 1e-9,
+        timestamp: new Date(),
+        libraryName: 'default',
+        cellCount: 0
+      }
     };
   }
 
-  async validateLayout(layout: any): Promise<{
+  async validateLayout(layout: LayoutData): Promise<{
     isValid: boolean;
     errors: string[];
   }> {

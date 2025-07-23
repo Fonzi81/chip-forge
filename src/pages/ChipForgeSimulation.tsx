@@ -24,6 +24,9 @@ import { getReflexionAdvice } from '../backend/reflexion/reviewer';
 import { runReflexionIteration } from '../backend/reflexion';
 import { HDLDesign } from '../utils/localStorage';
 import TopNav from "../components/chipforge/TopNav";
+import WorkflowNav from "../components/chipforge/WorkflowNav";
+import { useWorkflowStore } from "../state/workflowState";
+import { useHDLDesignStore } from '../state/hdlDesignStore';
 
 // Error Boundary Component
 class SimulationErrorBoundary extends React.Component<
@@ -69,33 +72,43 @@ class SimulationErrorBoundary extends React.Component<
 }
 
 export default function ChipForgeSimulation() {
+  const { markComplete, setStage } = useWorkflowStore();
+  const { design, loadFromLocalStorage } = useHDLDesignStore();
   const [status, setStatus] = useState<'idle' | 'loading' | 'running' | 'failed' | 'passed'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [currentDesign, setCurrentDesign] = useState<HDLDesign | null>(null);
-  const [simulationResult, setSimulationResult] = useState<any>(null);
+  const [simulationResult, setSimulationResult] = useState<{
+    passed: boolean;
+    feedback: string;
+    simulationTime: number;
+    errors?: string[];
+    warnings?: string[];
+  } | null>(null);
   const [advice, setAdvice] = useState<string | null>(null);
   const [isReflexionRunning, setIsReflexionRunning] = useState(false);
   const [reflexionCount, setReflexionCount] = useState(0);
 
   useEffect(() => {
-    setStatus('loading');
-    setError(null);
-    try {
-      const designs = JSON.parse(localStorage.getItem('hdlDesigns') || '[]');
-      if (designs.length > 0) {
-        const latestDesign = designs[designs.length - 1];
-        setCurrentDesign(latestDesign);
-      }
-      setStatus('idle');
-    } catch (err) {
-      console.error('Failed to load design:', err);
-      setError('Failed to load design from storage');
-      setStatus('idle');
-    }
-  }, []);
+    setStage('Simulation');
+    loadFromLocalStorage();
+  }, [setStage, loadFromLocalStorage]);
+
+  if (!design?.verilog) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <AlertCircle className="h-16 w-16 text-red-400 mx-auto" />
+          <h2 className="text-2xl font-bold text-red-400">No HDL Code Found</h2>
+          <p className="text-slate-400 max-w-md">
+            Please complete HDL Design first.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const runSimulation = async () => {
-    if (!currentDesign?.verilog) {
+    if (!design?.verilog) {
       setError('No HDL code available for simulation');
       return;
     }
@@ -105,16 +118,17 @@ export default function ChipForgeSimulation() {
     setAdvice(null);
     
     try {
-      const result = await runTestBench(currentDesign.verilog);
+      const result = await runTestBench(design.verilog);
       setSimulationResult(result);
       
       if (result.passed) {
         setStatus('passed');
+        markComplete('Simulation');
       } else {
         setStatus('failed');
         // Get AI advice for failed simulation
         try {
-          const reflexionAdvice = await getReflexionAdvice(currentDesign.verilog, result.feedback);
+          const reflexionAdvice = await getReflexionAdvice(design.verilog, result.feedback);
           setAdvice(reflexionAdvice.codeReview);
         } catch (adviceError) {
           console.error('Failed to get reflexion advice:', adviceError);
@@ -129,22 +143,22 @@ export default function ChipForgeSimulation() {
   };
 
   const handleReflexionFix = async () => {
-    if (!currentDesign?.verilog || !advice) return;
+    if (!design?.verilog || !advice) return;
     
     setIsReflexionRunning(true);
     setError(null);
     
     try {
       const newCode = await runReflexionIteration(
-        currentDesign.description || 'HDL module',
-        currentDesign.verilog,
+        design.description || 'HDL module',
+        design.verilog,
         simulationResult?.feedback || 'Simulation failed',
         advice
       );
       
       // Update current design
       setCurrentDesign({
-        ...currentDesign,
+        ...design,
         verilog: newCode,
         updatedAt: new Date().toISOString()
       });
@@ -173,6 +187,7 @@ export default function ChipForgeSimulation() {
     <SimulationErrorBoundary>
       <div className="min-h-screen bg-slate-900 text-slate-100">
         <TopNav />
+        <WorkflowNav />
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
@@ -188,9 +203,9 @@ export default function ChipForgeSimulation() {
                 <TrendingUp className="h-3 w-3 mr-1" />
                 Simulation Engine
               </Badge>
-              {currentDesign && (
+              {design && (
                 <Badge variant="secondary">
-                  {currentDesign.name}
+                  {design.name}
                 </Badge>
               )}
               {reflexionCount > 0 && (
@@ -244,7 +259,7 @@ export default function ChipForgeSimulation() {
                 <div className="flex items-center gap-2">
                   <Button
                     onClick={runSimulation}
-                    disabled={!currentDesign?.verilog || status === 'running'}
+                    disabled={!design?.verilog || status === 'running'}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     <Play className="h-4 w-4 mr-2" />
@@ -348,7 +363,7 @@ export default function ChipForgeSimulation() {
           )}
 
           {/* Current HDL Code */}
-          {currentDesign?.verilog && (
+          {design?.verilog && (
             <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -359,7 +374,7 @@ export default function ChipForgeSimulation() {
               <CardContent>
                 <div className="bg-slate-900 rounded p-4 overflow-auto max-h-96">
                   <pre className="text-sm font-mono text-slate-200 whitespace-pre-wrap">
-                    {currentDesign.verilog}
+                    {design.verilog}
                   </pre>
                 </div>
               </CardContent>

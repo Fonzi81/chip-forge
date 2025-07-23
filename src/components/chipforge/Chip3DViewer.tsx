@@ -2,8 +2,32 @@ import React, { useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import type { Chip3DLayout, ChipCell3D, ChipWire3D } from '../../backend/layout/chip3dModel';
 import TopNav from "./TopNav";
+
+interface ChipCell3D {
+  id: string;
+  type: string;
+  x: number;
+  y: number;
+  z: number;
+  width: number;
+  depth: number;
+  height: number;
+  layer: number;
+  color?: string;
+}
+
+interface ChipWire3D {
+  from: [number, number, number];
+  to: [number, number, number];
+  layer: number;
+}
+
+interface Chip3DLayout {
+  cells: ChipCell3D[];
+  wires: ChipWire3D[];
+  layers: string[];
+}
 
 const defaultLayout: Chip3DLayout = {
   cells: [
@@ -21,7 +45,7 @@ type Chip3DViewerProps = {
 };
 
 function CellBlock({ cell, selected, onClick }: { cell: ChipCell3D; selected: boolean; onClick: (cell: ChipCell3D) => void }) {
-  const ref = useRef<any>();
+  const ref = useRef<THREE.Mesh>(null);
   useFrame(() => { if (ref.current) ref.current.rotation.y += 0.001 });
   return (
     <mesh
@@ -49,7 +73,7 @@ function WirePath({ wire }: { wire: ChipWire3D }) {
     const quat = new THREE.Quaternion();
     quat.setFromUnitVectors(up, direction.clone().normalize());
     return quat;
-  }, [x1, y1, z1, x2, y2, z2]);
+  }, [direction]);
   return (
     <mesh position={position.toArray()} quaternion={quaternion}>
       <cylinderGeometry args={[0.05, 0.05, length]} />

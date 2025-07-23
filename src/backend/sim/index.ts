@@ -31,9 +31,34 @@ export interface SimulationResult {
   executionTime: number;
 }
 
+export interface VerilogAST {
+  type: string;
+  name?: string;
+  children?: VerilogAST[];
+  value?: string | number;
+  properties?: Record<string, string | number>;
+}
+
+export interface VerilogParser {
+  parse(code: string): Promise<VerilogAST>;
+  validate(ast: VerilogAST): string[];
+}
+
+export interface VerilogEvaluator {
+  evaluate(ast: VerilogAST, inputs: Record<string, number>): Promise<Record<string, number>>;
+  step(ast: VerilogAST, time: number): Promise<Record<string, number>>;
+}
+
+export interface Port {
+  name: string;
+  direction: 'input' | 'output' | 'inout';
+  width: number;
+  type: 'wire' | 'reg';
+}
+
 export class VerilogSimulator {
-  private parser: any;
-  private evaluator: any;
+  private parser: VerilogParser | null;
+  private evaluator: VerilogEvaluator | null;
 
   constructor() {
     // Initialize Verilog parser and evaluator
@@ -86,7 +111,7 @@ export class VerilogSimulator {
   }
 
   async parseVerilog(code: string): Promise<{
-    ast: any;
+    ast: VerilogAST | null;
     errors: string[];
   }> {
     // TODO: Implement Verilog parsing
@@ -96,7 +121,7 @@ export class VerilogSimulator {
     };
   }
 
-  async generateTestbench(moduleName: string, ports: any[]): Promise<string> {
+  async generateTestbench(moduleName: string, ports: Port[]): Promise<string> {
     // TODO: Implement testbench generation
     return `// Auto-generated testbench for ${moduleName}
 // TODO: Implement testbench generation logic

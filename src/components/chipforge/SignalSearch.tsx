@@ -50,7 +50,8 @@ const SignalSearch = ({
     const groups: { [key: string]: string[] } = {};
     
     signals.forEach(signal => {
-      const parts = signal.split(/[_\[\]\.]/);
+      // eslint-disable-next-line no-useless-escape
+      const parts = signal.split(/[_.\[\]]/); // Only escape [ and ] if needed
       const prefix = parts[0] || 'misc';
       
       if (!groups[prefix]) {

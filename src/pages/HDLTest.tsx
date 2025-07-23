@@ -1,5 +1,6 @@
 import React from 'react';
 import HDLModuleEditor from '../components/chipforge/HDLModuleEditor';
+import TopNav from '../components/chipforge/TopNav';
 import { listHDLDesigns, deleteHDLDesign } from '../utils/localStorage';
 
 export default function HDLTest() {
@@ -11,6 +12,7 @@ export default function HDLTest() {
 
   return (
     <div className="min-h-screen bg-slate-900">
+      <TopNav />
       <div className="container mx-auto p-4">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-slate-100 mb-2">HDL Generator Test</h1>

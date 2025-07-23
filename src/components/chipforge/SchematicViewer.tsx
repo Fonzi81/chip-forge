@@ -32,7 +32,7 @@ interface SchematicNode {
   height: number;
   inputs: string[];
   outputs: string[];
-  properties: { [key: string]: any };
+  properties: Record<string, string | number | boolean>;
 }
 
 interface SchematicConnection {
