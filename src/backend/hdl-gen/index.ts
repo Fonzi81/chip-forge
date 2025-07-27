@@ -3,6 +3,9 @@
 
 import { generateVerilog } from './generateHDL';
 
+export { generateVerilog } from './generateHDL';
+export { checkVerilogSyntax, checkVerilogSyntaxAsync, type SyntaxError, type SyntaxCheckResult } from './syntaxCheck';
+
 export interface HDLGenerationRequest {
   description: string;
   targetLanguage: 'verilog' | 'vhdl' | 'systemverilog';
