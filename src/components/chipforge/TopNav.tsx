@@ -5,6 +5,7 @@ import { WORKFLOW_STAGES } from "../../state/workflowState";
 const extraLinks = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/hdl-reflexion-agent", label: "Reflexion Agent" },
+  { to: "/hdl-generator", label: "HDL Generator" },
   { to: "/chip3d-viewer", label: "3D Chip Viewer" },
   { to: "/learning-panel", label: "Learning" },
 ];
