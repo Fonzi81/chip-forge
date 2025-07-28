@@ -2,8 +2,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import RTLViewer from "@/components/RTLViewer";
 import SimulationPanel from "@/components/SimulationPanel";
-import CodeEditor from "@/components/chipforge/CodeEditor";
-import AIAssistant from "@/components/chipforge/AIAssistant";
 import { 
   FileCode, 
   Play, 
@@ -58,15 +56,9 @@ const DesignEditorTabs = ({
           <div className="h-full flex">
             <div className="flex-1">
               {activeFile ? (
-                <CodeEditor
-                  content={activeFile.content}
-                  language={activeFile.type === 'constraint' ? 'verilog' : activeFile.type === 'testbench' ? 'verilog' : 'verilog'}
-                  onChange={onCodeChange}
-                  errors={activeFile.hasErrors ? [
-                    { line: 5, column: 10, message: "Syntax error: Missing semicolon", severity: "error" }
-                  ] : []}
-                  onSave={onSave}
-                />
+                <div className="h-full flex items-center justify-center text-slate-400">
+                  Select a file to start editing
+                </div>
               ) : (
                 <div className="h-full flex items-center justify-center text-slate-400">
                   Select a file to start editing
@@ -75,15 +67,28 @@ const DesignEditorTabs = ({
             </div>
             
             {/* AI Assistant Sidebar */}
-            <AIAssistant
-              isVisible={aiAssistEnabled}
-              suggestions={aiSuggestions}
-              designMetrics={designMetrics}
-              onApplySuggestion={onApplySuggestion}
-              onDismissSuggestion={onDismissSuggestion}
-              onGenerateCode={onGenerateCode}
-              onExplainCode={onExplainCode}
-            />
+            <div className="w-64 p-4 border-l border-slate-700">
+              <h3 className="text-lg font-semibold mb-4">AI Assistant</h3>
+              <p className="text-sm text-slate-400 mb-4">
+                Powered by ChipForge AI
+              </p>
+              <div className="space-y-3">
+                {aiSuggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    className="bg-slate-800/50 p-3 rounded-md flex justify-between items-center"
+                  >
+                    <span>{suggestion.description}</span>
+                    <button
+                      onClick={() => onApplySuggestion(suggestion)}
+                      className="text-slate-400 hover:text-slate-300"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </TabsContent>
 

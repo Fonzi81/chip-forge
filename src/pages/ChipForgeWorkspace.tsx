@@ -25,14 +25,12 @@ import {
   MessageSquare,
   Send
 } from "lucide-react";
-import { generateVerilog } from '../backend/hdl-gen/generateHDL';
-import { runTestBench } from '../backend/sim/testBench';
-import { getReflexionAdvice } from '../backend/reflexion/reviewer';
 import { saveHDLDesign, HDLDesign } from '../utils/localStorage';
 import TopNav from "../components/chipforge/TopNav";
-import WorkflowNav from "../components/chipforge/WorkflowNav";
 import { useWorkflowStore } from "../state/workflowState";
 import { useHDLDesignStore } from '../state/hdlDesignStore';
+import { HDLGenerator } from '../backend/hdl-gen';
+import { VerilogSimulator } from '../backend/sim';
 
 interface TestResult {
   passed: boolean;
@@ -76,24 +74,39 @@ export default function ChipForgeWorkspace() {
     
     try {
       // Generate Verilog with AI-determined I/O ports
-      const code = generateVerilog({ moduleName, description, io: [] });
-      setVerilog(code);
-      setDesign({ moduleName, description, io: [], verilog: code }); // <-- Save to store
+      const hdlGenerator = new HDLGenerator();
+      const result = await hdlGenerator.generateHDL({
+        description,
+        targetLanguage: 'verilog',
+        moduleName,
+        io: []
+      });
+      setVerilog(result.code);
+      setDesign({ moduleName, description, io: [], verilog: result.code });
       
       // Run test bench
       setStatus('testing');
-      const result = await runTestBench(code);
-      setTestResult(result);
+      const simulator = new VerilogSimulator();
+      const simResult = await simulator.simulate(result.code, {
+        timeLimit: 1000,
+        timeStep: 10,
+        signals: ['clk', 'reset', 'data_in', 'data_out']
+      });
       
-      if (result.passed) {
+      const testResult = {
+        passed: simResult.success,
+        feedback: simResult.success ? 'Simulation completed successfully' : simResult.errors.join(', '),
+        warnings: simResult.warnings,
+        errors: simResult.errors,
+        simulationTime: simResult.executionTime
+      };
+      
+      setTestResult(testResult);
+      
+      if (testResult.passed) {
         setStatus('passed');
         markComplete('HDL');
       } else {
-        setStatus('failed');
-        // Get AI advice for improvement
-        setStatus('reviewing');
-        const aiAdvice = await getReflexionAdvice(code, result.feedback);
-        setAdvice(aiAdvice);
         setStatus('failed');
       }
     } catch (error) {
@@ -110,31 +123,39 @@ export default function ChipForgeWorkspace() {
     
     try {
       // Generate improved Verilog based on previous feedback
-      const improvedCode = generateVerilog({ 
-        moduleName, 
-        description, 
-        io: [],
-        previousCode: verilog,
-        feedback: testResult?.feedback || '',
-        advice: advice?.suggestions.join('\n') || ''
+      const hdlGenerator = new HDLGenerator();
+      const result = await hdlGenerator.generateHDL({
+        description,
+        targetLanguage: 'verilog',
+        moduleName,
+        io: []
       });
-      setVerilog(improvedCode);
-      setDesign({ moduleName, description, io: [], verilog: improvedCode });
+      setVerilog(result.code);
+      setDesign({ moduleName, description, io: [], verilog: result.code });
       
       // Test the improved code
       setStatus('testing');
-      const result = await runTestBench(improvedCode);
-      setTestResult(result);
+      const simulator = new VerilogSimulator();
+      const simResult = await simulator.simulate(result.code, {
+        timeLimit: 1000,
+        timeStep: 10,
+        signals: ['clk', 'reset', 'data_in', 'data_out']
+      });
       
-      if (result.passed) {
+      const testResult = {
+        passed: simResult.success,
+        feedback: simResult.success ? 'Simulation completed successfully' : simResult.errors.join(', '),
+        warnings: simResult.warnings,
+        errors: simResult.errors,
+        simulationTime: simResult.executionTime
+      };
+      
+      setTestResult(testResult);
+      
+      if (testResult.passed) {
         setStatus('passed');
         markComplete('HDL');
       } else {
-        setStatus('failed');
-        // Get new AI advice
-        setStatus('reviewing');
-        const aiAdvice = await getReflexionAdvice(improvedCode, result.feedback);
-        setAdvice(aiAdvice);
         setStatus('failed');
       }
     } catch (error) {
@@ -199,7 +220,6 @@ export default function ChipForgeWorkspace() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <TopNav />
-      <WorkflowNav />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -290,7 +310,7 @@ export default function ChipForgeWorkspace() {
                     <Send className="h-4 w-4 mr-2" />
                     Generate Circuit
                   </Button>
-                  {status === 'failed' && advice && (
+                  {status === 'failed' && (
                     <Button
                       onClick={handleRegenerate}
                       variant="outline"

@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TopNav from "../components/chipforge/TopNav";
-import WorkflowNav from "../components/chipforge/WorkflowNav";
 import { useWorkflowStore } from "../state/workflowState";
 
 const Export = () => {
@@ -118,7 +117,6 @@ const Export = () => {
   return (
     <>
       <TopNav />
-      <WorkflowNav />
       <div className="min-h-screen bg-slate-950 text-slate-100">
         {/* Header */}
         <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">

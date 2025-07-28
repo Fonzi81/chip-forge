@@ -310,7 +310,7 @@ endmodule`;
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate('/chipforge-simulation', { state: { hdlCode: generatedHDL } })}
+                  onClick={() => navigate('/test-native-simulator', { state: { hdlCode: generatedHDL } })}
                   className="border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-slate-900 font-semibold px-6 py-3"
                 >
                   Simulate
