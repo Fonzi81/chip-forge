@@ -20,8 +20,10 @@ import HDLGeneratorPage from "./pages/HDLGeneratorPage";
 import TestNativeSimulator from "./pages/TestNativeSimulator";
 import AdvancedChipDesign from "./pages/AdvancedChipDesign";
 import AdvancedLayoutDesigner from "./pages/AdvancedLayoutDesignerPage";
+import LayoutEditorPage from "./pages/LayoutEditorPage";
+import CrossSectionViewerPage from "./pages/CrossSectionViewerPage";
 import NotFound from "./pages/NotFound";
-import Chip3DViewer from "./components/chipforge/Chip3DViewer";
+import ProfessionalChip3DViewer from "./components/chipforge/ProfessionalChip3DViewer";
 
 const queryClient = new QueryClient();
 
@@ -49,7 +51,9 @@ const App = () => (
           <Route path="/test-native-simulator" element={<TestNativeSimulator />} />
           <Route path="/advanced-chip-design" element={<AdvancedChipDesign />} />
           <Route path="/advanced-layout-designer" element={<AdvancedLayoutDesigner />} />
-          <Route path="/chip3d-viewer" element={<Chip3DViewer />} />
+          <Route path="/layout-editor" element={<LayoutEditorPage />} />
+          <Route path="/cross-section-viewer" element={<CrossSectionViewerPage />} />
+          <Route path="/chip3d-viewer" element={<ProfessionalChip3DViewer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
