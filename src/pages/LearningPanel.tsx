@@ -168,21 +168,21 @@ export default function LearningPanel() {
       title: "Create Your First Module",
       description: "Generate a simple Verilog module with AI",
       icon: <Brain className="h-5 w-5" />, 
-      link: "/hdl-test",
+      link: "/hdl-generator",
       color: "from-cyan-500 to-blue-500"
     },
     {
       title: "Run a Simulation",
       description: "Test your design with waveform analysis",
       icon: <Play className="h-5 w-5" />, 
-      link: "/chipforge-simulation",
+      link: "/test-native-simulator",
       color: "from-green-500 to-emerald-500"
     },
     {
       title: "View Layout",
       description: "See your design in the interactive layout viewer",
       icon: <Layout className="h-5 w-5" />, 
-      link: "/layout-viewer",
+      link: "/advanced-layout-designer",
       color: "from-purple-500 to-pink-500"
     }
   ];
@@ -475,7 +475,7 @@ export default function LearningPanel() {
                   </p>
                   <div className="flex gap-2">
                     <Button asChild>
-                      <Link to="/hdl-test">
+                      <Link to="/hdl-generator">
                         <Brain className="h-4 w-4 mr-2" />
                         Try AI Generator
                       </Link>

@@ -1,5 +1,5 @@
 import React from 'react';
-import HDLGenerator from '../components/chipforge/HDLGenerator';
+import EnhancedHDLGenerator from '../components/chipforge/EnhancedHDLGenerator';
 import TopNav from '../components/chipforge/TopNav';
 
 const HDLGeneratorPage = () => {
@@ -15,7 +15,7 @@ const HDLGeneratorPage = () => {
             Advanced Verilog editor with AI-powered code generation and real-time syntax checking
           </p>
         </div>
-        <HDLGenerator />
+        <EnhancedHDLGenerator />
       </div>
     </div>
   );

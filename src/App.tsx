@@ -9,7 +9,6 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NewProject from "./pages/NewProject";
 import DesignEditor from "./pages/DesignEditor";
-import ChipForgeWorkspace from "./pages/ChipForgeWorkspace";
 import AuditTrail from "./pages/AuditTrail";
 import TemplatesLibrary from "./pages/TemplatesLibrary";
 import Export from "./pages/Export";
@@ -17,17 +16,14 @@ import ConstraintEditor from "./pages/ConstraintEditor";
 import UsageDashboard from "./pages/UsageDashboard";
 import CollaboratorMode from "./pages/CollaboratorMode";
 import LearningPanel from "./pages/LearningPanel";
-import ChipForgeSimulation from "./pages/ChipForgeSimulation";
-import Synthesis from "./pages/Synthesis";
-import PlaceAndRoute from "./pages/PlaceAndRoute";
-import LayoutDesigner from "./pages/LayoutDesigner";
-import TestbenchEditor from "./components/chipforge/TestbenchEditor";
-import HDLReflexionAgent from "./pages/HDLReflexionAgent";
-import HDLTest from "./pages/HDLTest";
 import HDLGeneratorPage from "./pages/HDLGeneratorPage";
+import TestNativeSimulator from "./pages/TestNativeSimulator";
+import AdvancedChipDesign from "./pages/AdvancedChipDesign";
+import AdvancedLayoutDesigner from "./pages/AdvancedLayoutDesignerPage";
+import LayoutEditorPage from "./pages/LayoutEditorPage";
+import CrossSectionViewerPage from "./pages/CrossSectionViewerPage";
 import NotFound from "./pages/NotFound";
-import Chip3DViewer from "./components/chipforge/Chip3DViewer";
-
+import ProfessionalChip3DViewer from "./components/chipforge/ProfessionalChip3DViewer";
 
 const queryClient = new QueryClient();
 
@@ -43,24 +39,21 @@ const App = () => (
           <Route path="/landing" element={<Index />} />
           <Route path="/new-project" element={<NewProject />} />
           <Route path="/design-editor" element={<DesignEditor />} />
-          <Route path="/workspace" element={<ChipForgeWorkspace />} />
           <Route path="/audit-trail" element={<AuditTrail />} />
           <Route path="/templates" element={<TemplatesLibrary />} />
           <Route path="/constraints" element={<ConstraintEditor />} />
           <Route path="/usage-dashboard" element={<UsageDashboard />} />
           <Route path="/collaborator-mode" element={<CollaboratorMode />} />
           <Route path="/learning-panel" element={<LearningPanel />} />
-          <Route path="/chipforge-simulation" element={<ChipForgeSimulation />} />
-          <Route path="/synthesis" element={<Synthesis />} />
-          <Route path="/place-and-route" element={<PlaceAndRoute />} />
-          <Route path="/layout-designer" element={<LayoutDesigner />} />
           <Route path="/export" element={<Export />} />
-          {/* Extra/utility pages */}
-          <Route path="/testbench" element={<TestbenchEditor />} />
-          <Route path="/hdl-reflexion-agent" element={<HDLReflexionAgent />} />
-          <Route path="/hdl-test" element={<HDLTest />} />
+          {/* Phase 1-3 Development Pages */}
           <Route path="/hdl-generator" element={<HDLGeneratorPage />} />
-          <Route path="/chip3d-viewer" element={<Chip3DViewer />} />
+          <Route path="/test-native-simulator" element={<TestNativeSimulator />} />
+          <Route path="/advanced-chip-design" element={<AdvancedChipDesign />} />
+          <Route path="/advanced-layout-designer" element={<AdvancedLayoutDesigner />} />
+          <Route path="/layout-editor" element={<LayoutEditorPage />} />
+          <Route path="/cross-section-viewer" element={<CrossSectionViewerPage />} />
+          <Route path="/chip3d-viewer" element={<ProfessionalChip3DViewer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

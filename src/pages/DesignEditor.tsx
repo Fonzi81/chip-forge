@@ -1,5 +1,3 @@
-import FileExplorer from "@/components/chipforge/FileExplorer";
-import EditorToolbar from "@/components/chipforge/EditorToolbar";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useDesignEditor } from "@/hooks/useDesignEditor";
 import DesignEditorHeader from "@/components/design-editor/DesignEditorHeader";
@@ -49,35 +47,7 @@ const DesignEditor = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       <DesignEditorHeader />
 
-      {/* Editor Toolbar */}
-      <EditorToolbar
-        onSave={handleSave}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onRunSimulation={handleRunSimulation}
-        onExport={handleExport}
-        onOpenSettings={() => console.log("Settings")}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        hasUnsavedChanges={hasUnsavedChanges}
-        lastSaved={lastSaved}
-        compileStatus={compileStatus}
-        aiAssistEnabled={aiAssistEnabled}
-        onToggleAI={() => setAiAssistEnabled(!aiAssistEnabled)}
-        simulationRunning={simulationRunning}
-      />
-
       <div className="flex flex-1">
-        {/* File Explorer */}
-        <FileExplorer
-          files={files}
-          activeFileId={activeFileId}
-          onFileSelect={setActiveFileId}
-          onFileCreate={handleFileCreate}
-          onFileDelete={handleFileDelete}
-          onFileRename={(id, name) => console.log("Rename", id, name)}
-        />
-
         {/* Main Content */}
         <DesignEditorTabs
           activeFile={activeFile}
