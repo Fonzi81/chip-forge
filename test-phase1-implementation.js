@@ -2,9 +2,9 @@
 // Comprehensive validation of professional chip visualization system
 
 import { runAllTests } from './src/backend/visualization/chipDataModels.test.ts';
-import { MaterialFactory, materialManager } from './src/backend/visualization/materialSystem';
-import { TransistorGeometryFactory } from './src/backend/visualization/transistorModels';
-import { defaultTSMC7nmData } from './src/backend/visualization/chipDataModels';
+import { MaterialFactory, materialManager } from './src/backend/visualization/materialSystem.ts';
+import { TransistorGeometryFactory } from './src/backend/visualization/transistorModels.ts';
+import { defaultTSMC7nmData } from './src/backend/visualization/chipDataModels.ts';
 
 console.log('🚀 Phase 1 Implementation Test Suite');
 console.log('=====================================\n');
