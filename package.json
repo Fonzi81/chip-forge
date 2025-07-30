@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "validate:production": "node scripts/production-validator.js",
+    "test:production": "npm run validate:production && npm run lint && npm run build",
+    "deploy:check": "npm run validate:production && npm run lint && npm run build && echo '✅ Production deployment check passed'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
