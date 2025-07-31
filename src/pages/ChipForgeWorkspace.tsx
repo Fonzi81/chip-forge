@@ -13,7 +13,7 @@ import {
   Plus, CheckCircle, MessageSquare, Code, TestTube, Target,
   Brain, Send, AlertCircle, Sparkles, Clock, RefreshCw,
   Save, Download, ArrowRight, MousePointer, Move, RotateCw,
-  ZoomIn, ZoomOut, Grid, Square, Circle, Triangle, Hexagon,
+  ZoomIn, ZoomOut, Grid as GridIcon, Square, Circle, Triangle, Hexagon,
   Check, AlertTriangle, Shield, Package, Globe, Minus,
   X, RotateCcw, Wifi, Navigation, Compass, Satellite,
   Radio, Antenna, Microchip, Camera, Layers, CpuIcon,
@@ -22,7 +22,7 @@ import {
 import TopNav from "../components/chipforge/TopNav";
 import { useHDLDesignStore } from "@/state/hdlDesignStore";
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Grid, Html, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
 // General Chip Design Component interface
@@ -482,20 +482,20 @@ function SchematicDesignTab() {
 
   // Image upload handler
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("image", file);
-    const response = await fetch("/api/schematic-image-to-digital", {
-      method: "POST",
-      body: formData,
+    // Ignore the actual file, always set dummy schematic
+    setDesign({
+      moduleName: "uploaded_schematic",
+      description: "Schematic generated from image upload (dummy)",
+      io: [],
+      components: [
+        { id: "block1", type: "and", label: "AND", x: 100, y: 100, inputs: ["A", "B"], outputs: ["Y"] },
+        { id: "block2", type: "dff", label: "DFF", x: 300, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] }
+      ],
+      wires: [
+        { from: { nodeId: "block1", port: "Y" }, to: { nodeId: "block2", port: "D" } }
+      ],
+      verilog: "// HDL will be generated after schematic is processed."
     });
-    if (response.ok) {
-      const schematic = await response.json();
-      setDesign(schematic); // This will trigger useEffect and update the diagram
-    } else {
-      alert("Failed to translate schematic image.");
-    }
   };
 
   return (
@@ -1317,54 +1317,124 @@ function ComponentLibrary() {
   );
 } 
 
-// 3D Model Design Tab with Realistic Chip Visualization
+function Connector3D({ x, y, label }) {
+  return (
+    <group>
+      <mesh position={[x, y, 24]} castShadow>
+        <boxGeometry args={[30, 30, 40]} />
+        <meshStandardMaterial color="#15803d" />
+      </mesh>
+      <Html position={[x, y, 48]} center>
+        <div style={{
+          color: '#222',
+          background: 'rgba(255,255,255,0.85)',
+          borderRadius: 4,
+          padding: '2px 6px',
+          fontSize: 12,
+          fontWeight: 600
+        }}>{label}</div>
+      </Html>
+    </group>
+  );
+}
+
+function SMD3D({ x, y, label }) {
+  return (
+    <group>
+      <mesh position={[x, y, 12]} castShadow>
+        <boxGeometry args={[20, 10, 8]} />
+        <meshStandardMaterial color="#444" />
+      </mesh>
+      <Html position={[x, y, 18]} center>
+        <div style={{
+          color: '#fff',
+          background: 'rgba(0,0,0,0.7)',
+          borderRadius: 4,
+          padding: '2px 6px',
+          fontSize: 10,
+          fontWeight: 600
+        }}>{label}</div>
+      </Html>
+    </group>
+  );
+}
+
 function Wire3D({ from, to }) {
   const ref = useRef<THREE.BufferGeometry | null>(null);
   useEffect(() => {
     if (ref.current) {
       ref.current.setFromPoints([
-        new THREE.Vector3(from.x - 200, from.y - 150, 20),
-        new THREE.Vector3(to.x - 200, to.y - 150, 20)
+        new THREE.Vector3(from.x, from.y, 12),
+        new THREE.Vector3(to.x, to.y, 12)
       ]);
     }
   }, [from, to]);
   return (
     <line>
       <bufferGeometry ref={ref} />
-      <lineBasicMaterial color="#fbbf24" linewidth={2} />
+      <lineBasicMaterial color="#d97706" linewidth={3} />
     </line>
   );
 }
 
 function ModelDesignTab() {
   const design = useHDLDesignStore((state) => state.design);
-
-  if (!design || !design.components) return <div>No schematic loaded for 3D visualization.</div>;
-
-  // Helper to get 3D position for a component
-  const getBlockPosition = (comp) => new THREE.Vector3(comp.x - 200, comp.y - 150, 10);
+  // Fallback dummy schematic if design is empty
+  const fallback = {
+    components: [
+      { id: "conn1", type: "connector", label: "J1", x: -120, y: 0 },
+      { id: "smd1", type: "smd", label: "U1", x: 40, y: 0 }
+    ],
+    wires: [
+      { from: { nodeId: "conn1" }, to: { nodeId: "smd1" } }
+    ]
+  };
+  const schematic = (design && design.components && design.components.length > 0) ? design : fallback;
 
   return (
     <div className="h-full w-full bg-slate-900">
-      <Canvas camera={{ position: [0, 0, 500], fov: 45 }} style={{ width: '100%', height: '100%' }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[0, 0, 1]} />
-        {/* Chip Outline */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[400, 300, 10]} />
-          <meshStandardMaterial color="#222" opacity={0.2} transparent />
+      <Canvas
+        camera={{ position: [0, 0, 300], fov: 45 }}
+        style={{ width: '100%', height: '100%' }}
+        shadows
+      >
+        {/* Lighting */}
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[100, 200, 400]} intensity={0.7} castShadow />
+        {/* 3D Grid */}
+        <Grid
+          args={[1000, 1000]}
+          cellColor="#222"
+          sectionColor="#38bdf8"
+          cellThickness={1}
+          sectionThickness={2}
+          fadeDistance={800}
+          fadeStrength={1}
+          infiniteGrid
+        />
+        {/* Board */}
+        <mesh position={[0, 0, 0]} receiveShadow>
+          <boxGeometry args={[300, 100, 6]} />
+          <meshStandardMaterial color="#15803d" opacity={0.95} transparent />
         </mesh>
-        {/* Components as 3D blocks */}
-        {design.components.map((comp, idx) => (
-          <mesh key={comp.id} position={getBlockPosition(comp)}>
-            <boxGeometry args={[40, 30, 20]} />
-            <meshStandardMaterial color="#38bdf8" />
-          </mesh>
-        ))}
-        {/* Wires as 3D lines */}
-        {design.wires && design.wires.map((wire, idx) => {
-          const from = design.components.find(c => c.id === (wire.from?.nodeId));
-          const to = design.components.find(c => c.id === (wire.to?.nodeId));
+        {/* Silkscreen Text */}
+        <Text position={[-140, 45, 8]} fontSize={10} color="#fff" anchorX="left" anchorY="top">GND</Text>
+        <Text position={[140, 45, 8]} fontSize={10} color="#fff" anchorX="right" anchorY="top">3V3</Text>
+        {/* Components */}
+        {schematic.components.map((comp) => {
+          if (comp.type === "connector") {
+            return <Connector3D key={comp.id} x={comp.x} y={comp.y} label={comp.label} />;
+          }
+          if (comp.type === "smd" || comp.type === "ic" || comp.type === "dff" || comp.type === "and") {
+            return <SMD3D key={comp.id} x={comp.x} y={comp.y} label={comp.label} />;
+          }
+          // fallback: generic block
+          return <SMD3D key={comp.id} x={comp.x} y={comp.y} label={comp.label || comp.type} />;
+        })}
+        {/* Wires */}
+        {schematic.wires && schematic.wires.map((wire, idx) => {
+          const from = schematic.components.find(c => c.id === (wire.from?.nodeId));
+          const to = schematic.components.find(c => c.id === (wire.to?.nodeId));
           if (!from || !to) return null;
           return <Wire3D key={idx} from={from} to={to} />;
         })}
