@@ -127,14 +127,6 @@ const HowItWorks = () => {
                 <h3 className="text-xl font-bold mb-3 text-slate-100">{step.title}</h3>
                 <p className="text-slate-400 mb-4 leading-relaxed">{step.desc}</p>
                 
-                {/* Time indicator */}
-                <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold mb-4 ${
-                  isChipForgeFlow ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'
-                }`}>
-                  <Timer className="h-4 w-4" />
-                  {step.time}
-                </div>
-
                 {/* Technical details */}
                 <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
                   <div className="text-xs text-slate-500 mb-1">Process Details:</div>
