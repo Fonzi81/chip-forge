@@ -24,7 +24,7 @@ import {
   Settings,
   Maximize,
   Minimize,
-  Grid,
+  Grid as GridIcon,
   Activity,
   TrendingUp,
   TrendingDown,
@@ -576,7 +576,7 @@ export default function LayoutEnvironment() {
                   </Button>
                   <Separator orientation="vertical" className="h-6" />
                   <Button variant="outline" size="sm">
-                    <Grid className="h-4 w-4" />
+                    <GridIcon className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm">
                     <Maximize className="h-4 w-4" />

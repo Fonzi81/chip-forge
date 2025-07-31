@@ -1,0 +1,58 @@
+[
+  {
+    "id": "dff",
+    "name": "D Flip-Flop",
+    "category": "memory",
+    "pins": [
+      { "name": "D", "type": "input", "position": "left" },
+      { "name": "CLK", "type": "input", "position": "bottom" },
+      { "name": "Q", "type": "output", "position": "right" }
+    ],
+    "symbol": "DFF",
+    "hdl": "module dff(input D, input CLK, output reg Q); always @(posedge CLK) Q <= D; endmodule"
+  },
+  {
+    "id": "and_gate",
+    "name": "AND Gate",
+    "category": "logic",
+    "pins": [
+      { "name": "A", "type": "input", "position": "left" },
+      { "name": "B", "type": "input", "position": "left" },
+      { "name": "Y", "type": "output", "position": "right" }
+    ],
+    "symbol": "AND",
+    "hdl": "module and_gate(input A, input B, output Y); assign Y = A & B; endmodule"
+  },
+  {
+    "id": "or_gate",
+    "name": "OR Gate",
+    "category": "logic",
+    "pins": [
+      { "name": "A", "type": "input", "position": "left" },
+      { "name": "B", "type": "input", "position": "left" },
+      { "name": "Y", "type": "output", "position": "right" }
+    ],
+    "symbol": "OR",
+    "hdl": "module or_gate(input A, input B, output Y); assign Y = A | B; endmodule"
+  },
+  {
+    "id": "input_port",
+    "name": "Input Port",
+    "category": "io",
+    "pins": [
+      { "name": "IN", "type": "output", "position": "right" }
+    ],
+    "symbol": "IN",
+    "hdl": "// Input port placeholder"
+  },
+  {
+    "id": "output_port",
+    "name": "Output Port",
+    "category": "io",
+    "pins": [
+      { "name": "OUT", "type": "input", "position": "left" }
+    ],
+    "symbol": "OUT",
+    "hdl": "// Output port placeholder"
+  }
+] 

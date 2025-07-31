@@ -27,6 +27,7 @@ import SimulationEnvironment from "./pages/SimulationEnvironment";
 import LayoutEnvironment from "./pages/LayoutEnvironment";
 import ChipForgeSimulation from "./pages/ChipForgeSimulation";
 import SchematicWizard from "./components/chipforge/SchematicWizard";
+import WaveformPlanner from "@/components/chipforge/WaveformPlanner";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
           <Route path="/cross-section-viewer" element={<CrossSectionViewerPage />} />
           <Route path="/chip3d-viewer" element={<ProfessionalChip3DViewer />} />
           <Route path="/wizard" element={<SchematicWizard />} />
+          <Route path="/waveform" element={<WaveformPlanner />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         </Routes>
       </BrowserRouter>

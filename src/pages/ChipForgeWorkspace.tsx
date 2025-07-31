@@ -498,6 +498,46 @@ function SchematicDesignTab() {
     });
   };
 
+  // Add demo schematic button
+  const handleDemoSchematic = () => {
+    setDesign({
+      moduleName: "counter4",
+      description: "4-bit counter demo schematic",
+      io: [
+        { name: "clk", direction: "input", width: 1 },
+        { name: "en", direction: "input", width: 1 },
+        { name: "rst", direction: "input", width: 1 },
+        { name: "q", direction: "output", width: 4 }
+      ],
+      verilog: "",
+      components: [
+        { id: "clk_in", type: "input_port", label: "clk", x: 50, y: 100, inputs: [], outputs: ["IN"] },
+        { id: "en_in", type: "input_port", label: "en", x: 50, y: 200, inputs: [], outputs: ["IN"] },
+        { id: "rst_in", type: "input_port", label: "rst", x: 50, y: 300, inputs: [], outputs: ["IN"] },
+        { id: "dff0", type: "dff", label: "DFF0", x: 200, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "dff1", type: "dff", label: "DFF1", x: 300, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "dff2", type: "dff", label: "DFF2", x: 400, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "dff3", type: "dff", label: "DFF3", x: 500, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "and0", type: "and_gate", label: "AND0", x: 150, y: 200, inputs: ["A", "B"], outputs: ["Y"] },
+        { id: "or0", type: "or_gate", label: "OR0", x: 150, y: 300, inputs: ["A", "B"], outputs: ["Y"] },
+        { id: "q_out", type: "output_port", label: "q", x: 600, y: 100, inputs: ["OUT"], outputs: [] }
+      ],
+      wires: [
+        { from: { nodeId: "clk_in", port: "IN" }, to: { nodeId: "dff0", port: "CLK" } },
+        { from: { nodeId: "dff0", port: "Q" }, to: { nodeId: "dff1", port: "D" } },
+        { from: { nodeId: "dff1", port: "Q" }, to: { nodeId: "dff2", port: "D" } },
+        { from: { nodeId: "dff2", port: "Q" }, to: { nodeId: "dff3", port: "D" } },
+        { from: { nodeId: "dff3", port: "Q" }, to: { nodeId: "q_out", port: "OUT" } },
+        { from: { nodeId: "en_in", port: "IN" }, to: { nodeId: "and0", port: "A" } },
+        { from: { nodeId: "clk_in", port: "IN" }, to: { nodeId: "and0", port: "B" } },
+        { from: { nodeId: "and0", port: "Y" }, to: { nodeId: "dff0", port: "D" } },
+        { from: { nodeId: "rst_in", port: "IN" }, to: { nodeId: "or0", port: "A" } },
+        { from: { nodeId: "dff3", port: "Q" }, to: { nodeId: "or0", port: "B" } },
+        { from: { nodeId: "or0", port: "Y" }, to: { nodeId: "dff0", port: "CLK" } }
+      ]
+    });
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Schematic Canvas */}
@@ -1359,16 +1399,19 @@ function SMD3D({ x, y, label }) {
   );
 }
 
-function Wire3D({ from, to }) {
+function Wire3D({ from, to, components }) {
+  const fromComp = components.find(c => c.id === from.nodeId);
+  const toComp = components.find(c => c.id === to.nodeId);
+  if (!fromComp || !toComp) return null;
   const ref = useRef<THREE.BufferGeometry | null>(null);
   useEffect(() => {
     if (ref.current) {
       ref.current.setFromPoints([
-        new THREE.Vector3(from.x, from.y, 12),
-        new THREE.Vector3(to.x, to.y, 12)
+        new THREE.Vector3(fromComp.x, fromComp.y, 12),
+        new THREE.Vector3(toComp.x, toComp.y, 12)
       ]);
     }
-  }, [from, to]);
+  }, [fromComp, toComp]);
   return (
     <line>
       <bufferGeometry ref={ref} />
@@ -1436,7 +1479,7 @@ function ModelDesignTab() {
           const from = schematic.components.find(c => c.id === (wire.from?.nodeId));
           const to = schematic.components.find(c => c.id === (wire.to?.nodeId));
           if (!from || !to) return null;
-          return <Wire3D key={idx} from={from} to={to} />;
+          return <Wire3D key={idx} from={from} to={to} components={schematic.components} />;
         })}
         <OrbitControls />
       </Canvas>
@@ -1462,6 +1505,8 @@ export default function ChipForgeWorkspace() {
       ]
     }
   ]);
+
+  const setDesign = useHDLDesignStore((state) => state.setDesign);
 
   // Handle URL parameters
   useEffect(() => {
@@ -1505,6 +1550,45 @@ export default function ChipForgeWorkspace() {
 
   const handleApplySuggestion = (suggestion: string) => {
     handleSendMessage(suggestion);
+  };
+
+  const handleDemoSchematic = () => {
+    setDesign({
+      moduleName: "counter4",
+      description: "4-bit counter demo schematic",
+      io: [
+        { name: "clk", direction: "input", width: 1 },
+        { name: "en", direction: "input", width: 1 },
+        { name: "rst", direction: "input", width: 1 },
+        { name: "q", direction: "output", width: 4 }
+      ],
+      verilog: "",
+      components: [
+        { id: "clk_in", type: "input_port", label: "clk", x: 50, y: 100, inputs: [], outputs: ["IN"] },
+        { id: "en_in", type: "input_port", label: "en", x: 50, y: 200, inputs: [], outputs: ["IN"] },
+        { id: "rst_in", type: "input_port", label: "rst", x: 50, y: 300, inputs: [], outputs: ["IN"] },
+        { id: "dff0", type: "dff", label: "DFF0", x: 200, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "dff1", type: "dff", label: "DFF1", x: 300, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "dff2", type: "dff", label: "DFF2", x: 400, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "dff3", type: "dff", label: "DFF3", x: 500, y: 100, inputs: ["D", "CLK"], outputs: ["Q"] },
+        { id: "and0", type: "and_gate", label: "AND0", x: 150, y: 200, inputs: ["A", "B"], outputs: ["Y"] },
+        { id: "or0", type: "or_gate", label: "OR0", x: 150, y: 300, inputs: ["A", "B"], outputs: ["Y"] },
+        { id: "q_out", type: "output_port", label: "q", x: 600, y: 100, inputs: ["OUT"], outputs: [] }
+      ],
+      wires: [
+        { from: { nodeId: "clk_in", port: "IN" }, to: { nodeId: "dff0", port: "CLK" } },
+        { from: { nodeId: "dff0", port: "Q" }, to: { nodeId: "dff1", port: "D" } },
+        { from: { nodeId: "dff1", port: "Q" }, to: { nodeId: "dff2", port: "D" } },
+        { from: { nodeId: "dff2", port: "Q" }, to: { nodeId: "dff3", port: "D" } },
+        { from: { nodeId: "dff3", port: "Q" }, to: { nodeId: "q_out", port: "OUT" } },
+        { from: { nodeId: "en_in", port: "IN" }, to: { nodeId: "and0", port: "A" } },
+        { from: { nodeId: "clk_in", port: "IN" }, to: { nodeId: "and0", port: "B" } },
+        { from: { nodeId: "and0", port: "Y" }, to: { nodeId: "dff0", port: "D" } },
+        { from: { nodeId: "rst_in", port: "IN" }, to: { nodeId: "or0", port: "A" } },
+        { from: { nodeId: "dff3", port: "Q" }, to: { nodeId: "or0", port: "B" } },
+        { from: { nodeId: "or0", port: "Y" }, to: { nodeId: "dff0", port: "CLK" } }
+      ]
+    });
   };
 
   return (
@@ -1553,7 +1637,12 @@ export default function ChipForgeWorkspace() {
 
             {/* Tab Content */}
             <div className="flex-1 min-h-0">
-              {activeTab === 'schematic' && <SchematicDesignTab />}
+              {activeTab === 'schematic' && (
+                <div className="p-4">
+                  <Button onClick={handleDemoSchematic} className="mb-2">Load 4-bit Counter Demo</Button>
+                  <SchematicDesignTab />
+                </div>
+              )}
               {activeTab === 'hdl' && <HDLDesignTab />}
               {activeTab === 'model' && <ModelDesignTab />}
             </div>

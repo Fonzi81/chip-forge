@@ -36,6 +36,10 @@ interface HDLDesignState {
   addWire: (wire: HDLWire) => void;
   removeWire: (wire: HDLWire) => void;
   exportNetlist: () => any;
+  waveform: Record<string, Record<number, 0 | 1>>;
+  testbenchVerilog: string;
+  setWaveformSignal: (signal: string, values: Record<number, 0 | 1>) => void;
+  generateTestbench: () => void;
 }
 
 const LOCAL_STORAGE_KEY = 'chipforge-hdl-design';
@@ -112,5 +116,40 @@ export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
       components: design.components,
       wires: design.wires
     };
+  },
+  waveform: {},
+  testbenchVerilog: "",
+  setWaveformSignal: (signal, values) => {
+    set((state) => ({
+      waveform: { ...state.waveform, [signal]: values }
+    }));
+  },
+  generateTestbench: () => {
+    const waveform = get().waveform;
+    const maxCycle = Math.max(0, ...Object.values(waveform).flatMap(s => Object.keys(s).map(Number)));
+    let lines: string[] = [
+      "module testbench;",
+      "  reg clk = 0;",
+      "  always #5 clk = ~clk;",
+    ];
+    const signals = Object.keys(waveform);
+    // Declare signals
+    signals.forEach(sig => {
+      lines.push(`  reg ${sig.replace(/\./g, "_")};`);
+    });
+    lines.push("  initial begin");
+    for (let t = 0; t <= maxCycle; t++) {
+      lines.push(`    #10;`);
+      signals.forEach(sig => {
+        const val = waveform[sig]?.[t];
+        if (val !== undefined) {
+          lines.push(`    ${sig.replace(/\./g, "_")} = ${val};`);
+        }
+      });
+    }
+    lines.push("    $finish;");
+    lines.push("  end");
+    lines.push("endmodule");
+    set({ testbenchVerilog: lines.join("\n") });
   }
 })); 

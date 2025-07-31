@@ -69,6 +69,12 @@ const MAIN_NAVIGATION = [
         description: "Step-by-step schematic builder"
       },
       {
+        label: "Waveform Planner",
+        path: "/waveform",
+        icon: TestTube,
+        description: "Define signal waveforms and generate testbenches"
+      },
+      {
         label: "New Project",
         path: "/new-project",
         icon: Layers,
