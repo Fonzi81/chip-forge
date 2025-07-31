@@ -31,7 +31,6 @@ const HeroSection = () => {
 
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[1.1] tracking-tight animate-fade-in" style={{animationDelay: '0.2s'}}>
           From <span className="gradient-text">Idea</span> to Silicon
-          <br />— Designed by AI
         </h1>
         
         <div className="text-xl md:text-2xl text-slate-400 mb-4 font-light animate-fade-in" style={{animationDelay: '0.4s'}}>
