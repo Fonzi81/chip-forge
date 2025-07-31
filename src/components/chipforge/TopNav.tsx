@@ -61,6 +61,18 @@ const MAIN_NAVIGATION = [
         path: "/workspace", 
         icon: Monitor,
         description: "Integrated design environment"
+      },
+      {
+        label: "Schematic Wizard",
+        path: "/wizard",
+        icon: Cpu,
+        description: "Step-by-step schematic builder"
+      },
+      {
+        label: "New Project",
+        path: "/new-project",
+        icon: Layers,
+        description: "Start a new chip design project"
       }
     ]
   }

@@ -171,7 +171,7 @@ export class NativeVerilogSimulator {
 
     let i = 0;
     let inModule = false;
-    let inPortList = false;
+    const inPortList = false;
 
     while (i < tokens.length) {
       const token = tokens[i];
