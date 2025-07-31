@@ -27,6 +27,7 @@ import SimulationEnvironment from "./pages/SimulationEnvironment";
 import LayoutEnvironment from "./pages/LayoutEnvironment";
 import ChipForgeSimulation from "./pages/ChipForgeSimulation";
 import SchematicWizard from "./components/chipforge/SchematicWizard";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -37,9 +38,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/landing" element={<Index />} />
           <Route path="/workspace" element={<ChipForgeWorkspace />} />
           <Route path="/new-project" element={<NewProject />} />
           <Route path="/audit-trail" element={<AuditTrail />} />
@@ -66,6 +66,7 @@ const App = () => (
           <Route path="/chip3d-viewer" element={<ProfessionalChip3DViewer />} />
           <Route path="/wizard" element={<SchematicWizard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
       <Analytics />
