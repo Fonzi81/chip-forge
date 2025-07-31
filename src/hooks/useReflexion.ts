@@ -1,7 +1,12 @@
 import { useState, useCallback, useRef } from 'react';
 import { reflexionAI } from '@/services/reflexionAI';
 import { useSimulation } from '@/hooks/useSimulation';
-import { runReflexionIteration } from '@/backend/reflexion';
+// Mock reflexion iteration function
+const runReflexionIteration = async (description: string, code: string, feedback: string, advice: string): Promise<string> => {
+  // Mock implementation - in production this would call the actual reflexion backend
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return `// Improved code based on feedback\n${code}\n// Added improvements based on: ${advice}`;
+};
 
 export interface ReflexionIteration {
   id: string;

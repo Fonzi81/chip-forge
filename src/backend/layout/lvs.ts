@@ -1,4 +1,9 @@
-import type { Cell } from '../../components/chipforge/layout-designer/CellLibrary';
+// Simple Cell type definition for LVS operations
+interface Cell {
+  id: string;
+  type: string;
+  pins?: Array<{ name: string; x: number; y: number; }>;
+}
 
 export type LVSResultType = 'error' | 'warning' | 'info';
 

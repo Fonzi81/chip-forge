@@ -45,7 +45,9 @@ export default function SchematicWizard() {
       moduleName: `main_${designType}`,
       description: naturalPrompt || `A ${bitWidth}-bit ${designType.toUpperCase()} with ${inputs} inputs and ${outputs} outputs`,
       io,
-      verilog: ''
+      verilog: '',
+      components: [],
+      wires: []
     });
     setStep(3);
   };

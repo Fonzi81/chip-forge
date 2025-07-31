@@ -34,24 +34,31 @@ const HowItWorks = () => {
   const chipforgeSteps = [
     { 
       icon: FileText, 
-      title: "Natural Language Input", 
-      desc: "Describe chip functionality in plain English specifications", 
-      time: "< 5 minutes",
-      details: "AI parses requirements, extracts technical parameters"
+      title: "Input: Natural Language / Schematic / Waveform", 
+      desc: "Describe functionality, draw FSMs, or define expected waveforms", 
+      time: "< 1 minute",
+      details: "Multiple input modalities: text, visual, temporal specifications"
     },
     { 
       icon: Zap, 
-      title: "AI Synthesis Engine", 
-      desc: "Advanced AI generates optimized HDL with formal verification", 
+      title: "Smeltr (Syntax-Constrained Verilog Generator)", 
+      desc: "Grammar-constrained HDL generation with 100% syntax guarantee", 
       time: "< 30 seconds",
-      details: "Multi-agent AI system: architecture, optimization, verification"
+      details: "Earley parser integration, real-time syntax validation"
     },
     { 
       icon: CheckCircle, 
-      title: "Automated Validation", 
-      desc: "Comprehensive testing suite with deployment package", 
+      title: "Simulation Engine + Reflexion Loop", 
+      desc: "Automated testing with AI-driven error correction until pass", 
       time: "< 2 minutes",
-      details: "Formal verification, timing analysis, fabrication files"
+      details: "Actor-Reviewer architecture, continuous improvement cycle"
+    },
+    { 
+      icon: Cpu, 
+      title: "Synthesis Engine + Layout + GDSII Export", 
+      desc: "Complete flow from logic to fabrication-ready files", 
+      time: "< 5 minutes",
+      details: "Integrated synthesis, place & route, DRC verification"
     }
   ];
 
@@ -68,7 +75,7 @@ const HowItWorks = () => {
             <span className="text-sm text-slate-300 font-medium">Workflow Comparison</span>
           </div>
           <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight tracking-tight">
-            How <span className="gradient-text">ChipForge</span> Works
+            A Full AI EDA Stack — <span className="gradient-text">Not Just Code Generation</span>
           </h2>
           
           {/* Professional toggle */}
@@ -95,7 +102,7 @@ const HowItWorks = () => {
         </div>
 
         {/* Professional workflow steps */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid lg:grid-cols-4 gap-8 mb-16">
           {currentSteps.map((step, index) => (
             <Card 
               key={index} 
@@ -120,14 +127,6 @@ const HowItWorks = () => {
                 <h3 className="text-xl font-bold mb-3 text-slate-100">{step.title}</h3>
                 <p className="text-slate-400 mb-4 leading-relaxed">{step.desc}</p>
                 
-                {/* Time indicator */}
-                <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold mb-4 ${
-                  isChipForgeFlow ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'
-                }`}>
-                  <Timer className="h-4 w-4" />
-                  {step.time}
-                </div>
-
                 {/* Technical details */}
                 <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
                   <div className="text-xs text-slate-500 mb-1">Process Details:</div>
@@ -147,7 +146,7 @@ const HowItWorks = () => {
 
         {/* Professional summary with metrics */}
         <div className="text-center">
-          <Card className="max-w-2xl mx-auto bg-slate-800/30 border-slate-700">
+          <Card className="w-full bg-slate-800/30 border-slate-700">
             <CardContent className="p-8">
               <h3 className="text-2xl font-bold mb-6 text-slate-100">Workflow Comparison Summary</h3>
               
