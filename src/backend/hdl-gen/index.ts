@@ -59,7 +59,7 @@ export class HDLGenerator {
     console.log('Enhanced HDL Generation requested:', request);
     
     let generatedCode: string;
-    let metadata = {
+    const metadata = {
       estimatedGates: 100,
       estimatedFrequency: 100,
       warnings: [] as string[],

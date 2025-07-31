@@ -319,7 +319,7 @@ export function checkLayerCompatibility(layer1: string, layer2: string, techFile
   const viaRule = techFile.rules.find(rule => 
     rule.category === 'overlap' && 
     ((rule.layer1 === layer1 && rule.layer2 === layer2) ||
-     (rule.layer1 === layer2 && rule.layer2 === layer1)
+     (rule.layer1 === layer2 && rule.layer2 === layer1))
   );
 
   return !!viaRule;

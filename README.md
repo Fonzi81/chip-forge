@@ -1,8 +1,27 @@
-# ChipForge - AI-Powered Chip Design Platform
+# ChipForge - Universal AI-Powered Chip Design Platform
 
-A comprehensive, AI-driven platform for digital circuit design, simulation, and verification. ChipForge combines modern web technologies with advanced AI capabilities to provide an intuitive and powerful environment for chip design, from concept to implementation.
+A comprehensive, AI-driven platform for universal chip design, from transistors to complete systems. ChipForge combines modern web technologies with advanced AI capabilities to provide an intuitive and powerful environment for designing any type of chip, from simple logic gates to complex integrated circuits.
 
 ## 🚀 Core Features
+
+### 🧩 Universal Chip Design Components
+- **Transistors**: NMOS, PMOS, BJT with realistic electrical characteristics
+- **Logic Gates**: NAND, NOR, AND, OR, XOR, NOT with proper symbols
+- **Memory Elements**: D-Flip Flops, SRAM cells, ROM cells
+- **Arithmetic Units**: Full adders, multipliers, ALUs
+- **Interface Circuits**: I/O buffers, level shifters
+- **Analog Circuits**: Op-amps, ADCs, DACs, PLLs
+- **Power Management**: Voltage regulators, power switches
+- **Communication**: UART, SPI, I2C interfaces
+
+### 🎨 Realistic 3D Chip Visualization
+- **Actual Chip Layers**: Metal 3, Metal 2, Metal 1, Poly, Active, Substrate
+- **Realistic Materials**: Copper, Tungsten, Polysilicon, Silicon with proper resistivity
+- **Transistor Structures**: NMOS/PMOS with accurate geometry and gate voltages
+- **Metal Interconnects**: Realistic routing patterns with vias and bonding pads
+- **Multiple Views**: 3D, Top, Side, and Cross-Section visualization
+- **Layer Information**: Material properties, thickness, and electrical characteristics
+- **Interactive Controls**: Zoom, rotate, and layer selection
 
 ### 🤖 AI-Powered HDL Generation
 - **Natural Language to Verilog**: Describe circuits in plain English, get working Verilog code
@@ -31,8 +50,9 @@ A comprehensive, AI-driven platform for digital circuit design, simulation, and 
 - **Professional Reports**: Comprehensive synthesis reports and netlist export
 
 ### 🎯 Complete Design Workflow
-- **Design Input**: Natural language descriptions or structured I/O configuration
-- **AI Generation**: LLM-powered Verilog code generation
+- **Schematic Design**: Drag-and-drop component placement with grid snapping
+- **HDL Code Generation**: AI-powered Verilog synthesis from schematics
+- **3D Visualization**: Realistic chip model with actual layers and structures
 - **Simulation**: Automatic test bench execution and validation
 - **AI Reflexion**: Automatic feedback and one-click code improvement when tests fail
 - **Iterative Enhancement**: Track AI improvement iterations and apply multiple refinements
@@ -88,7 +108,7 @@ npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The application will be available at `http://localhost:8080`
 
 ### Building for Production
 
@@ -104,43 +124,119 @@ npm run preview
 
 ### 🎯 Getting Started
 
-1. **Dashboard**: Overview of projects, statistics, and quick actions
-2. **AI HDL Generator**: Create designs from natural language descriptions
-3. **Simulation**: Test and validate your designs with professional tools
-4. **Learning Panel**: Interactive courses and AI assistance
+1. **Workspace**: Main integrated design environment with schematic, HDL, and 3D views
+2. **Dashboard**: Overview of projects, statistics, and quick actions
+3. **AI HDL Generator**: Create designs from natural language descriptions
+4. **Simulation**: Test and validate your designs with professional tools
+5. **Learning Panel**: Interactive courses and AI assistance
 
-### 🤖 AI HDL Generation Workflow
+### 🧩 Universal Chip Design Workflow
 
-#### 1. Design Input
-```typescript
-// Natural language description
-"8-bit synchronous counter with reset"
+#### 1. Schematic Design
+- **Component Library**: Browse 8 categories of chip components
+- **Drag & Drop**: Place components on grid-snapped canvas
+- **Realistic Symbols**: Proper electrical symbols for all components
+- **Component Details**: Power consumption, area, pin specifications
+- **Categories**: Transistors, Logic Gates, Memory, Arithmetic, Interface, Analog, Power, Communication
 
-// Optional constraints
-"timing: 100MHz, area: minimize gates"
-```
+#### 2. HDL Code Generation
+- **AI-Powered**: Automatic Verilog generation from schematic
+- **Realistic Code**: Industry-standard Verilog with proper structure
+- **Component Examples**: 
+  - Logic gates with proper truth tables
+  - Memory elements with clock and reset
+  - Arithmetic units with carry logic
+  - Interface circuits with protocol handling
+- **Syntax Validation**: Real-time error checking and suggestions
 
-#### 2. AI Generation
-- **Pattern Detection**: Automatically identifies circuit types
-- **Code Synthesis**: Generates working Verilog code
-- **Module Extraction**: Intelligent naming and structure
-- **Safe Generation**: Enhanced validation with security checks and retry logic
+#### 3. 3D Chip Visualization
+- **Realistic Layers**: Actual chip fabrication layers with proper materials
+- **Transistor Structures**: NMOS/PMOS with gate oxide and active regions
+- **Metal Interconnects**: Power distribution and signal routing
+- **Bonding Pads**: I/O connections with proper materials
+- **Interactive Views**: 3D rotation, zoom, layer selection
+- **Material Properties**: Resistivity, thickness, electrical characteristics
 
-#### 3. Simulation & Validation
+#### 4. Simulation & Validation
 - **Test Bench Creation**: Automatic test case generation
 - **Signal Analysis**: Comprehensive waveform visualization
 - **Performance Metrics**: Timing, power, and area analysis
 
-#### 4. Synthesis & Optimization
+#### 5. Synthesis & Optimization
 - **Logic Synthesis**: Transform HDL to gate-level netlists
 - **Timing Analysis**: Setup/hold violations, critical path optimization
 - **Area Analysis**: Silicon area estimation and utilization
 - **Power Analysis**: Dynamic, static, and switching power breakdown
 
-#### 5. Reflexion Loop
+#### 6. Reflexion Loop
 - **AI Feedback**: Detailed code review when tests fail
 - **Improvement Suggestions**: Actionable advice for enhancement
 - **Iterative Regeneration**: Improved code based on feedback
+
+### 🎨 3D Visualization Features
+
+#### Realistic Chip Layers
+- **Metal 3**: Power distribution (Copper, 1.68 μΩ·cm)
+- **Via 2-3**: Vertical connections (Tungsten, 5.6 μΩ·cm)
+- **Metal 2**: Signal routing (Copper, 1.68 μΩ·cm)
+- **Via 1-2**: Vertical connections (Tungsten, 5.6 μΩ·cm)
+- **Metal 1**: Local interconnects (Copper, 1.68 μΩ·cm)
+- **Via 0-1**: Vertical connections (Tungsten, 5.6 μΩ·cm)
+- **Poly**: Gate material (Polysilicon, 1000 μΩ·cm)
+- **Active**: Silicon regions (Silicon, 2300 μΩ·cm)
+- **Substrate**: Base material (P-Silicon, 100000 μΩ·cm)
+
+#### Interactive Features
+- **3D View**: Rotate, zoom, and explore chip structure
+- **Top View**: Die layout with functional blocks
+- **Side View**: Layer stack with material properties
+- **Cross Section**: Transistor structures and interconnects
+- **Layer Selection**: Toggle visibility and select layers
+- **Component Labels**: ALU, SRAM, CLK, I/O blocks
+
+### 🧩 Component Library
+
+#### Transistors
+- **NMOS**: N-channel MOSFET for digital logic (0.5μm², 0.1mW)
+- **PMOS**: P-channel MOSFET for complementary logic (1.0μm², 0.1mW)
+- **BJT**: Bipolar Junction Transistor for analog (2.0μm², 1.0mW)
+
+#### Logic Gates
+- **NAND**: Universal logic gate (1.5μm², 0.2mW)
+- **NOR**: Universal logic gate (1.5μm², 0.2mW)
+- **AND**: Logical AND operation (1.2μm², 0.15mW)
+- **OR**: Logical OR operation (1.2μm², 0.15mW)
+- **XOR**: Exclusive OR operation (2.5μm², 0.3mW)
+- **NOT**: Logical inversion (0.8μm², 0.1mW)
+
+#### Memory Elements
+- **D-Flip Flop**: Data flip-flop with clock (3.0μm², 0.5mW)
+- **SRAM Cell**: 6T Static RAM cell (1.2μm², 0.1μW)
+- **ROM Cell**: Read-Only Memory cell (0.8μm², 0.05μW)
+
+#### Arithmetic Units
+- **Full Adder**: 1-bit full adder with carry (2.8μm², 0.4mW)
+- **Multiplier**: 8x8 bit multiplier (45.0μm², 2.5mW)
+- **ALU**: 8-bit Arithmetic Logic Unit (25.0μm², 1.8mW)
+
+#### Interface Circuits
+- **I/O Buffer**: Input/Output buffer with ESD protection (8.0μm², 0.8mW)
+- **Level Shifter**: Voltage level converter (3.5μm², 0.3mW)
+
+#### Analog Circuits
+- **Op-Amp**: Operational amplifier (15.0μm², 1.2mW)
+- **ADC**: 8-bit Analog-to-Digital Converter (35.0μm², 3.5mW)
+- **DAC**: 8-bit Digital-to-Analog Converter (28.0μm², 2.8mW)
+- **PLL**: Phase-Locked Loop (50.0μm², 5.0mW)
+
+#### Power Management
+- **Voltage Regulator**: Low-dropout voltage regulator (12.0μm², 0.5mW)
+- **Power Switch**: Power gating switch (5.0μm², 0.1mW)
+
+#### Communication
+- **UART**: Universal Asynchronous Receiver/Transmitter (18.0μm², 1.5mW)
+- **SPI**: Serial Peripheral Interface (15.0μm², 1.2mW)
+- **I2C**: Inter-Integrated Circuit (12.0μm², 0.8mW)
 
 ### 🛡️ Enhanced Safe Generation
 
@@ -242,7 +338,7 @@ src/
 │   ├── HDLTest.tsx     # HDL generation testing
 │   ├── ChipForgeSimulation.tsx # Simulation interface
 │   ├── Synthesis.tsx   # Synthesis engine
-│   └── ChipForgeWorkspace.tsx # Complete workspace
+│   └── ChipForgeWorkspace.tsx # Complete workspace with 3D visualization
 ├── backend/            # Backend engines
 │   ├── hdl-gen/        # HDL generation engine
 │   ├── sim/            # Simulation engine
@@ -301,6 +397,40 @@ src/
 2. Use quick action buttons to jump directly to specific tools
 3. Check tool status before starting complex workflows
 4. Access learning resources and settings from the header
+
+### 🧩 Workspace (`/workspace`)
+**Purpose**: Complete integrated development environment with schematic design, HDL generation, and 3D visualization.
+
+**Key Features**:
+- **Schematic Design**: Drag-and-drop component placement with grid snapping
+- **Component Library**: 8 categories of chip components with detailed specifications
+- **HDL Editor**: AI-powered Verilog generation with syntax validation
+- **3D Visualization**: Realistic chip model with actual layers and materials
+- **AI Copilot**: Contextual assistance for chip design
+- **Real-time Integration**: Seamless workflow between schematic, code, and 3D views
+
+**How to Use**:
+1. **Schematic Tab**: Drag components from library to canvas, connect with wires
+2. **HDL Tab**: View generated Verilog code, edit manually, validate syntax
+3. **3D Model Tab**: Explore realistic chip visualization with multiple views
+4. **AI Copilot**: Get design suggestions and assistance
+5. **Component Library**: Browse and search chip components by category
+
+**Component Categories**:
+- **Transistors**: NMOS, PMOS, BJT with electrical characteristics
+- **Logic Gates**: NAND, NOR, AND, OR, XOR, NOT with proper symbols
+- **Memory Elements**: D-Flip Flops, SRAM, ROM cells
+- **Arithmetic Units**: Adders, multipliers, ALUs
+- **Interface Circuits**: I/O buffers, level shifters
+- **Analog Circuits**: Op-amps, ADCs, DACs, PLLs
+- **Power Management**: Voltage regulators, power switches
+- **Communication**: UART, SPI, I2C interfaces
+
+**3D Visualization Views**:
+- **3D View**: Interactive 3D chip with rotation and zoom
+- **Top View**: Die layout with functional blocks and routing
+- **Side View**: Layer stack with material properties
+- **Cross Section**: Transistor structures and interconnects
 
 ### 🤖 HDL Test (`/hdl-test`)
 **Purpose**: AI-powered HDL code generation from natural language descriptions.
@@ -493,23 +623,6 @@ Constraints: "timing: 50MHz, area: optimize for minimum gates"
 3. **Resources Tab**: Access documentation and guides
 4. **Glossary Tab**: Look up technical terms and concepts
 
-### 🏭 Workspace (`/workspace`)
-**Purpose**: Complete integrated development environment for chip design.
-
-**Key Features**:
-- **Multi-tool Integration**: All tools in one interface
-- **Real-time Collaboration**: Multi-user editing capabilities
-- **Project Management**: Complete project lifecycle management
-- **Version Control**: Design version tracking and history
-- **Export Suite**: Comprehensive export options
-
-**How to Use**:
-1. Create or load a project
-2. Use integrated tools for the complete design flow
-3. Collaborate with team members in real-time
-4. Track changes and maintain version history
-5. Export final designs and documentation
-
 ### 📊 Usage Dashboard (`/usage-dashboard`)
 **Purpose**: Analytics and metrics tracking for design projects.
 
@@ -693,4 +806,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**ChipForge** - Empowering the future of chip design with AI-powered tools and intuitive workflows.
+**ChipForge** - Empowering the future of universal chip design with AI-powered tools, realistic 3D visualization, and intuitive workflows.

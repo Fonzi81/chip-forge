@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from 'react-router-dom';
@@ -17,16 +17,20 @@ import {
   Check, AlertTriangle, Shield, Package, Globe, Minus,
   X, RotateCcw, Wifi, Navigation, Compass, Satellite,
   Radio, Antenna, Microchip, Camera, Layers, CpuIcon,
-  Calculator, Wrench, Gauge, Battery, RadioTower
+  Calculator, Wrench, Gauge, Battery, RadioTower, Image as ImageIcon
 } from "lucide-react";
 import TopNav from "../components/chipforge/TopNav";
+import { useHDLDesignStore } from "@/state/hdlDesignStore";
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
 
 // General Chip Design Component interface
 interface Component {
   id: string;
   name: string;
   type: 'nmos' | 'pmos' | 'bjt' | 'nand' | 'nor' | 'and' | 'or' | 'xor' | 'not' | 
-        'dff' | 'sram' | 'rom' | 'adder' | 'multiplier' | 'alu' | 'io_buffer' | 
+        'dff' | 'tff' | 'jkff' | 'srff' | 'dlatch' | 'srlatch' | 'register' | 'counter' | 'sram' | 'rom' | 'adder' | 'multiplier' | 'alu' | 'io_buffer' | 
         'level_shifter' | 'opamp' | 'adc' | 'dac' | 'pll' | 'vreg' | 'power_switch' |
         'uart' | 'spi' | 'i2c';
   description: string;
@@ -39,6 +43,8 @@ interface Component {
   pins: string[];
   power: string;
   area: string;
+  outputs?: string[];
+  inputs?: string[];
 }
 
 // AI Chat Message interface
@@ -171,43 +177,84 @@ function AICopilot({ messages, onSendMessage, onApplySuggestion }: {
 
 // Schematic Design Tab with General Chip Components
 function SchematicDesignTab() {
-  const [components, setComponents] = useState<Array<{
-    id: string;
-    type: string;
-    x: number;
-    y: number;
-    connections: string[];
-  }>>([]);
-  const [wires, setWires] = useState<Array<{
-    id: string;
-    from: string;
-    to: string;
-    fromPin: string;
-    toPin: string;
-  }>>([]);
+  // Always use global store for design state
+  const design = useHDLDesignStore((state) => state.design);
+  const setDesign = useHDLDesignStore((state) => state.setDesign);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Local state mirrors global store, always kept in sync
+  const [components, setComponents] = useState([]);
+  const [wires, setWires] = useState([]);
+
+  // On mount and whenever design changes, sync local state
+  useEffect(() => {
+    if (design) {
+      setComponents(design.components || []);
+      setWires(design.wires || []);
+    }
+  }, [design]);
+
+  // On any schematic change, update global store
+  const updateDesign = (newComponents, newWires) => {
+    setComponents(newComponents);
+    setWires(newWires);
+    setDesign({ ...design, components: newComponents, wires: newWires });
+  };
+
+  // Example: Add component
+  const handleAddComponent = (newComponent) => {
+    const updated = [...components, newComponent];
+    updateDesign(updated, wires);
+  };
+  // Example: Add wire
+  const handleAddWire = (newWire) => {
+    const updated = [...wires, newWire];
+    updateDesign(components, updated);
+  };
+  // Example: Move component
+  const handleMoveComponent = (id, x, y) => {
+    const updated = components.map(c => c.id === id ? { ...c, x, y } : c);
+    updateDesign(updated, wires);
+  };
+  // Example: Delete component
+  const handleDeleteComponent = (id) => {
+    const updated = components.filter(c => c.id !== id);
+    const updatedWires = wires.filter(w => w.from.blockId !== id && w.to.blockId !== id);
+    updateDesign(updated, updatedWires);
+  };
+
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [isDragOver, setIsDragOver] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [justDragged, setJustDragged] = useState(false);
+  const [wiring, setWiring] = useState<null | { blockId: string; port: string; type: 'output' | 'input'; x: number; y: number }>(null);
+  const [hoveredPort, setHoveredPort] = useState<null | { blockId: string; port: string; type: 'output' | 'input' }>(null);
+
+  // Define block size constants
+  const BLOCK_WIDTH = 140;
+  const BLOCK_HEIGHT = 90;
 
   const handleCanvasClick = (e: React.MouseEvent) => {
-    if (isDragging) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
+    if (isDragging || justDragged) {
+      setJustDragged(false);
+      return;
+    }
+    const rect = canvasRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
-    // Add a default component (NAND gate) at click position
     const newComponent = {
       id: `comp_${Date.now()}`,
       type: 'nand',
       x: Math.round(x / 20) * 20,
       y: Math.round(y / 20) * 20,
-      connections: []
+      connections: [],
+      inputs: ['A', 'B'],
+      outputs: ['Y'],
     };
-    
-    setComponents(prev => [...prev, newComponent]);
+    handleAddComponent(newComponent);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -237,16 +284,17 @@ function SchematicDesignTab() {
       type: componentType,
       x: Math.round(x / 20) * 20,
       y: Math.round(y / 20) * 20,
-      connections: []
+      connections: [],
+      inputs: ['A', 'B'],
+      outputs: ['Y'],
     };
     
-    setComponents(prev => [...prev, newComponent]);
+    handleAddComponent(newComponent);
   };
 
   const handleMouseDown = (e: React.MouseEvent, componentId: string) => {
     e.stopPropagation();
-    
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = canvasRef.current!.getBoundingClientRect();
     const component = components.find(c => c.id === componentId);
     
     if (component) {
@@ -262,22 +310,18 @@ function SchematicDesignTab() {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !selectedComponent) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = canvasRef.current!.getBoundingClientRect();
     const newX = e.clientX - rect.left - dragOffset.x;
     const newY = e.clientY - rect.top - dragOffset.y;
     
     const snappedX = Math.round(newX / 20) * 20;
     const snappedY = Math.round(newY / 20) * 20;
     
-    setComponents(prev => prev.map(comp => 
-      comp.id === selectedComponent 
-        ? { ...comp, x: snappedX, y: snappedY }
-        : comp
-    ));
+    handleMoveComponent(selectedComponent, snappedX, snappedY);
   };
 
   const handleMouseUp = () => {
+    if (isDragging) setJustDragged(true);
     setIsDragging(false);
     setSelectedComponent(null);
     setDragOffset({ x: 0, y: 0 });
@@ -287,25 +331,18 @@ function SchematicDesignTab() {
     if (isDragging) {
       const handleGlobalMouseMove = (e: MouseEvent) => {
         if (!selectedComponent) return;
+        const rect = canvasRef.current!.getBoundingClientRect();
+        const newX = e.clientX - rect.left - dragOffset.x;
+        const newY = e.clientY - rect.top - dragOffset.y;
         
-        const canvas = document.querySelector('.schematic-canvas') as HTMLElement;
-        if (canvas) {
-          const rect = canvas.getBoundingClientRect();
-          const newX = e.clientX - rect.left - dragOffset.x;
-          const newY = e.clientY - rect.top - dragOffset.y;
-          
-          const snappedX = Math.round(newX / 20) * 20;
-          const snappedY = Math.round(newY / 20) * 20;
-          
-          setComponents(prev => prev.map(comp => 
-            comp.id === selectedComponent 
-              ? { ...comp, x: snappedX, y: snappedY }
-              : comp
-          ));
-        }
+        const snappedX = Math.round(newX / 20) * 20;
+        const snappedY = Math.round(newY / 20) * 20;
+        
+        handleMoveComponent(selectedComponent, snappedX, snappedY);
       };
 
       const handleGlobalMouseUp = () => {
+        setJustDragged(true);
         setIsDragging(false);
         setSelectedComponent(null);
         setDragOffset({ x: 0, y: 0 });
@@ -408,10 +445,88 @@ function SchematicDesignTab() {
     }
   };
 
+  // Helper to get port positions
+  const getPortPosition = (block, port, type) => {
+    const idx = (type === 'input' ? block.inputs : block.outputs).indexOf(port);
+    const total = (type === 'input' ? block.inputs : block.outputs).length;
+    const y = block.y + ((idx + 1) * BLOCK_HEIGHT) / (total + 1);
+    const x = type === 'input' ? block.x : block.x + BLOCK_WIDTH;
+    return { x, y };
+  };
+
+  // Port click handler
+  const handlePortClick = (blockId, port, type, e) => {
+    e.stopPropagation();
+    const block = components.find(c => c.id === blockId);
+    if (!block) return;
+    const { x, y } = getPortPosition(block, port, type);
+    if (!wiring) {
+      if (type === 'output') {
+        setWiring({ blockId, port, type, x, y });
+      }
+    } else {
+      if (type === 'input' && wiring.type === 'output' && wiring.blockId !== blockId) {
+        handleAddWire({
+          id: `wire_${Date.now()}`,
+          from: { blockId: wiring.blockId, port: wiring.port, type: 'output' },
+          to: { blockId, port, type: 'input' }
+        });
+        setWiring(null); // Reset wiring so user can start a new wire
+      } else if (type === 'output') {
+        setWiring({ blockId, port, type, x, y }); // Allow starting a new wire from another output
+      } else {
+        setWiring(null);
+      }
+    }
+  };
+
+  // Image upload handler
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await fetch("/api/schematic-image-to-digital", {
+      method: "POST",
+      body: formData,
+    });
+    if (response.ok) {
+      const schematic = await response.json();
+      setDesign(schematic); // This will trigger useEffect and update the diagram
+    } else {
+      alert("Failed to translate schematic image.");
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Schematic Canvas */}
       <div className="flex-1 relative overflow-hidden">
+        {/* Small Upload Icon Button */}
+        <button
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 4,
+            zIndex: 20,
+          }}
+          title="Upload Schematic Image"
+          onClick={() => fileInputRef.current?.click()}
+          type="button"
+        >
+          <ImageIcon size={20} color="#38bdf8" />
+        </button>
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleImageUpload}
+        />
         {/* Grid Background */}
         <div className="absolute inset-0" style={{
           backgroundImage: `
@@ -435,36 +550,94 @@ function SchematicDesignTab() {
           style={{ 
             cursor: isDragging ? 'grabbing' : isDragOver ? 'copy' : 'crosshair'
           }}
+          ref={canvasRef}
         >
-          {isDragOver && (
-            <div className="absolute inset-0 bg-cyan-600/10 pointer-events-none rounded-lg flex items-center justify-center">
-              <div className="text-center text-cyan-400">
-                <Package className="h-8 w-8 mx-auto mb-2" />
-                <div className="text-sm font-medium">Drop component here</div>
-              </div>
-            </div>
-          )}
+          {/* SVG wires */}
+          <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%">
+            {wires.map(wire => {
+              const fromBlock = components.find(c => c.id === wire.from.blockId);
+              const toBlock = components.find(c => c.id === wire.to.blockId);
+              if (!fromBlock || !toBlock) return null;
+              const fromPos = getPortPosition(fromBlock, wire.from.port, 'output');
+              const toPos = getPortPosition(toBlock, wire.to.port, 'input');
+              return <line key={wire.id} x1={fromPos.x} y1={fromPos.y} x2={toPos.x} y2={toPos.y} stroke="#10b981" strokeWidth={3} />;
+            })}
+            {wiring && hoveredPort && hoveredPort.type === 'input' && (() => {
+              const toBlock = components.find(c => c.id === hoveredPort.blockId);
+              if (!toBlock) return null;
+              const toPos = getPortPosition(toBlock, hoveredPort.port, 'input');
+              return <line x1={wiring.x} y1={wiring.y} x2={toPos.x} y2={toPos.y} stroke="#fbbf24" strokeWidth={2} strokeDasharray="4 2" />;
+            })()}
+          </svg>
           {/* Placed Components */}
-          {components.map((component) => (
-            <div
-              key={component.id}
-              className={`absolute cursor-move transition-transform ${
-                selectedComponent === component.id ? 'ring-2 ring-cyan-400 z-10' : 'z-0'
-              } ${isDragging && selectedComponent === component.id ? 'scale-105' : ''}`}
-              style={{ 
-                left: component.x, 
-                top: component.y,
-                transform: isDragging && selectedComponent === component.id ? 'scale(1.05)' : 'scale(1)'
-              }}
-              onMouseDown={(e) => handleMouseDown(e, component.id)}
-            >
-              {getComponentSymbol(component.type)}
-              <div className="text-xs text-slate-400 mt-1 text-center">
-                {component.type.toUpperCase()}
+          {components.map((component) => {
+            const safeComponent = {
+              ...component,
+              inputs: Array.isArray(component.inputs) ? component.inputs : [],
+              outputs: Array.isArray(component.outputs) ? component.outputs : [],
+            };
+            return (
+              <div
+                key={safeComponent.id}
+                className={`absolute schematic-block cursor-move transition-transform ${
+                  selectedComponent === safeComponent.id ? 'ring-2 ring-cyan-400 z-10' : 'z-0'
+                } ${isDragging && selectedComponent === safeComponent.id ? 'scale-105' : ''}`}
+                style={{
+                  left: safeComponent.x,
+                  top: safeComponent.y,
+                  width: BLOCK_WIDTH,
+                  height: BLOCK_HEIGHT,
+                  position: 'absolute',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#1e293b',
+                  border: '2px solid #0ea5e9',
+                  borderRadius: 8,
+                  boxSizing: 'border-box',
+                  padding: 0,
+                  margin: 0,
+                  overflow: 'visible',
+                  zIndex: selectedComponent === safeComponent.id ? 10 : 1,
+                  transform: isDragging && selectedComponent === safeComponent.id ? 'scale(1.05)' : 'scale(1)'
+                }}
+                onMouseDown={(e) => handleMouseDown(e, safeComponent.id)}
+              >
+                {/* Output ports */}
+                {safeComponent.outputs.map((port, idx) => {
+                  const isHovered = hoveredPort && hoveredPort.blockId === safeComponent.id && hoveredPort.port === port && hoveredPort.type === 'output';
+                  return <svg key={port} style={{ position: 'absolute', left: BLOCK_WIDTH - 8, top: ((idx + 1) * BLOCK_HEIGHT) / (safeComponent.outputs.length + 1) - 8, zIndex: 2 }} width={16} height={16}>
+                    <circle cx={8} cy={8} r={8} fill={isHovered ? '#fbbf24' : '#0ea5e9'} stroke="#fff" strokeWidth={2}
+                      onMouseEnter={() => setHoveredPort({ blockId: safeComponent.id, port, type: 'output' })}
+                      onMouseLeave={() => setHoveredPort(null)}
+                      onClick={e => handlePortClick(safeComponent.id, port, 'output', e)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </svg>;
+                })}
+                {/* Input ports */}
+                {safeComponent.inputs.map((port, idx) => {
+                  const isHovered = hoveredPort && hoveredPort.blockId === safeComponent.id && hoveredPort.port === port && hoveredPort.type === 'input';
+                  return <svg key={port} style={{ position: 'absolute', left: -8, top: ((idx + 1) * BLOCK_HEIGHT) / (safeComponent.inputs.length + 1) - 8, zIndex: 2 }} width={16} height={16}>
+                    <circle cx={8} cy={8} r={8} fill={isHovered ? '#fbbf24' : '#0ea5e9'} stroke="#fff" strokeWidth={2}
+                      onMouseEnter={() => setHoveredPort({ blockId: safeComponent.id, port, type: 'input' })}
+                      onMouseLeave={() => setHoveredPort(null)}
+                      onClick={e => handlePortClick(safeComponent.id, port, 'input', e)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </svg>;
+                })}
+                {/* Block content: icon and label centered */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, width: '100%', height: '100%' }}>
+                  {getComponentSymbol(safeComponent.type)}
+                  <div className="text-xs text-slate-400 mt-1 text-center">
+                    {safeComponent.type.toUpperCase()}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-          
+            );
+          })}
           {/* Instructions */}
           {components.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -510,427 +683,13 @@ function SchematicDesignTab() {
 
 // HDL Design Tab with General Chip Design Code
 function HDLDesignTab() {
-  const [verilogCode, setVerilogCode] = useState(`// General Chip Design - Verilog Code
-// Basic Logic Gates and Memory Elements
-
-module basic_logic_gates (
-  input wire a,
-  input wire b,
-  output wire and_out,
-  output wire or_out,
-  output wire nand_out,
-  output wire nor_out,
-  output wire xor_out,
-  output wire not_out
-);
-
-  // Basic logic gate implementations
-  assign and_out = a & b;
-  assign or_out = a | b;
-  assign nand_out = ~(a & b);
-  assign nor_out = ~(a | b);
-  assign xor_out = a ^ b;
-  assign not_out = ~a;
-
-endmodule
-
-// D-Flip Flop with asynchronous reset
-module d_flip_flop (
-  input wire clk,
-  input wire rst_n,
-  input wire d,
-  output reg q,
-  output reg q_bar
-);
-
-  always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      q <= 1'b0;
-      q_bar <= 1'b1;
-    end else begin
-      q <= d;
-      q_bar <= ~d;
-    end
-  end
-
-endmodule
-
-// 4-bit Adder
-module four_bit_adder (
-  input wire [3:0] a,
-  input wire [3:0] b,
-  input wire cin,
-  output wire [3:0] sum,
-  output wire cout
-);
-
-  wire [4:0] carry;
-  assign carry[0] = cin;
-  
-  genvar i;
-  generate
-    for (i = 0; i < 4; i = i + 1) begin : adder_loop
-      assign sum[i] = a[i] ^ b[i] ^ carry[i];
-      assign carry[i + 1] = (a[i] & b[i]) | (a[i] & carry[i]) | (b[i] & carry[i]);
-    end
-  endgenerate
-  
-  assign cout = carry[4];
-
-endmodule
-
-// Simple SRAM Cell
-module sram_cell (
-  input wire clk,
-  input wire we,
-  input wire [7:0] addr,
-  input wire [7:0] data_in,
-  output reg [7:0] data_out
-);
-
-  reg [7:0] memory [0:255]; // 256 x 8-bit memory
-  
-  always @(posedge clk) begin
-    if (we) begin
-      memory[addr] <= data_in;
-    end
-    data_out <= memory[addr];
-  end
-
-endmodule
-
-// 8-bit ALU
-module alu_8bit (
-  input wire [7:0] a,
-  input wire [7:0] b,
-  input wire [2:0] op,
-  output reg [7:0] result,
-  output reg zero_flag,
-  output reg carry_flag
-);
-
-  always @(*) begin
-    case (op)
-      3'b000: result = a + b;      // ADD
-      3'b001: result = a - b;      // SUB
-      3'b010: result = a & b;      // AND
-      3'b011: result = a | b;      // OR
-      3'b100: result = a ^ b;      // XOR
-      3'b101: result = ~a;         // NOT
-      3'b110: result = a << 1;     // SHIFT LEFT
-      3'b111: result = a >> 1;     // SHIFT RIGHT
-    endcase
-    
-    zero_flag = (result == 8'h00);
-    carry_flag = (op == 3'b000) && (a + b > 8'hFF);
-  end
-
-endmodule
-
-// Clock Divider
-module clock_divider (
-  input wire clk_in,
-  input wire rst_n,
-  output reg clk_out
-);
-
-  reg [31:0] counter;
-  
-  always @(posedge clk_in or negedge rst_n) begin
-    if (!rst_n) begin
-      counter <= 32'h00000000;
-      clk_out <= 1'b0;
-    end else begin
-      if (counter >= 32'h0000000F) begin // Divide by 32
-        counter <= 32'h00000000;
-        clk_out <= ~clk_out;
-      end else begin
-        counter <= counter + 1;
-      end
-    end
-  end
-
-endmodule
-
-// Top Level Module
-module chip_design_top (
-  input wire clk,
-  input wire rst_n,
-  input wire [7:0] input_data,
-  input wire [7:0] input_addr,
-  input wire write_enable,
-  input wire [2:0] alu_op,
-  output wire [7:0] output_data,
-  output wire [7:0] alu_result
-);
-
-  wire [7:0] memory_data;
-  wire [7:0] logic_result;
-  
-  // Instantiate modules
-  sram_cell memory (
-    .clk(clk),
-    .we(write_enable),
-    .addr(input_addr),
-    .data_in(input_data),
-    .data_out(memory_data)
-  );
-  
-  alu_8bit alu (
-    .a(input_data),
-    .b(memory_data),
-    .op(alu_op),
-    .result(alu_result),
-    .zero_flag(),
-    .carry_flag()
-  );
-  
-  basic_logic_gates logic_gates (
-    .a(input_data[0]),
-    .b(input_data[1]),
-    .and_out(),
-    .or_out(),
-    .nand_out(),
-    .nor_out(),
-    .xor_out(),
-    .not_out()
-  );
-  
-  assign output_data = memory_data;
-
-endmodule
-
-// Testbench
-module chip_design_tb;
-  reg clk;
-  reg rst_n;
-  reg [7:0] input_data;
-  reg [7:0] input_addr;
-  reg write_enable;
-  reg [2:0] alu_op;
-  wire [7:0] output_data;
-  wire [7:0] alu_result;
-  
-  // Instantiate the design under test
-  chip_design_top dut (
-    .clk(clk),
-    .rst_n(rst_n),
-    .input_data(input_data),
-    .input_addr(input_addr),
-    .write_enable(write_enable),
-    .alu_op(alu_op),
-    .output_data(output_data),
-    .alu_result(alu_result)
-  );
-  
-  // Clock generation
-  initial begin
-    clk = 0;
-    forever #5 clk = ~clk;
-  end
-  
-  // Test stimulus
-  initial begin
-    // Initialize
-    rst_n = 0;
-    input_data = 8'h00;
-    input_addr = 8'h00;
-    write_enable = 0;
-    alu_op = 3'b000;
-    
-    // Release reset
-    #10 rst_n = 1;
-    
-    // Write data to memory
-    #10 write_enable = 1;
-    input_addr = 8'h01;
-    input_data = 8'hAA;
-    
-    #10 input_addr = 8'h02;
-    input_data = 8'h55;
-    
-    #10 write_enable = 0;
-    
-    // Test ALU operations
-    #10 alu_op = 3'b000; // ADD
-    input_data = 8'h10;
-    
-    #10 alu_op = 3'b010; // AND
-    input_data = 8'h0F;
-    
-    #10 alu_op = 3'b100; // XOR
-    input_data = 8'hFF;
-    
-    #100 $finish;
-  end
-  
-  // Monitor outputs
-  initial begin
-    $monitor("Time=%0t rst_n=%b addr=%h data_in=%h alu_op=%b alu_result=%h", 
-             $time, rst_n, input_addr, input_data, alu_op, alu_result);
-  end
-
-endmodule`);
-
-  const [syntaxErrors, setSyntaxErrors] = useState<string[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  const generateVerilogFromSchematic = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      const newCode = `// AI-Generated Verilog from Schematic
-module ai_generated_design (
-  input wire clk,
-  input wire rst_n,
-  input wire [7:0] data_in,
-  output wire [7:0] data_out
-);
-
-  // Generated from schematic components
-  wire [7:0] processed_data;
-  wire [7:0] memory_data;
-  wire [7:0] alu_result;
-  
-  // Component instantiations based on schematic
-  sram_cell memory1 (.clk(clk), .we(1'b1), .addr(data_in[7:0]), .data_in(data_in), .data_out(memory_data));
-  alu_8bit alu1 (.a(data_in), .b(memory_data), .op(3'b000), .result(alu_result));
-  d_flip_flop dff1 (.clk(clk), .rst_n(rst_n), .d(alu_result[0]), .q(processed_data[0]));
-  
-  assign data_out = processed_data;
-
-endmodule`;
-      
-      setVerilogCode(newCode);
-      setIsGenerating(false);
-    }, 2000);
-  };
-
-  const validateSyntax = () => {
-    const errors: string[] = [];
-    
-    if (!verilogCode.includes('module')) {
-      errors.push('Missing module declaration');
-    }
-    
-    if (!verilogCode.includes('endmodule')) {
-      errors.push('Missing endmodule');
-    }
-    
-    if (verilogCode.includes('wire') && !verilogCode.includes('assign')) {
-      errors.push('Wire declared but not assigned');
-    }
-    
-    if (verilogCode.includes('reg') && !verilogCode.includes('always')) {
-      errors.push('Register declared but not used in always block');
-    }
-    
-    setSyntaxErrors(errors);
-  };
+  const design = useHDLDesignStore((state) => state.design);
+  const verilogCode = design?.verilog || "// No HDL generated for this schematic yet.";
 
   return (
-    <div className="h-full flex flex-col">
-      {/* HDL Editor Header */}
-      <div className="bg-slate-800 border-b border-slate-700 p-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h3 className="text-sm font-medium text-slate-200">Chip Design HDL Editor</h3>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent"
-              onClick={generateVerilogFromSchematic}
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3 w-3 mr-2" />
-                  Generate from Schematic
-                </>
-              )}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent"
-              onClick={validateSyntax}
-            >
-              <Check className="h-3 w-3 mr-2" />
-              Validate Syntax
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">
-            Verilog-2001
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            {verilogCode.split('\n').length} lines
-          </Badge>
-        </div>
-      </div>
-
-      {/* Syntax Errors */}
-      {syntaxErrors.length > 0 && (
-        <div className="bg-red-900/20 border-b border-red-700 p-2">
-          <div className="flex items-center gap-2 text-red-400 text-sm">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="font-medium">Syntax Errors:</span>
-          </div>
-          <ul className="text-xs text-red-300 mt-1 ml-6">
-            {syntaxErrors.map((error, index) => (
-              <li key={index}>• {error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Code Editor */}
-      <div className="flex-1 relative">
-        <textarea
-          value={verilogCode}
-          onChange={(e) => setVerilogCode(e.target.value)}
-          className="w-full h-full bg-slate-900 text-slate-200 p-4 font-mono text-sm resize-none border-none outline-none"
-          placeholder="Enter chip design Verilog code here..."
-          spellCheck={false}
-        />
-        
-        {/* Line Numbers */}
-        <div className="absolute left-0 top-0 w-12 h-full bg-slate-800 border-r border-slate-700 p-4 font-mono text-xs text-slate-500 select-none">
-          {verilogCode.split('\n').map((_, index) => (
-            <div key={index} className="text-right">
-              {index + 1}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bottom Toolbar */}
-      <div className="bg-slate-800 border-t border-slate-700 p-2 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent">
-            <Save className="h-3 w-3 mr-2" />
-            Save
-          </Button>
-          <Button variant="outline" size="sm" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent">
-            <Download className="h-3 w-3 mr-2" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent">
-            <TestTube className="h-3 w-3 mr-2" />
-            Generate Testbench
-          </Button>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span>AI Suggestions: 3</span>
-          <span>•</span>
-          <span>Syntax: {syntaxErrors.length > 0 ? 'Error' : 'Valid'}</span>
-        </div>
-      </div>
+    <div className="p-4 h-full overflow-auto bg-slate-900">
+      <h3 className="text-lg font-semibold mb-2 text-cyan-400">Generated HDL (Verilog)</h3>
+      <pre className="bg-slate-800 p-4 rounded text-xs overflow-x-auto">{verilogCode}</pre>
     </div>
   );
 } 
@@ -1089,11 +848,116 @@ function ComponentLibrary() {
       verified: true,
       usage: '14.7k',
       likes: 678,
-      icon: <Calculator className="h-4 w-4" />,
+      icon: <Clock className="h-4 w-4" />, // Use clock icon for flip-flops
       category: 'Memory Elements',
       pins: ['D', 'CLK', 'Q', 'Q_bar'],
       power: '0.5mW',
       area: '3.0μm²'
+    },
+    {
+      id: 'tff_001',
+      name: 'T-Flip Flop',
+      type: 'tff',
+      description: 'Toggle flip-flop with clock',
+      creator: 'TSMC',
+      verified: true,
+      usage: '8.2k',
+      likes: 412,
+      icon: <RotateCw className="h-4 w-4" />, // Toggle icon
+      category: 'Memory Elements',
+      pins: ['T', 'CLK', 'Q', 'Q_bar'],
+      power: '0.5mW',
+      area: '3.0μm²'
+    },
+    {
+      id: 'jkff_001',
+      name: 'JK-Flip Flop',
+      type: 'jkff',
+      description: 'JK flip-flop with clock',
+      creator: 'TSMC',
+      verified: true,
+      usage: '6.1k',
+      likes: 301,
+      icon: <Cpu className="h-4 w-4" />, // Use CPU icon for JK
+      category: 'Memory Elements',
+      pins: ['J', 'K', 'CLK', 'Q', 'Q_bar'],
+      power: '0.5mW',
+      area: '3.0μm²'
+    },
+    {
+      id: 'srff_001',
+      name: 'SR-Flip Flop',
+      type: 'srff',
+      description: 'Set-Reset flip-flop with clock',
+      creator: 'TSMC',
+      verified: true,
+      usage: '5.4k',
+      likes: 250,
+      icon: <Cpu className="h-4 w-4" />, // Use CPU icon for SR
+      category: 'Memory Elements',
+      pins: ['S', 'R', 'CLK', 'Q', 'Q_bar'],
+      power: '0.5mW',
+      area: '3.0μm²'
+    },
+    {
+      id: 'dlatch_001',
+      name: 'D Latch',
+      type: 'dlatch',
+      description: 'Transparent D latch',
+      creator: 'TSMC',
+      verified: true,
+      usage: '4.2k',
+      likes: 200,
+      icon: <Square className="h-4 w-4" />, // Use square icon for latches
+      category: 'Memory Elements',
+      pins: ['D', 'EN', 'Q', 'Q_bar'],
+      power: '0.3mW',
+      area: '2.5μm²'
+    },
+    {
+      id: 'srlatch_001',
+      name: 'SR Latch',
+      type: 'srlatch',
+      description: 'Set-Reset latch',
+      creator: 'TSMC',
+      verified: true,
+      usage: '3.8k',
+      likes: 180,
+      icon: <Square className="h-4 w-4" />, // Use square icon for latches
+      category: 'Memory Elements',
+      pins: ['S', 'R', 'Q', 'Q_bar'],
+      power: '0.3mW',
+      area: '2.5μm²'
+    },
+    {
+      id: 'register_001',
+      name: 'Register (8-bit)',
+      type: 'register',
+      description: '8-bit parallel register',
+      creator: 'TSMC',
+      verified: true,
+      usage: '10.5k',
+      likes: 500,
+      icon: <Layers className="h-4 w-4" />, // Use layers icon for register
+      category: 'Memory Elements',
+      pins: ['D[7:0]', 'CLK', 'Q[7:0]'],
+      power: '1.0mW',
+      area: '8.0μm²'
+    },
+    {
+      id: 'counter_001',
+      name: 'Counter (4-bit)',
+      type: 'counter',
+      description: '4-bit synchronous counter',
+      creator: 'TSMC',
+      verified: true,
+      usage: '7.3k',
+      likes: 350,
+      icon: <RotateCcw className="h-4 w-4" />, // Use rotate icon for counter
+      category: 'Memory Elements',
+      pins: ['CLK', 'RST', 'Q[3:0]'],
+      power: '0.8mW',
+      area: '4.0μm²'
     },
     {
       id: 'sram_001',
@@ -1454,465 +1318,58 @@ function ComponentLibrary() {
 } 
 
 // 3D Model Design Tab with Realistic Chip Visualization
+function Wire3D({ from, to }) {
+  const ref = useRef<THREE.BufferGeometry | null>(null);
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.setFromPoints([
+        new THREE.Vector3(from.x - 200, from.y - 150, 20),
+        new THREE.Vector3(to.x - 200, to.y - 150, 20)
+      ]);
+    }
+  }, [from, to]);
+  return (
+    <line>
+      <bufferGeometry ref={ref} />
+      <lineBasicMaterial color="#fbbf24" linewidth={2} />
+    </line>
+  );
+}
+
 function ModelDesignTab() {
-  const [viewMode, setViewMode] = useState<'3d' | 'top' | 'side' | 'cross'>('3d');
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-  const [selectedLayer, setSelectedLayer] = useState<string>('Metal 3');
+  const design = useHDLDesignStore((state) => state.design);
 
-  const chipLayers = [
-    { name: 'Metal 3', color: '#FFD700', thickness: 2, material: 'Copper', resistivity: '1.68 μΩ·cm' },
-    { name: 'Via 2-3', color: '#FFA500', thickness: 1, material: 'Tungsten', resistivity: '5.6 μΩ·cm' },
-    { name: 'Metal 2', color: '#FF6347', thickness: 2, material: 'Copper', resistivity: '1.68 μΩ·cm' },
-    { name: 'Via 1-2', color: '#FF4500', thickness: 1, material: 'Tungsten', resistivity: '5.6 μΩ·cm' },
-    { name: 'Metal 1', color: '#DC143C', thickness: 2, material: 'Copper', resistivity: '1.68 μΩ·cm' },
-    { name: 'Via 0-1', color: '#B22222', thickness: 1, material: 'Tungsten', resistivity: '5.6 μΩ·cm' },
-    { name: 'Poly', color: '#32CD32', thickness: 1, material: 'Polysilicon', resistivity: '1000 μΩ·cm' },
-    { name: 'Active', color: '#4169E1', thickness: 1, material: 'Silicon', resistivity: '2300 μΩ·cm' },
-    { name: 'Substrate', color: '#8B4513', thickness: 10, material: 'P-Silicon', resistivity: '100000 μΩ·cm' }
-  ];
+  if (!design || !design.components) return <div>No schematic loaded for 3D visualization.</div>;
 
-  const transistorStructures = [
-    { id: 't1', x: 50, y: 30, type: 'NMOS', width: 2, length: 0.5, gateVoltage: '1.2V' },
-    { id: 't2', x: 120, y: 30, type: 'PMOS', width: 4, length: 0.5, gateVoltage: '0V' },
-    { id: 't3', x: 190, y: 30, type: 'NMOS', width: 1.5, length: 0.3, gateVoltage: '1.2V' },
-    { id: 't4', x: 50, y: 100, type: 'PMOS', width: 3, length: 0.5, gateVoltage: '0V' },
-    { id: 't5', x: 120, y: 100, type: 'NMOS', width: 2.5, length: 0.4, gateVoltage: '1.2V' }
-  ];
-
-  const renderChip3D = () => (
-    <div className="relative w-full h-full bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-      {/* 3D Chip Visualization */}
-      <div 
-        className="relative transform-gpu"
-        style={{
-          transform: `scale(${zoom}) rotateY(${rotation}deg)`,
-          transformStyle: 'preserve-3d'
-        }}
-      >
-        {/* Chip Die with Realistic Materials */}
-        <div className="w-80 h-80 bg-gradient-to-br from-slate-700 to-slate-600 rounded-lg shadow-2xl relative">
-          {/* Die Surface with Actual Chip Features */}
-          <div className="absolute inset-4 bg-slate-800 rounded-md">
-            {/* Metal Interconnects (Realistic Pattern) */}
-            <svg className="w-full h-full absolute inset-0" viewBox="0 0 288 288">
-              {/* Metal 3 Layer - Power Distribution */}
-              <path d="M 20 20 L 268 20" stroke="#FFD700" strokeWidth="3" fill="none"/>
-              <path d="M 20 268 L 268 268" stroke="#FFD700" strokeWidth="3" fill="none"/>
-              <path d="M 20 20 L 20 268" stroke="#FFD700" strokeWidth="3" fill="none"/>
-              <path d="M 268 20 L 268 268" stroke="#FFD700" strokeWidth="3" fill="none"/>
-              
-              {/* Metal 2 Layer - Signal Routing */}
-              <path d="M 40 60 L 120 60" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 160 60 L 248 60" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 40 120 L 80 120" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 120 120 L 200 120" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 220 120 L 248 120" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 40 180 L 100 180" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 140 180 L 248 180" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 40 240 L 60 240" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 80 240 L 160 240" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              <path d="M 180 240 L 248 240" stroke="#FF6347" strokeWidth="2" fill="none"/>
-              
-              {/* Metal 1 Layer - Local Interconnects */}
-              <path d="M 50 80 L 70 80" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 90 80 L 110 80" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 130 80 L 150 80" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 170 80 L 190 80" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 210 80 L 230 80" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 50 140 L 70 140" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 90 140 L 110 140" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 130 140 L 150 140" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 170 140 L 190 140" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 210 140 L 230 140" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 50 200 L 70 200" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 90 200 L 110 200" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 130 200 L 150 200" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 170 200 L 190 200" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              <path d="M 210 200 L 230 200" stroke="#DC143C" strokeWidth="1.5" fill="none"/>
-              
-              {/* Vias (Vertical Connections) */}
-              <circle cx="60" cy="60" r="2" fill="#FFA500"/>
-              <circle cx="120" cy="60" r="2" fill="#FFA500"/>
-              <circle cx="180" cy="60" r="2" fill="#FFA500"/>
-              <circle cx="60" cy="120" r="2" fill="#FFA500"/>
-              <circle cx="120" cy="120" r="2" fill="#FFA500"/>
-              <circle cx="180" cy="120" r="2" fill="#FFA500"/>
-              <circle cx="60" cy="180" r="2" fill="#FFA500"/>
-              <circle cx="120" cy="180" r="2" fill="#FFA500"/>
-              <circle cx="180" cy="180" r="2" fill="#FFA500"/>
-              
-              {/* Transistor Outlines */}
-              <rect x="45" y="25" width="30" height="20" fill="none" stroke="#32CD32" strokeWidth="1" strokeDasharray="2,2"/>
-              <rect x="115" y="25" width="30" height="20" fill="none" stroke="#32CD32" strokeWidth="1" strokeDasharray="2,2"/>
-              <rect x="185" y="25" width="30" height="20" fill="none" stroke="#32CD32" strokeWidth="1" strokeDasharray="2,2"/>
-              <rect x="45" y="95" width="30" height="20" fill="none" stroke="#32CD32" strokeWidth="1" strokeDasharray="2,2"/>
-              <rect x="115" y="95" width="30" height="20" fill="none" stroke="#32CD32" strokeWidth="1" strokeDasharray="2,2"/>
-              <rect x="185" y="95" width="30" height="20" fill="none" stroke="#32CD32" strokeWidth="1" strokeDasharray="2,2"/>
-              
-              {/* Bonding Pads */}
-              <circle cx="20" cy="20" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-              <circle cx="268" cy="20" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-              <circle cx="20" cy="268" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-              <circle cx="268" cy="268" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-              <circle cx="144" cy="20" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-              <circle cx="144" cy="268" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-              <circle cx="20" cy="144" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-              <circle cx="268" cy="144" r="4" fill="#C0C0C0" stroke="#808080" strokeWidth="1"/>
-            </svg>
-            
-            {/* Component Labels */}
-            <div className="absolute top-8 left-8 text-xs text-slate-300 font-mono">
-              <div>ALU</div>
-              <div className="text-xs text-slate-400">8-bit</div>
-            </div>
-            <div className="absolute top-8 right-8 text-xs text-slate-300 font-mono">
-              <div>SRAM</div>
-              <div className="text-xs text-slate-400">256x8</div>
-            </div>
-            <div className="absolute bottom-8 left-8 text-xs text-slate-300 font-mono">
-              <div>CLK</div>
-              <div className="text-xs text-slate-400">DIV</div>
-            </div>
-            <div className="absolute bottom-8 right-8 text-xs text-slate-300 font-mono">
-              <div>I/O</div>
-              <div className="text-xs text-slate-400">BUF</div>
-            </div>
-          </div>
-          
-          {/* Layer Stack Visualization */}
-          <div className="absolute -bottom-4 left-0 right-0 h-4 bg-gradient-to-r from-yellow-600 via-orange-600 to-red-600 rounded-b-lg">
-            <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-bold">
-              LAYER STACK
-            </div>
-          </div>
-        </div>
-        
-        {/* Package with Realistic Materials */}
-        <div className="absolute -inset-6 bg-gradient-to-br from-slate-500 to-slate-400 rounded-xl opacity-30 shadow-lg">
-          <div className="absolute inset-2 bg-gradient-to-br from-slate-600 to-slate-500 rounded-lg opacity-50"></div>
-        </div>
-      </div>
-      
-      {/* Layer Information Panel */}
-      <div className="absolute top-4 left-4 bg-slate-800/90 backdrop-blur-sm rounded-lg p-4 max-w-xs">
-        <h4 className="text-sm font-medium text-slate-200 mb-3">Chip Layers</h4>
-        <div className="space-y-2">
-          {chipLayers.map((layer) => (
-            <div 
-              key={layer.name}
-              className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
-                selectedLayer === layer.name ? 'bg-slate-700' : 'hover:bg-slate-700/50'
-              }`}
-              onClick={() => setSelectedLayer(layer.name)}
-            >
-              <div 
-                className="w-4 h-4 rounded"
-                style={{ backgroundColor: layer.color }}
-              ></div>
-              <div className="flex-1">
-                <div className="text-xs font-medium text-slate-200">{layer.name}</div>
-                <div className="text-xs text-slate-400">{layer.material}</div>
-              </div>
-              <div className="text-xs text-slate-500">{layer.thickness}μm</div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Controls Overlay */}
-      <div className="absolute top-4 right-4 bg-slate-800/80 backdrop-blur-sm rounded-lg p-3">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <ZoomIn className="h-4 w-4 text-slate-300" />
-            <input
-              type="range"
-              min="0.5"
-              max="2"
-              step="0.1"
-              value={zoom}
-              onChange={(e) => setZoom(parseFloat(e.target.value))}
-              className="w-20"
-            />
-            <ZoomOut className="h-4 w-4 text-slate-300" />
-          </div>
-          <div className="flex items-center gap-2">
-            <RotateCcw className="h-4 w-4 text-slate-300" />
-            <input
-              type="range"
-              min="0"
-              max="360"
-              value={rotation}
-              onChange={(e) => setRotation(parseInt(e.target.value))}
-              className="w-20"
-            />
-            <RotateCw className="h-4 w-4 text-slate-300" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderTopView = () => (
-    <div className="w-full h-full bg-slate-900 flex items-center justify-center">
-      <div className="w-96 h-96 bg-slate-800 rounded-lg relative">
-        {/* Top View Layout with Realistic Chip Features */}
-        <svg className="w-full h-full" viewBox="0 0 384 384">
-          {/* Die Outline */}
-          <rect x="32" y="32" width="320" height="320" fill="none" stroke="#FFD700" strokeWidth="4" rx="8"/>
-          
-          {/* Metal 3 Layer - Power Grid */}
-          <rect x="48" y="48" width="288" height="288" fill="none" stroke="#FFD700" strokeWidth="3"/>
-          <path d="M 144 48 L 144 336" stroke="#FFD700" strokeWidth="2"/>
-          <path d="M 240 48 L 240 336" stroke="#FFD700" strokeWidth="2"/>
-          <path d="M 48 144 L 336 144" stroke="#FFD700" strokeWidth="2"/>
-          <path d="M 48 240 L 336 240" stroke="#FFD700" strokeWidth="2"/>
-          
-          {/* Metal 2 Layer - Signal Routing */}
-          <path d="M 64 80 L 160 80" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 224 80 L 320 80" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 64 128 L 128 128" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 160 128 L 256 128" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 64 176 L 96 176" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 128 176 L 224 176" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 256 176 L 320 176" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 64 224 L 112 224" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 144 224 L 240 224" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 272 224 L 320 224" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 64 272 L 80 272" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 96 272 L 192 272" stroke="#FF6347" strokeWidth="2"/>
-          <path d="M 224 272 L 320 272" stroke="#FF6347" strokeWidth="2"/>
-          
-          {/* Functional Blocks */}
-          <rect x="64" y="64" width="64" height="48" fill="#4ade80" stroke="#22c55e" strokeWidth="2" rx="4"/>
-          <text x="96" y="92" textAnchor="middle" fill="white" fontSize="10">ALU</text>
-          
-          <rect x="256" y="64" width="64" height="48" fill="#60a5fa" stroke="#3b82f6" strokeWidth="2" rx="4"/>
-          <text x="288" y="92" textAnchor="middle" fill="white" fontSize="10">SRAM</text>
-          
-          <rect x="64" y="128" width="64" height="48" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx="4"/>
-          <text x="96" y="156" textAnchor="middle" fill="white" fontSize="10">CLK</text>
-          
-          <rect x="256" y="128" width="64" height="48" fill="#8b5cf6" stroke="#7c3aed" strokeWidth="2" rx="4"/>
-          <text x="288" y="156" textAnchor="middle" fill="white" fontSize="10">I/O</text>
-          
-          <rect x="64" y="192" width="64" height="48" fill="#ec4899" stroke="#db2777" strokeWidth="2" rx="4"/>
-          <text x="96" y="220" textAnchor="middle" fill="white" fontSize="10">CTRL</text>
-          
-          <rect x="256" y="192" width="64" height="48" fill="#10b981" stroke="#059669" strokeWidth="2" rx="4"/>
-          <text x="288" y="220" textAnchor="middle" fill="white" fontSize="10">PLL</text>
-          
-          {/* Transistor Arrays */}
-          <g stroke="#32CD32" strokeWidth="1" fill="none">
-            <rect x="144" y="64" width="96" height="48" strokeDasharray="2,2"/>
-            <rect x="144" y="128" width="96" height="48" strokeDasharray="2,2"/>
-            <rect x="144" y="192" width="96" height="48" strokeDasharray="2,2"/>
-          </g>
-          
-          {/* Bonding Pads */}
-          <circle cx="32" cy="32" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-          <circle cx="352" cy="32" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-          <circle cx="32" cy="352" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-          <circle cx="352" cy="352" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-          <circle cx="192" cy="32" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-          <circle cx="192" cy="352" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-          <circle cx="32" cy="192" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-          <circle cx="352" cy="192" r="6" fill="#C0C0C0" stroke="#808080" strokeWidth="2"/>
-        </svg>
-      </div>
-    </div>
-  );
-
-  const renderSideView = () => (
-    <div className="w-full h-full bg-slate-900 flex items-center justify-center">
-      <div className="w-96 h-96 bg-slate-800 rounded-lg relative">
-        {/* Side View - Detailed Layer Stack */}
-        <div className="absolute inset-8 flex flex-col justify-center">
-          {chipLayers.map((layer, index) => (
-            <div
-              key={layer.name}
-              className="flex items-center mb-1"
-              style={{ height: `${layer.thickness * 3}px` }}
-            >
-              <div 
-                className="w-full h-full rounded"
-                style={{ backgroundColor: layer.color }}
-              ></div>
-              <div className="ml-3 text-xs text-slate-300 w-20">{layer.name}</div>
-              <div className="ml-2 text-xs text-slate-400 w-16">{layer.material}</div>
-              <div className="ml-2 text-xs text-slate-500 w-12">{layer.thickness}μm</div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Layer Details */}
-        <div className="absolute right-8 top-8 text-xs text-slate-400">
-          <div className="font-medium mb-2">Layer Properties</div>
-          <div className="space-y-1">
-            {chipLayers.map((layer) => (
-              <div key={layer.name} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded"
-                  style={{ backgroundColor: layer.color }}
-                ></div>
-                <span>{layer.name}:</span>
-                <span className="text-slate-500">{layer.resistivity}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderCrossSection = () => (
-    <div className="w-full h-full bg-slate-900 flex items-center justify-center">
-      <div className="w-96 h-96 bg-slate-800 rounded-lg relative">
-        {/* Cross Section View - Transistor Structures */}
-        <svg className="w-full h-full" viewBox="0 0 384 384">
-          {/* Substrate */}
-          <rect x="32" y="320" width="320" height="32" fill="#8B4513"/>
-          
-          {/* Active Regions */}
-          <rect x="64" y="304" width="48" height="16" fill="#4169E1"/>
-          <rect x="144" y="304" width="48" height="16" fill="#4169E1"/>
-          <rect x="224" y="304" width="48" height="16" fill="#4169E1"/>
-          <rect x="304" y="304" width="48" height="16" fill="#4169E1"/>
-          
-          {/* Gate Oxide */}
-          <rect x="64" y="296" width="48" height="8" fill="#32CD32" opacity="0.7"/>
-          <rect x="144" y="296" width="48" height="8" fill="#32CD32" opacity="0.7"/>
-          <rect x="224" y="296" width="48" height="8" fill="#32CD32" opacity="0.7"/>
-          <rect x="304" y="296" width="48" height="8" fill="#32CD32" opacity="0.7"/>
-          
-          {/* Polysilicon Gates */}
-          <rect x="80" y="280" width="16" height="24" fill="#32CD32"/>
-          <rect x="160" y="280" width="16" height="24" fill="#32CD32"/>
-          <rect x="240" y="280" width="16" height="24" fill="#32CD32"/>
-          <rect x="320" y="280" width="16" height="24" fill="#32CD32"/>
-          
-          {/* Metal 1 Interconnects */}
-          <rect x="64" y="264" width="48" height="8" fill="#DC143C"/>
-          <rect x="144" y="264" width="48" height="8" fill="#DC143C"/>
-          <rect x="224" y="264" width="48" height="8" fill="#DC143C"/>
-          <rect x="304" y="264" width="48" height="8" fill="#DC143C"/>
-          
-          {/* Metal 2 Interconnects */}
-          <rect x="64" y="248" width="48" height="8" fill="#FF6347"/>
-          <rect x="144" y="248" width="48" height="8" fill="#FF6347"/>
-          <rect x="224" y="248" width="48" height="8" fill="#FF6347"/>
-          <rect x="304" y="248" width="48" height="8" fill="#FF6347"/>
-          
-          {/* Metal 3 Power Rails */}
-          <rect x="32" y="232" width="320" height="8" fill="#FFD700"/>
-          <rect x="32" y="216" width="320" height="8" fill="#FFD700"/>
-          
-          {/* Vias */}
-          <circle cx="88" cy="272" r="2" fill="#FFA500"/>
-          <circle cx="168" cy="272" r="2" fill="#FFA500"/>
-          <circle cx="248" cy="272" r="2" fill="#FFA500"/>
-          <circle cx="328" cy="272" r="2" fill="#FFA500"/>
-          <circle cx="88" cy="256" r="2" fill="#FF4500"/>
-          <circle cx="168" cy="256" r="2" fill="#FF4500"/>
-          <circle cx="248" cy="256" r="2" fill="#FF4500"/>
-          <circle cx="328" cy="256" r="2" fill="#FF4500"/>
-          
-          {/* Labels */}
-          <text x="192" y="340" textAnchor="middle" fill="white" fontSize="10">Substrate (P-Silicon)</text>
-          <text x="192" y="310" textAnchor="middle" fill="white" fontSize="8">Active Regions</text>
-          <text x="192" y="300" textAnchor="middle" fill="white" fontSize="8">Gate Oxide</text>
-          <text x="192" y="290" textAnchor="middle" fill="white" fontSize="8">Polysilicon Gates</text>
-          <text x="192" y="270" textAnchor="middle" fill="white" fontSize="8">Metal 1</text>
-          <text x="192" y="254" textAnchor="middle" fill="white" fontSize="8">Metal 2</text>
-          <text x="192" y="238" textAnchor="middle" fill="white" fontSize="8">Metal 3 (Power)</text>
-        </svg>
-      </div>
-    </div>
-  );
+  // Helper to get 3D position for a component
+  const getBlockPosition = (comp) => new THREE.Vector3(comp.x - 200, comp.y - 150, 10);
 
   return (
-    <div className="h-full flex flex-col">
-      {/* 3D Model Header */}
-      <div className="bg-slate-800 border-b border-slate-700 p-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h3 className="text-sm font-medium text-slate-200">Realistic Chip 3D Model</h3>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant={viewMode === '3d' ? 'default' : 'outline'}
-              size="sm" 
-              className={viewMode === '3d' ? 'bg-cyan-600 text-white' : 'border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent'}
-              onClick={() => setViewMode('3d')}
-            >
-              3D View
-            </Button>
-            <Button 
-              variant={viewMode === 'top' ? 'default' : 'outline'}
-              size="sm" 
-              className={viewMode === 'top' ? 'bg-cyan-600 text-white' : 'border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent'}
-              onClick={() => setViewMode('top')}
-            >
-              Top View
-            </Button>
-            <Button 
-              variant={viewMode === 'side' ? 'default' : 'outline'}
-              size="sm" 
-              className={viewMode === 'side' ? 'bg-cyan-600 text-white' : 'border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent'}
-              onClick={() => setViewMode('side')}
-            >
-              Side View
-            </Button>
-            <Button 
-              variant={viewMode === 'cross' ? 'default' : 'outline'}
-              size="sm" 
-              className={viewMode === 'cross' ? 'bg-cyan-600 text-white' : 'border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent'}
-              onClick={() => setViewMode('cross')}
-            >
-              Cross Section
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">
-            {viewMode.toUpperCase()}
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            {Math.round(zoom * 100)}% Zoom
-          </Badge>
-        </div>
-      </div>
-
-      {/* 3D Viewport */}
-      <div className="flex-1 relative">
-        {viewMode === '3d' && renderChip3D()}
-        {viewMode === 'top' && renderTopView()}
-        {viewMode === 'side' && renderSideView()}
-        {viewMode === 'cross' && renderCrossSection()}
-      </div>
-
-      {/* Bottom Toolbar */}
-      <div className="bg-slate-800 border-t border-slate-700 p-2 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent">
-            <Download className="h-3 w-3 mr-2" />
-            Export STL
-          </Button>
-          <Button variant="outline" size="sm" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent">
-            <Eye className="h-3 w-3 mr-2" />
-            Cross Section
-          </Button>
-          <Button variant="outline" size="sm" className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-slate-100 bg-transparent">
-            <Target className="h-3 w-3 mr-2" />
-            Measure
-          </Button>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span>Layers: {chipLayers.length}</span>
-          <span>•</span>
-          <span>Transistors: {transistorStructures.length}</span>
-          <span>•</span>
-          <span>View: {viewMode}</span>
-        </div>
-      </div>
+    <div className="h-full w-full bg-slate-900">
+      <Canvas camera={{ position: [0, 0, 500], fov: 45 }} style={{ width: '100%', height: '100%' }}>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[0, 0, 1]} />
+        {/* Chip Outline */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[400, 300, 10]} />
+          <meshStandardMaterial color="#222" opacity={0.2} transparent />
+        </mesh>
+        {/* Components as 3D blocks */}
+        {design.components.map((comp, idx) => (
+          <mesh key={comp.id} position={getBlockPosition(comp)}>
+            <boxGeometry args={[40, 30, 20]} />
+            <meshStandardMaterial color="#38bdf8" />
+          </mesh>
+        ))}
+        {/* Wires as 3D lines */}
+        {design.wires && design.wires.map((wire, idx) => {
+          const from = design.components.find(c => c.id === (wire.from?.nodeId));
+          const to = design.components.find(c => c.id === (wire.to?.nodeId));
+          if (!from || !to) return null;
+          return <Wire3D key={idx} from={from} to={to} />;
+        })}
+        <OrbitControls />
+      </Canvas>
     </div>
   );
 } 

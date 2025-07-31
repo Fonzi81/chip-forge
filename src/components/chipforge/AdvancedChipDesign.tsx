@@ -30,6 +30,9 @@ import {
 import { synthesisEngine } from '../../backend/synth/synthesisEngine';
 import { placeAndRouteEngine } from '../../backend/place-route/placeAndRouteEngine';
 import { hdlGenerator } from '../../backend/hdl-gen';
+import { SynthesisEngine } from '@/backend/synth/synthesisEngine';
+import { PlaceAndRouteEngine } from '@/backend/place-route/placeAndRouteEngine';
+import { NativeVerilogSimulator } from '@/backend/sim/nativeSimulator';
 
 interface DesignStep {
   name: string;
@@ -229,6 +232,62 @@ export default function AdvancedChipDesign() {
       case 'failed': return 'border-red-500 bg-red-50';
       default: return 'border-gray-200 bg-gray-50';
     }
+  };
+
+  // Add copilot feature handlers
+  const handleTimingAnalysis = async () => {
+    const synth = new SynthesisEngine();
+    const result = await synth.synthesize({
+      rtlCode,
+      targetTechnology: 'asic',
+      constraints: {
+        maxDelay: constraints.maxDelay,
+        maxArea: constraints.maxArea,
+        maxPower: constraints.maxPower,
+        clockFrequency: constraints.clockFrequency,
+        targetLibrary: 'default'
+      },
+      optimizationGoals: ['speed']
+    });
+    alert('Timing Analysis Result: ' + JSON.stringify(result.timingReport, null, 2));
+  };
+  const handlePowerOptimization = async () => {
+    const synth = new SynthesisEngine();
+    const result = await synth.synthesize({
+      rtlCode,
+      targetTechnology: 'asic',
+      constraints: {
+        maxDelay: constraints.maxDelay,
+        maxArea: constraints.maxArea,
+        maxPower: constraints.maxPower,
+        clockFrequency: constraints.clockFrequency,
+        targetLibrary: 'default'
+      },
+      optimizationGoals: ['power']
+    });
+    alert('Power Optimization Result: ' + JSON.stringify(result.powerReport, null, 2));
+  };
+  const handleDRCCheck = async () => {
+    const par = new PlaceAndRouteEngine();
+    const result = await par.placeAndRoute({
+      netlist: rtlCode,
+      technology: 'tsmc28',
+      dieSize: { width: 1000, height: 1000 },
+      constraints: {
+        maxUtilization: 0.8,
+        maxWireLength: 10000,
+        maxFanout: 20,
+        clockFrequency: constraints.clockFrequency,
+        powerBudget: constraints.maxPower
+      },
+      optimizationGoals: ['area', 'timing', 'power', 'routability']
+    });
+    alert('DRC Check Result: ' + JSON.stringify(result.drcReport, null, 2));
+  };
+  const handleGenerateTestbench = async () => {
+    const sim = new NativeVerilogSimulator();
+    // This is a stub; real testbench generation would be more complex
+    alert('Testbench generated and simulation started (stub).');
   };
 
   return (
@@ -616,6 +675,13 @@ export default function AdvancedChipDesign() {
           )}
         </div>
       </div>
+
+      {/* Add copilot buttons to the UI (e.g., above or below the main design flow) */}
+      {/* Example: */}
+      {/* <Button onClick={handleTimingAnalysis}>Timing Analysis</Button> */}
+      {/* <Button onClick={handlePowerOptimization}>Power Optimization</Button> */}
+      {/* <Button onClick={handleDRCCheck}>DRC Check</Button> */}
+      {/* <Button onClick={handleGenerateTestbench}>Generate Testbench</Button> */}
     </div>
   );
 } 

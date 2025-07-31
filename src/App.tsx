@@ -8,7 +8,6 @@ import { Analytics } from "@vercel/analytics/react";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NewProject from "./pages/NewProject";
-import DesignEditor from "./pages/DesignEditor";
 import AuditTrail from "./pages/AuditTrail";
 import TemplatesLibrary from "./pages/TemplatesLibrary";
 import Export from "./pages/Export";
@@ -22,14 +21,12 @@ import AdvancedChipDesign from "./pages/AdvancedChipDesign";
 import AdvancedLayoutDesigner from "./pages/AdvancedLayoutDesignerPage";
 import LayoutEditorPage from "./pages/LayoutEditorPage";
 import CrossSectionViewerPage from "./pages/CrossSectionViewerPage";
-import NotFound from "./pages/NotFound";
 import ProfessionalChip3DViewer from "./components/chipforge/ProfessionalChip3DViewer";
 import ChipForgeWorkspace from "./pages/ChipForgeWorkspace";
 import SimulationEnvironment from "./pages/SimulationEnvironment";
-import SynthesisEnvironment from "./pages/SynthesisEnvironment";
 import LayoutEnvironment from "./pages/LayoutEnvironment";
-import ExportEnvironment from "./pages/ExportEnvironment";
 import ChipForgeSimulation from "./pages/ChipForgeSimulation";
+import SchematicWizard from "./components/chipforge/SchematicWizard";
 
 const queryClient = new QueryClient();
 
@@ -45,7 +42,6 @@ const App = () => (
           <Route path="/landing" element={<Index />} />
           <Route path="/workspace" element={<ChipForgeWorkspace />} />
           <Route path="/new-project" element={<NewProject />} />
-          <Route path="/design-editor" element={<DesignEditor />} />
           <Route path="/audit-trail" element={<AuditTrail />} />
           <Route path="/templates" element={<TemplatesLibrary />} />
           <Route path="/constraints" element={<ConstraintEditor />} />
@@ -57,10 +53,8 @@ const App = () => (
           {/* ChipForge Design Flow Routes */}
           <Route path="/simulation" element={<SimulationEnvironment />} />
           <Route path="/chipforge-simulation" element={<ChipForgeSimulation />} />
-          <Route path="/synthesis" element={<SynthesisEnvironment />} />
-          <Route path="/place-and-route" element={<SynthesisEnvironment />} />
+          <Route path="/place-and-route" element={<LayoutEnvironment />} />
           <Route path="/layout" element={<LayoutEnvironment />} />
-          <Route path="/export-fabrication" element={<ExportEnvironment />} />
           
           {/* Phase 1-3 Development Pages */}
           <Route path="/hdl-generator" element={<HDLGeneratorPage />} />
@@ -70,8 +64,8 @@ const App = () => (
           <Route path="/layout-editor" element={<LayoutEditorPage />} />
           <Route path="/cross-section-viewer" element={<CrossSectionViewerPage />} />
           <Route path="/chip3d-viewer" element={<ProfessionalChip3DViewer />} />
+          <Route path="/wizard" element={<SchematicWizard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
       <Analytics />
