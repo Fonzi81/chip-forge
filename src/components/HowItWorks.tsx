@@ -146,7 +146,7 @@ const HowItWorks = () => {
 
         {/* Professional summary with metrics */}
         <div className="text-center">
-          <Card className="max-w-2xl mx-auto bg-slate-800/30 border-slate-700">
+          <Card className="w-full bg-slate-800/30 border-slate-700">
             <CardContent className="p-8">
               <h3 className="text-2xl font-bold mb-6 text-slate-100">Workflow Comparison Summary</h3>
               
