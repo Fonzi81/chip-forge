@@ -18,12 +18,8 @@ const CTASection = () => {
         </div>
 
         <h2 className="text-5xl md:text-7xl font-bold mb-8 leading-[1.1] tracking-tight">
-          Transform Your <span className="gradient-text">Chip Design</span>
+          Start Designing Chips in Minutes — <span className="gradient-text">for Free</span>
         </h2>
-        <h3 className="text-2xl md:text-4xl font-light mb-8 text-slate-400">
-          From months to <span className="text-cyan-400 font-semibold">hours</span>. 
-          From manual to <span className="text-blue-400 font-semibold">AI-native</span>.
-        </h3>
 
         <p className="text-xl text-slate-400 mb-16 max-w-4xl mx-auto leading-relaxed">
           Join leading semiconductor organizations, government agencies, and research institutions 
@@ -37,7 +33,7 @@ const CTASection = () => {
             className="bg-cyan-500 text-slate-900 hover:bg-cyan-400 font-semibold px-10 py-6 text-xl enterprise-shadow-lg transition-all duration-200 hover:scale-105 min-w-[220px]"
           >
             <Calendar className="mr-3 h-6 w-6" />
-            Schedule Demo
+            Get Started
           </Button>
           
           <Button 

@@ -30,48 +30,48 @@ const HeroSection = () => {
         </div>
 
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[1.1] tracking-tight animate-fade-in" style={{animationDelay: '0.2s'}}>
-          From <span className="gradient-text">Specification</span>
-          <br />to Silicon
+          From <span className="gradient-text">Idea</span> to Silicon
+          <br />— Designed by AI
         </h1>
         
         <div className="text-xl md:text-2xl text-slate-400 mb-4 font-light animate-fade-in" style={{animationDelay: '0.4s'}}>
-          Enterprise AI-Native Chip Design Platform
+          The World's First AI-Native Chip Design Platform
         </div>
         
         <p className="text-lg md:text-xl mb-12 text-slate-400 max-w-4xl mx-auto leading-relaxed animate-fade-in" style={{animationDelay: '0.6s'}}>
-          Automated HDL generation, verification, and optimization for sovereign semiconductor development. 
-          <span className="text-cyan-400 font-medium"> Reduce 6-month cycles to hours.</span>
+          ChipForge is the first AI-native platform that transforms plain English into verified, simulation-passed, synthesis-ready HDL. 
+          <span className="text-cyan-400 font-medium">No manual coding. No toolchain juggling. Just chips — fast, local, and sovereign.</span>
         </p>
 
         {/* Professional CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 animate-fade-in" style={{animationDelay: '0.8s'}}>
           <Button size="lg" className="bg-cyan-500 text-slate-900 hover:bg-cyan-400 font-semibold px-8 py-4 text-lg enterprise-shadow-lg transition-all duration-200 hover:scale-105 min-w-[180px]">
             <Cpu className="mr-2 h-5 w-5" />
-            Request Demo
+            Try the Generator
           </Button>
           <Button size="lg" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-blue-500 font-semibold px-8 py-4 text-lg transition-all duration-200 hover:scale-105 min-w-[180px]">
             <Play className="mr-2 h-5 w-5" />
-            Technical Overview
+            See How It Works
           </Button>
         </div>
 
         {/* Technical specifications preview */}
         <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto animate-fade-in" style={{animationDelay: '1s'}}>
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 technical-hover">
-            <div className="text-2xl font-bold text-cyan-400 mb-1">98.7%</div>
-            <div className="text-sm text-slate-400">Verification Accuracy</div>
+            <div className="text-2xl font-bold text-cyan-400 mb-1">100%</div>
+            <div className="text-sm text-slate-400">Syntax Guarantee</div>
           </div>
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 technical-hover">
             <div className="text-2xl font-bold text-blue-400 mb-1">&lt; 30s</div>
             <div className="text-sm text-slate-400">HDL Generation</div>
           </div>
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 technical-hover">
-            <div className="text-2xl font-bold text-emerald-400 mb-1">40%</div>
-            <div className="text-sm text-slate-400">Area Optimization</div>
+            <div className="text-2xl font-bold text-emerald-400 mb-1">AI-Native</div>
+            <div className="text-sm text-slate-400">Processing</div>
           </div>
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 technical-hover">
-            <div className="text-2xl font-bold text-cyan-400 mb-1">SOC2</div>
-            <div className="text-sm text-slate-400">Compliance</div>
+            <div className="text-2xl font-bold text-cyan-400 mb-1">Sovereign</div>
+            <div className="text-sm text-slate-400">Deploy</div>
           </div>
         </div>
       </div>

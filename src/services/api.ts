@@ -2,7 +2,24 @@
 // Mock API service for HDL operations
 // This can be easily replaced with real API calls when backend is ready
 
-import { checkVerilogSyntaxAsync, type SyntaxCheckResult } from '@/backend/hdl-gen/syntaxCheck';
+// Mock syntax check function
+const checkVerilogSyntaxAsync = async (code: string) => {
+  // Simple syntax validation
+  const hasModule = /module\s+\w+/.test(code);
+  const hasEndmodule = /endmodule/.test(code);
+  const errors = [];
+  const warnings = [];
+  
+  if (!hasModule) errors.push({ line: 1, column: 1, message: "Missing module declaration", severity: 'error' as const });
+  if (!hasEndmodule) errors.push({ line: 1, column: 1, message: "Missing endmodule", severity: 'error' as const });
+  
+  return {
+    errors,
+    warnings,
+    isValid: errors.length === 0,
+    moduleInfo: hasModule ? { name: 'test_module', portCount: 3, signalCount: 5, alwaysBlockCount: 1, assignCount: 2 } : undefined
+  };
+};
 
 export interface SyntaxCheckRequest {
   code: string;
