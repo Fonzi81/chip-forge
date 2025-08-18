@@ -79,6 +79,12 @@ const MAIN_NAVIGATION = [
         path: "/new-project",
         icon: Layers,
         description: "Start a new chip design project"
+      },
+      {
+        label: "Test Error Boundaries",
+        path: "/test-error-boundaries",
+        icon: AlertCircle,
+        description: "Test error handling and boundaries"
       }
     ]
   }

@@ -30,6 +30,7 @@ import LayoutEnvironment from "./pages/LayoutEnvironment";
 import ChipForgeSimulation from "./pages/ChipForgeSimulation";
 import SchematicWizard from "./components/chipforge/SchematicWizard";
 import WaveformPlanner from "@/components/chipforge/WaveformPlanner";
+import ErrorBoundaryTest from "./pages/ErrorBoundaryTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,10 @@ const App = () => (
             <Route path="/chip3d-viewer" element={<ProfessionalChip3DViewer />} />
             <Route path="/wizard" element={<SchematicWizard />} />
             <Route path="/waveform" element={<WaveformPlanner />} />
+            
+            {/* Testing Routes */}
+            <Route path="/test-error-boundaries" element={<ErrorBoundaryTest />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
