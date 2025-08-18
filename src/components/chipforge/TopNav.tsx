@@ -69,10 +69,22 @@ const MAIN_NAVIGATION = [
         description: "Step-by-step schematic builder"
       },
       {
+        label: "Waveform Planner",
+        path: "/waveform",
+        icon: TestTube,
+        description: "Define signal waveforms and generate testbenches"
+      },
+      {
         label: "New Project",
         path: "/new-project",
         icon: Layers,
         description: "Start a new chip design project"
+      },
+      {
+        label: "Test Error Boundaries",
+        path: "/test-error-boundaries",
+        icon: AlertCircle,
+        description: "Test error handling and boundaries"
       }
     ]
   }

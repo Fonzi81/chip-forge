@@ -519,7 +519,7 @@ export class LayoutEditor {
     }
   }
 
-  private recordOperation(type: LayoutOperation['type'], elementId: string, data: any): void {
+  private recordOperation(type: LayoutOperation['type'], elementId: string, data: LayoutOperationData): void {
     const operation: LayoutOperation = {
       type,
       elementId,

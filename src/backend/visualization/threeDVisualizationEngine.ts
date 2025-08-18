@@ -1,8 +1,10 @@
 // 3D Chip Visualization Engine
 // Real-time 3D rendering of chip layouts with interactive exploration
 
+import * as THREE from 'three';
+
 export interface VisualizationRequest {
-  layoutData: any;
+  layoutData: LayoutData;
   viewport: {
     width: number;
     height: number;
@@ -20,11 +22,58 @@ export interface VisualizationRequest {
   };
 }
 
+export interface LayoutData {
+  layers: LayerData[];
+  components: ComponentData[];
+  connections: ConnectionData[];
+  metadata: LayoutMetadata;
+}
+
+export interface LayerData {
+  name: string;
+  type: 'metal' | 'poly' | 'diffusion' | 'via' | 'insulator';
+  thickness: number;
+  material: MaterialProperties;
+}
+
+export interface ComponentData {
+  id: string;
+  type: string;
+  position: { x: number; y: number; z: number };
+  dimensions: { width: number; height: number; depth: number };
+  layer: string;
+  properties: Record<string, string | number>;
+}
+
+export interface ConnectionData {
+  id: string;
+  from: { componentId: string; port: string };
+  to: { componentId: string; port: string };
+  layer: string;
+  width: number;
+}
+
+export interface LayoutMetadata {
+  technology: string;
+  designRules: Record<string, number>;
+  units: string;
+  version: string;
+}
+
+export interface MaterialProperties {
+  color: string;
+  opacity: number;
+  roughness: number;
+  metalness: number;
+  emissive: string;
+  emissiveIntensity: number;
+}
+
 export interface VisualizationResult {
-  scene: any;
-  camera: any;
-  renderer: any;
-  controls: any;
+  scene: THREE.Scene;
+  camera: THREE.Camera;
+  renderer: THREE.WebGLRenderer;
+  controls: any; // OrbitControls type from drei
   layers: VisualizationLayer[];
   statistics: {
     totalObjects: number;
@@ -45,7 +94,7 @@ export interface VisualizationLayer {
   visible: boolean;
   opacity: number;
   color: string;
-  objects: any[];
+  objects: THREE.Object3D[];
   number: number;
   boundingBox: {
     min: { x: number; y: number; z: number };
@@ -57,8 +106,8 @@ export interface ChipGeometry {
   id: string;
   layer: string;
   type: 'metal' | 'via' | 'poly' | 'diffusion';
-  geometry: any;
-  material: any;
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material;
   position: { x: number; y: number; z: number };
   scale: { x: number; y: number; z: number };
   rotation: { x: number; y: number; z: number };
@@ -78,17 +127,55 @@ export interface AnimationConfig {
   reverse: boolean;
 }
 
+export interface AnimationInstance {
+  id: string;
+  config: AnimationConfig;
+  startTime: number;
+  currentTime: number;
+  isPlaying: boolean;
+  onComplete?: () => void;
+}
+
+export class PerformanceMonitor {
+  private frameCount = 0;
+  private lastTime = performance.now();
+  private fps = 0;
+  private frameTime = 0;
+
+  update() {
+    this.frameCount++;
+    const currentTime = performance.now();
+    
+    if (currentTime - this.lastTime >= 1000) {
+      this.fps = this.frameCount;
+      this.frameTime = 1000 / this.fps;
+      this.frameCount = 0;
+      this.lastTime = currentTime;
+    }
+  }
+
+  getStats() {
+    return {
+      fps: this.fps,
+      frameTime: this.frameTime
+    };
+  }
+}
+
 export class ThreeDVisualizationEngine {
-  private scene: any;
-  private camera: any;
-  private renderer: any;
-  private controls: any;
+  private scene: THREE.Scene;
+  private camera: THREE.Camera;
+  private renderer: THREE.WebGLRenderer;
+  private controls: any; // OrbitControls type from drei
   private layers: Map<string, VisualizationLayer>;
   private geometries: Map<string, ChipGeometry>;
-  private animations: Map<string, any>;
+  private animations: Map<string, AnimationInstance>;
   private performanceMonitor: PerformanceMonitor;
 
   constructor() {
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera();
+    this.renderer = new THREE.WebGLRenderer();
     this.layers = new Map();
     this.geometries = new Map();
     this.animations = new Map();
@@ -99,20 +186,43 @@ export class ThreeDVisualizationEngine {
     console.log('Initializing 3D visualization engine');
 
     try {
-      // Initialize Three.js scene
-      this.scene = this.createScene();
-      this.camera = this.createCamera(request.camera);
-      this.renderer = this.createRenderer(request.viewport, request.rendering);
-      this.controls = this.createControls(this.camera, this.renderer);
+      // Initialize scene
+      this.scene = new THREE.Scene();
+      this.scene.background = new THREE.Color(0x0a0a0a);
+
+      // Initialize camera
+      this.camera = new THREE.PerspectiveCamera(
+        request.camera.fov,
+        request.viewport.width / request.viewport.height,
+        0.1,
+        1000
+      );
+      this.camera.position.set(
+        request.camera.position.x,
+        request.camera.position.y,
+        request.camera.position.z
+      );
+
+      // Initialize renderer
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: request.rendering.antiAliasing,
+        alpha: true
+      });
+      this.renderer.setSize(request.viewport.width, request.viewport.height);
+      this.renderer.shadowMap.enabled = request.rendering.shadows;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // Create layers from layout data
+      this.createLayersFromLayout(request.layoutData);
+
+      // Create geometries
+      this.createGeometriesFromLayout(request.layoutData);
 
       // Setup lighting
       this.setupLighting();
 
-      // Process layout data and create 3D objects
-      await this.processLayoutData(request.layoutData);
-
-      // Setup performance monitoring
-      this.performanceMonitor.start();
+      // Setup controls (placeholder - would be set by the calling component)
+      this.controls = null;
 
       return {
         scene: this.scene,
@@ -120,8 +230,8 @@ export class ThreeDVisualizationEngine {
         renderer: this.renderer,
         controls: this.controls,
         layers: Array.from(this.layers.values()),
-        statistics: this.calculateStatistics(),
-        performance: this.performanceMonitor.getMetrics()
+        statistics: this.getStatistics(),
+        performance: this.performanceMonitor.getStats()
       };
     } catch (error) {
       console.error('Visualization initialization failed:', error);
@@ -252,155 +362,46 @@ export class ThreeDVisualizationEngine {
     };
   }
 
-  // Private helper methods
-  private createScene(): any {
-    // Simulate Three.js scene creation
-    return {
-      add: (object: any) => console.log('Adding object to scene:', object),
-      remove: (object: any) => console.log('Removing object from scene:', object),
-      children: [],
-      background: null,
-      fog: null
-    };
+  private createLayersFromLayout(layoutData: LayoutData): void {
+    layoutData.layers.forEach(layer => {
+      const visualizationLayer: VisualizationLayer = {
+        name: layer.name,
+        visible: true,
+        opacity: 1.0,
+        color: layer.material.color,
+        objects: [],
+        number: 0,
+        boundingBox: {
+          min: { x: 0, y: 0, z: 0 },
+          max: { x: 0, y: 0, z: 0 }
+        }
+      };
+      this.layers.set(layer.name, visualizationLayer);
+    });
   }
 
-  private createCamera(cameraConfig: any): any {
-    // Simulate Three.js camera creation
-    return {
-      position: { set: (x: number, y: number, z: number) => console.log('Setting camera position:', x, y, z) },
-      lookAt: (target: any) => console.log('Looking at target:', target),
-      updateProjectionMatrix: () => console.log('Updating projection matrix'),
-      fitBox: (box: any) => console.log('Fitting camera to box:', box),
-      toJSON: () => ({ type: 'PerspectiveCamera' })
-    };
-  }
-
-  private createRenderer(viewport: any, rendering: any): any {
-    // Simulate Three.js renderer creation
-    return {
-      setSize: (width: number, height: number) => console.log('Setting renderer size:', width, height),
-      setPixelRatio: (ratio: number) => console.log('Setting pixel ratio:', ratio),
-      shadowMap: { enabled: false, type: 1 },
-      render: (scene: any, camera: any) => console.log('Rendering scene'),
-      domElement: { toDataURL: () => 'data:image/png;base64,simulated_screenshot' },
-      setClearColor: (color: any) => console.log('Setting clear color:', color)
-    };
-  }
-
-  private createControls(camera: any, renderer: any): any {
-    // Simulate Three.js controls creation
-    return {
-      target: { set: (x: number, y: number, z: number) => console.log('Setting controls target:', x, y, z) },
-      update: () => console.log('Updating controls'),
-      enableDamping: true,
-      dampingFactor: 0.05
-    };
+  private createGeometriesFromLayout(layoutData: LayoutData): void {
+    // Implementation would create actual 3D objects
+    // This is a placeholder for the actual geometry creation logic
   }
 
   private setupLighting(): void {
-    // Simulate lighting setup
-    console.log('Setting up 3D lighting');
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    this.scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(10, 10, 5);
+    directionalLight.castShadow = true;
+    this.scene.add(directionalLight);
   }
 
-  private async processLayoutData(layoutData: any): Promise<void> {
-    console.log('Processing layout data for 3D visualization');
-
-    // Process shapes and create 3D geometries
-    if (layoutData.shapes) {
-      for (const shape of layoutData.shapes) {
-        await this.createGeometryFromShape(shape);
-      }
-    }
-
-    // Organize geometries into layers
-    this.organizeLayers();
-  }
-
-  private async createGeometryFromShape(shape: any): Promise<void> {
-    const geometry = this.createGeometry(shape);
-    const material = this.createMaterial(shape);
-    const mesh = this.createMesh(geometry, material, shape);
-
-    const chipGeometry: ChipGeometry = {
-      id: shape.id,
-      layer: shape.layer,
-      type: this.getGeometryType(shape.layer),
-      geometry,
-      material,
-      position: { x: 0, y: 0, z: this.getLayerZIndex(shape.layer) },
-      scale: { x: 1, y: 1, z: 1 },
-      rotation: { x: 0, y: 0, z: 0 }
-    };
-
-    this.geometries.set(shape.id, chipGeometry);
-    this.scene.add(mesh);
-  }
-
-  private createGeometry(shape: any): any {
-    // Simulate geometry creation based on shape type
-    switch (shape.type) {
-      case 'rectangle':
-        return { type: 'BoxGeometry', parameters: shape.properties };
-      case 'polygon':
-        return { type: 'ShapeGeometry', parameters: shape.coordinates };
-      case 'path':
-        return { type: 'BufferGeometry', parameters: shape.coordinates };
-      default:
-        return { type: 'BoxGeometry', parameters: { width: 1, height: 1, depth: 0.1 } };
-    }
-  }
-
-  private createMaterial(shape: any): any {
-    const layer = this.layers.get(shape.layer);
+  private getStatistics() {
     return {
-      color: layer ? layer.color : '#FF6B6B',
-      opacity: layer ? layer.opacity : 1.0,
-      transparent: layer ? layer.opacity < 1 : false,
-      metalness: 0.1,
-      roughness: 0.8
-    };
-  }
-
-  private createMesh(geometry: any, material: any, shape: any): any {
-    return {
-      geometry,
-      material,
-      position: { x: 0, y: 0, z: 0 },
-      visible: true,
-      castShadow: true,
-      receiveShadow: true
-    };
-  }
-
-  private getGeometryType(layerName: string): 'metal' | 'via' | 'poly' | 'diffusion' {
-    if (layerName.startsWith('M')) return 'metal';
-    if (layerName.startsWith('V')) return 'via';
-    if (layerName.includes('poly')) return 'poly';
-    return 'diffusion';
-  }
-
-  private getLayerZIndex(layerName: string): number {
-    const layer = this.layers.get(layerName);
-    return layer ? layer.number * 0.1 : 0;
-  }
-
-  private organizeLayers(): void {
-    // Group geometries by layer
-    for (const [layerName, layer] of this.layers) {
-      const layerObjects = Array.from(this.geometries.values())
-        .filter(geo => geo.layer === layerName)
-        .map(geo => geo.geometry);
-
-      layer.objects = layerObjects;
-      layer.boundingBox = this.calculateLayerBoundingBox(layerObjects);
-    }
-  }
-
-  private calculateLayerBoundingBox(objects: any[]): any {
-    // Simulate bounding box calculation
-    return {
-      min: { x: 0, y: 0, z: 0 },
-      max: { x: 100, y: 100, z: 10 }
+      totalObjects: this.scene.children.length,
+      totalVertices: 0, // Would calculate from geometries
+      totalFaces: 0,    // Would calculate from geometries
+      renderTime: 0,    // Would measure actual render time
+      memoryUsage: 0    // Would get from renderer.info
     };
   }
 
@@ -429,59 +430,4 @@ export class ThreeDVisualizationEngine {
       update: () => console.log(`Updating animation for layer ${layer.name}`)
     };
   }
-
-  private calculateStatistics(): any {
-    return {
-      totalObjects: this.geometries.size,
-      totalVertices: this.geometries.size * 1000, // Simulated
-      totalFaces: this.geometries.size * 500, // Simulated
-      renderTime: 16.67, // Simulated 60 FPS
-      memoryUsage: this.geometries.size * 1024 // Simulated
-    };
-  }
-}
-
-// Performance monitoring
-class PerformanceMonitor {
-  private startTime: number;
-  private frameCount: number;
-  private lastFrameTime: number;
-  private fps: number;
-  private frameTime: number;
-
-  constructor() {
-    this.startTime = 0;
-    this.frameCount = 0;
-    this.lastFrameTime = 0;
-    this.fps = 0;
-    this.frameTime = 0;
-  }
-
-  start(): void {
-    this.startTime = performance.now();
-    this.frameCount = 0;
-  }
-
-  update(): void {
-    const currentTime = performance.now();
-    this.frameCount++;
-    
-    if (this.lastFrameTime > 0) {
-      this.frameTime = currentTime - this.lastFrameTime;
-      this.fps = 1000 / this.frameTime;
-    }
-    
-    this.lastFrameTime = currentTime;
-  }
-
-  getMetrics(): any {
-    return {
-      fps: Math.round(this.fps),
-      frameTime: Math.round(this.frameTime * 100) / 100,
-      gpuMemory: this.frameCount * 1024 // Simulated
-    };
-  }
-}
-
-// Export singleton instance
-export const threeDVisualizationEngine = new ThreeDVisualizationEngine(); 
+} 

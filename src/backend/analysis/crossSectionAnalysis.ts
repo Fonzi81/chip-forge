@@ -406,11 +406,11 @@ export class CrossSectionAnalysis {
   }
 
   // Measurement Tools
-  addMeasurement(startPoint: THREE.Vector3, endPoint: THREE.Vector3, type: string): CrossSectionMeasurement {
+  addMeasurement(startPoint: THREE.Vector3, endPoint: THREE.Vector3, type: CrossSectionMeasurement['type']): CrossSectionMeasurement {
     const distance = startPoint.distanceTo(endPoint);
     const measurement: CrossSectionMeasurement = {
       id: `measurement_${Date.now()}`,
-      type: type as any,
+      type,
       startPoint: startPoint.clone(),
       endPoint: endPoint.clone(),
       value: distance * 1000, // Convert to nm

@@ -489,6 +489,55 @@ export default function LearningPanel() {
               </div>
             </CardContent>
           </Card>
+
+          {/* End-to-End Chip Design Walkthrough */}
+          <Card className="bg-gradient-to-br from-emerald-700 to-cyan-800 border-emerald-600 mb-6">
+            <CardHeader>
+              <CardTitle>End-to-End Chip Design Walkthrough: 4-bit Counter Demo</CardTitle>
+              <CardDescription>
+                Learn how to use ChipForge by building, simulating, and validating a 4-bit counter chip from schematic to testbench.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-slate-100">
+              <ol className="list-decimal ml-6 space-y-2">
+                <li>
+                  <b>Open the Workspace</b>: Go to <span className="font-mono">Tools → Workspace</span>.
+                </li>
+                <li>
+                  <b>Load the Demo Schematic</b>: In the Schematic tab, click <span className="font-mono">Load 4-bit Counter Demo</span>.
+                  <ul className="list-disc ml-6">
+                    <li>Review the auto-generated schematic: 4 DFFs, AND/OR gates, input/output ports, and all wiring.</li>
+                  </ul>
+                </li>
+                <li>
+                  <b>View HDL & 3D Model</b>:
+                  <ul className="list-disc ml-6">
+                    <li>Switch to the HDL tab to see the generated Verilog code.</li>
+                    <li>Switch to the 3D Model tab to visualize the chip layout.</li>
+                  </ul>
+                </li>
+                <li>
+                  <b>Define Waveforms & Generate Testbench</b>:
+                  <ul className="list-disc ml-6">
+                    <li>Go to <span className="font-mono">Tools → Waveform Planner</span>.</li>
+                    <li>Set <b>clk</b> to toggle every cycle, <b>en</b> high for a few cycles, <b>rst</b> high at cycle 0.</li>
+                    <li>Click <span className="font-mono">Generate Verilog Testbench</span> to preview and export the testbench.</li>
+                  </ul>
+                </li>
+                <li>
+                  <b>Simulate & Validate</b>:
+                  <ul className="list-disc ml-6">
+                    <li>Use the testbench and HDL in your preferred simulator, or use ChipForge’s built-in simulation tools.</li>
+                    <li>Check that <b>q[3:0]</b> increments as expected and resets when <b>rst</b> is high.</li>
+                  </ul>
+                </li>
+                <li>
+                  <b>Iterate</b>: Edit the schematic, HDL, or waveform and repeat the process to explore more features.
+                </li>
+              </ol>
+              <div className="mt-4 text-emerald-300 font-semibold">Tip: All your work is auto-saved. You can move between pages and tabs at any time without losing your project!</div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>
