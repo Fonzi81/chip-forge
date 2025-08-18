@@ -40,6 +40,15 @@ interface HDLDesignState {
   testbenchVerilog: string;
   setWaveformSignal: (signal: string, values: Record<number, 0 | 1>) => void;
   generateTestbench: () => void;
+  // --- Added for EnhancedHDLGenerator integration ---
+  hdlOutput: string;
+  hdlScore: number;
+  setHDL: (code: string) => void;
+  setHDLScore: (score: number) => void;
+  simResults: Record<string, number[]>;
+  setSimResults: (results: Record<string, number[]>) => void;
+  simulationScore: number;
+  setSimulationScore: (score: number) => void;
 }
 
 const LOCAL_STORAGE_KEY = 'chipforge-hdl-design';
@@ -151,5 +160,13 @@ export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
     lines.push("  end");
     lines.push("endmodule");
     set({ testbenchVerilog: lines.join("\n") });
-  }
+  },
+  hdlOutput: "",
+  hdlScore: 0,
+  setHDL: (code) => set({ hdlOutput: code }),
+  setHDLScore: (score) => set({ hdlScore: score }),
+  simResults: {},
+  setSimResults: (results) => set({ simResults: results }),
+  simulationScore: 0,
+  setSimulationScore: (score) => set({ simulationScore: score }),
 })); 
