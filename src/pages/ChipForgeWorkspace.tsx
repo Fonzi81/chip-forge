@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { 
   Search, Star, ShoppingCart, Folder, Cloud, Settings,
   Eye, Cpu, Zap, FileText, CircuitBoard, Box, ChevronDown,
@@ -1598,11 +1599,13 @@ export default function ChipForgeWorkspace() {
         {/* Main Workspace Area */}
         <div className="flex-1 flex min-h-0">
           {/* Left Side - AI Copilot */}
-          <AICopilot 
-            messages={aiMessages}
-            onSendMessage={handleSendMessage}
-            onApplySuggestion={handleApplySuggestion}
-          />
+          <ErrorBoundary>
+            <AICopilot 
+              messages={aiMessages}
+              onSendMessage={handleSendMessage}
+              onApplySuggestion={handleApplySuggestion}
+            />
+          </ErrorBoundary>
           
           {/* Center - Main Content */}
           <div className="flex-1 flex flex-col min-h-0">
@@ -1640,16 +1643,28 @@ export default function ChipForgeWorkspace() {
               {activeTab === 'schematic' && (
                 <div className="p-4">
                   <Button onClick={handleDemoSchematic} className="mb-2">Load 4-bit Counter Demo</Button>
-                  <SchematicDesignTab />
+                  <ErrorBoundary>
+                    <SchematicDesignTab />
+                  </ErrorBoundary>
                 </div>
               )}
-              {activeTab === 'hdl' && <HDLDesignTab />}
-              {activeTab === 'model' && <ModelDesignTab />}
+              {activeTab === 'hdl' && (
+                <ErrorBoundary>
+                  <HDLDesignTab />
+                </ErrorBoundary>
+              )}
+              {activeTab === 'model' && (
+                <ErrorBoundary>
+                  <ModelDesignTab />
+                </ErrorBoundary>
+              )}
             </div>
           </div>
 
           {/* Right Side - Component Library */}
-          <ComponentLibrary />
+          <ErrorBoundary>
+            <ComponentLibrary />
+          </ErrorBoundary>
         </div>
       </div>
     </>
