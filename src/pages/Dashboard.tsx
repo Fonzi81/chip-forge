@@ -116,7 +116,7 @@ export default function Dashboard() {
         <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
-              <Link to="/landing" className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors">
+              <Link to="/" className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors">
                 <Home className="h-5 w-5" />
                 <span className="font-medium">Home</span>
               </Link>
