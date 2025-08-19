@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useHDLDesignStore, HDLComponent, HDLWire } from "@/state/hdlDesignStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,11 +20,13 @@ import {
   RotateCcw,
   RotateCw,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Eye
 } from "lucide-react";
 
 // Import the component library
 import componentLibrary from "@/lib/component.library.json";
+import { useNavigate } from 'react-router-dom';
 
 // Component interface matching the library
 interface ComponentBlock {
@@ -99,148 +101,23 @@ const getComponentRecommendations = (chipType: string, allComponents: ComponentB
   const recommendations: { [key: string]: string[] } = {
     "counter": ["dff", "and", "or", "not"],
     "alu": ["alu", "dff", "adder", "and", "or", "xor"],
-    "memory": ["dff", "sram", "rom", "and"],
-    "controller": ["dff", "and", "or", "register", "counter"],
-    "multiplier": ["dff", "and", "multiplier", "adder"],
-    "divider": ["dff", "adder", "register", "counter"]
+    "memory": ["dff", "sram", "rom", "register"],
+    "processor": ["alu", "dff", "register", "and", "or", "not"],
+    "fifo": ["dff", "register", "counter"],
+    "uart": ["dff", "register", "counter", "and", "or"],
+    "spi": ["dff", "register", "counter", "and", "or"],
+    "i2c": ["dff", "register", "and", "or", "not"]
   };
   
   const defaultComponents: string[] = ["dff", "and", "or", "not"];
   const selectedTypes = recommendations[chipType.toLowerCase()] || defaultComponents;
   
-  // Return actual components from the existing library
-  return allComponents.filter(comp => selectedTypes.includes(comp.type));
+  return allComponents.filter(comp => 
+    selectedTypes.some(type => comp.label.toLowerCase().includes(type.toLowerCase()))
+  );
 };
 
-// Use the existing component library from the HDL tab
-const chipComponents: ComponentBlock[] = [
-  // Transistors
-  {
-    id: 'nmos_001',
-    type: 'nmos',
-    label: 'NMOS Transistor',
-    ports: [{ name: 'Source', width: 1 }, { name: 'Drain', width: 1 }, { name: 'Gate', width: 1 }, { name: 'Bulk', width: 1 }],
-    description: 'N-channel MOSFET for digital logic',
-    verilog: 'NMOS(VDD, GND, Gate, Bulk)',
-    category: 'Transistors',
-    symbol: 'NMOS',
-    hdl: 'NMOS(VDD, GND, Gate, Bulk)'
-  },
-  {
-    id: 'pmos_001',
-    type: 'pmos',
-    label: 'PMOS Transistor',
-    ports: [{ name: 'Source', width: 1 }, { name: 'Drain', width: 1 }, { name: 'Gate', width: 1 }, { name: 'Bulk', width: 1 }],
-    description: 'P-channel MOSFET for complementary logic',
-    verilog: 'PMOS(VDD, GND, Gate, Bulk)',
-    category: 'Transistors',
-    symbol: 'PMOS',
-    hdl: 'PMOS(VDD, GND, Gate, Bulk)'
-  },
-  {
-    id: 'bjt_001',
-    type: 'bjt',
-    label: 'BJT Transistor',
-    ports: [{ name: 'Emitter', width: 1 }, { name: 'Base', width: 1 }, { name: 'Collector', width: 1 }],
-    description: 'Bipolar Junction Transistor for analog circuits',
-    verilog: 'BJT(VDD, GND, Emitter, Base, Collector)',
-    category: 'Transistors',
-    symbol: 'BJT',
-    hdl: 'BJT(VDD, GND, Emitter, Base, Collector)'
-  },
-  // Logic Gates
-  {
-    id: 'nand_001',
-    type: 'nand',
-    label: 'NAND Gate',
-    ports: [{ name: 'A', width: 1 }, { name: 'B', width: 1 }, { name: 'Y', width: 1 }],
-    description: 'Universal logic gate (NOT-AND)',
-    verilog: 'NAND(A, B, Y)',
-    category: 'Logic Gates',
-    symbol: 'NAND',
-    hdl: 'NAND(A, B, Y)'
-  },
-  {
-    id: 'nor_001',
-    type: 'nor',
-    label: 'NOR Gate',
-    ports: [{ name: 'A', width: 1 }, { name: 'B', width: 1 }, { name: 'Y', width: 1 }],
-    description: 'Universal logic gate (NOT-OR)',
-    verilog: 'NOR(A, B, Y)',
-    category: 'Logic Gates',
-    symbol: 'NOR',
-    hdl: 'NOR(A, B, Y)'
-  },
-  {
-    id: 'and_001',
-    type: 'and',
-    label: 'AND Gate',
-    ports: [{ name: 'A', width: 1 }, { name: 'B', width: 1 }, { name: 'Y', width: 1 }],
-    description: 'Logical AND operation',
-    verilog: 'AND(A, B, Y)',
-    category: 'Logic Gates',
-    symbol: 'AND',
-    hdl: 'AND(A, B, Y)'
-  },
-  {
-    id: 'or_001',
-    type: 'or',
-    label: 'OR Gate',
-    ports: [{ name: 'A', width: 1 }, { name: 'B', width: 1 }, { name: 'Y', width: 1 }],
-    description: 'Logical OR operation',
-    verilog: 'OR(A, B, Y)',
-    category: 'Logic Gates',
-    symbol: 'OR',
-    hdl: 'OR(A, B, Y)'
-  },
-  {
-    id: 'xor_001',
-    type: 'xor',
-    label: 'XOR Gate',
-    ports: [{ name: 'A', width: 1 }, { name: 'B', width: 1 }, { name: 'Y', width: 1 }],
-    description: 'Exclusive OR operation',
-    verilog: 'XOR(A, B, Y)',
-    category: 'Logic Gates',
-    symbol: 'XOR',
-    hdl: 'XOR(A, B, Y)'
-  },
-  {
-    id: 'not_001',
-    type: 'not',
-    label: 'NOT Gate',
-    ports: [{ name: 'A', width: 1 }, { name: 'Y', width: 1 }],
-    description: 'Logical inversion',
-    verilog: 'NOT(A, Y)',
-    category: 'Logic Gates',
-    symbol: 'NOT',
-    hdl: 'NOT(A, Y)'
-  },
-  // Memory Elements
-  {
-    id: 'dff_001',
-    type: 'dff',
-    label: 'D-Flip Flop',
-    ports: [{ name: 'D', width: 1 }, { name: 'CLK', width: 1 }, { name: 'Q', width: 1 }, { name: 'Q_bar', width: 1 }],
-    description: 'Data flip-flop with clock',
-    verilog: 'DFF(D, CLK, Q, Q_bar)',
-    category: 'Memory Elements',
-    symbol: 'DFF',
-    hdl: 'DFF(D, CLK, Q, Q_bar)'
-  },
-  {
-    id: 'tff_001',
-    type: 'tff',
-    label: 'T-Flip Flop',
-    ports: [{ name: 'T', width: 1 }, { name: 'CLK', width: 1 }, { name: 'Q', width: 1 }, { name: 'Q_bar', width: 1 }],
-    description: 'Toggle flip-flop',
-    verilog: 'TFF(T, CLK, Q, Q_bar)',
-    category: 'Memory Elements',
-    symbol: 'TFF',
-    hdl: 'TFF(T, CLK, Q, Q_bar)'
-  }
-];
-
-
+// Component library is imported from @/lib/component.library.json
 
 const GRID_SIZE = 20;
 const BLOCK_WIDTH = 120;
@@ -262,6 +139,8 @@ export default function SchematicCanvas() {
     setGuidedStep,
     completeGuidedStep,
     resetGuidedMode,
+    waveform,
+    setWaveformSignal,
   } = useHDLDesignStore();
   
   const [dragging, setDragging] = useState<null | { id: string; offsetX: number; offsetY: number }>(null);
@@ -314,7 +193,7 @@ export default function SchematicCanvas() {
   // Handle guided mode input
   const handleGuidedInput = (value: string) => {
     if (guidedData.currentStep === 1) {
-      const recommendations = getComponentRecommendations(value, chipComponents);
+      const recommendations = getComponentRecommendations(value, componentLibrary);
       setGuidedData(prev => ({
         ...prev,
         chipType: value,
@@ -342,16 +221,16 @@ export default function SchematicCanvas() {
     
     if (!design) {
       console.log('No design state, initializing...');
-      // Initialize design if it doesn't exist
-      const initialDesign = {
-        moduleName: 'schematic_design',
-        description: 'Schematic design created in canvas',
+      // Initialize design if none exists
+      const newDesign = {
+        moduleName: 'NewDesign',
+        description: 'Design created from component library',
         io: [],
         verilog: '',
         components: [],
         wires: []
       };
-      setDesign(initialDesign);
+      setDesign(newDesign);
     }
     
     const id = `${component.type}-${Date.now()}`;
@@ -365,11 +244,8 @@ export default function SchematicCanvas() {
       outputs: component.ports.slice(-1).map(p => p.name)
     };
     
-    console.log('Creating new component:', newComponent);
     addComponent(newComponent);
     pushHistory();
-    
-    console.log('Component added, new design state:', design);
     
     // Complete guided step if active
     if (guidedMode.isActive) {
@@ -377,6 +253,8 @@ export default function SchematicCanvas() {
       setGuidedData(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
       setGuidedStep(guidedData.currentStep + 1);
     }
+    
+    console.log('Component added:', newComponent);
   };
 
   // Add component from guided recommendations
@@ -384,7 +262,7 @@ export default function SchematicCanvas() {
     if (!design) return;
 
     const id = `${component.type}-${Date.now()}`;
-      const newComponent: HDLComponent = {
+    const newComponent: HDLComponent = {
       id,
       type: component.type,
       label: component.label,
@@ -392,12 +270,12 @@ export default function SchematicCanvas() {
       y: 150 + Math.random() * 200,
       inputs: component.ports.slice(0, -1).map(p => p.name),
       outputs: component.ports.slice(-1).map(p => p.name)
-      };
+    };
 
-      addComponent(newComponent);
-      pushHistory();
-
-    // Complete guided step
+    addComponent(newComponent);
+    pushHistory();
+    
+    // Complete guided step if active
     if (guidedMode.isActive) {
       completeGuidedStep(guidedData.currentStep);
       setGuidedData(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
@@ -747,6 +625,64 @@ export default function SchematicCanvas() {
     return { x, y };
   }
 
+  const navigate = useNavigate();
+  
+  // NEW: Navigate to waveform planner
+  const goToWaveform = () => {
+    navigate('/waveform');
+  };
+
+  // NEW: Auto-populate waveform signals from schematic
+  const autoPopulateWaveformSignals = () => {
+    if (!design || design.components.length === 0) return;
+    
+    // Generate all signal names from components
+    const allSignals = [
+      ...design.components.flatMap(c => c.inputs.map(i => `${c.label}.${i}`)),
+      ...design.components.flatMap(c => c.outputs.map(o => `${c.label}.${o}`)),
+    ];
+    
+    // Auto-populate waveform with default patterns
+    allSignals.forEach(signal => {
+      if (!waveform[signal]) {
+        let defaultPattern: Record<number, 0 | 1> = {};
+        
+        // Smart default patterns based on signal names
+        if (signal.toLowerCase().includes('clk') || signal.toLowerCase().includes('clock')) {
+          // Clock pattern: alternating 0,1
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = (i % 2) as 0 | 1;
+          }
+        } else if (signal.toLowerCase().includes('reset') || signal.toLowerCase().includes('rst')) {
+          // Reset pattern: 1 at start, 0 after
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = (i === 0 ? 1 : 0) as 0 | 1;
+          }
+        } else if (signal.toLowerCase().includes('enable') || signal.toLowerCase().includes('en')) {
+          // Enable pattern: 1 for first few cycles
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = (i < 4 ? 1 : 0) as 0 | 1;
+          }
+        } else {
+          // Default pattern: all 0 for inputs, alternating for outputs
+          const isOutput = design.components.some(c => c.outputs.some(o => `${c.label}.${o}` === signal));
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = isOutput ? (i % 2) as 0 | 1 : 0;
+          }
+        }
+        
+        setWaveformSignal(signal, defaultPattern);
+      }
+    });
+  };
+
+  // NEW: Auto-populate signals when components are added
+  useEffect(() => {
+    if (design && design.components.length > 0) {
+      autoPopulateWaveformSignals();
+    }
+  }, [design?.components.length]);
+
   return (
     <div className="relative w-full h-[80vh] bg-slate-800 rounded flex">
       {/* Left Sidebar: Component Library & Guided Mode */}
@@ -892,7 +828,7 @@ export default function SchematicCanvas() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'and')!)}
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'logic' && c.label.includes('AND'))!)}
                 className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
               >
                 <CircuitBoard className="h-4 w-4 mr-2" />
@@ -901,7 +837,7 @@ export default function SchematicCanvas() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'or')!)}
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'logic' && c.label.includes('OR'))!)}
                 className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
               >
                 <CircuitBoard className="h-4 w-4 mr-2" />
@@ -910,7 +846,7 @@ export default function SchematicCanvas() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'not')!)}
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'logic' && c.label.includes('NOT'))!)}
                 className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
               >
                 <CircuitBoard className="h-4 w-4 mr-2" />
@@ -919,7 +855,7 @@ export default function SchematicCanvas() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'dff')!)}
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'memory' && c.label.includes('D Flip-Flop'))!)}
                 className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
               >
                 <Clock className="h-4 w-4 mr-2" />
@@ -1008,6 +944,14 @@ export default function SchematicCanvas() {
             className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
           >
             Reset View
+          </Button>
+          <Button 
+            onClick={goToWaveform}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+            disabled={!design || design.components.length === 0}
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View Waveforms
           </Button>
           <Button 
             onClick={() => {/* TODO: Generate HDL */}}

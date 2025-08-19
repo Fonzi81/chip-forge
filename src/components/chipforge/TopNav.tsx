@@ -89,6 +89,7 @@ const MAIN_NAVIGATION = [
 // Workflow progress tracking
 const WORKFLOW_STAGES = [
   { id: 'schematic', label: 'Schematic Design', path: '/workspace', status: 'pending' },
+  { id: 'waveform', label: 'Waveform Planning', path: '/waveform', status: 'pending' },
   { id: 'hdl', label: 'HDL Code', path: '/hdl-generator', status: 'pending' },
   { id: 'simulation', label: 'Simulation', path: '/test-native-simulator', status: 'pending' },
   { id: 'synthesis', label: 'Synthesis', path: '/advanced-chip-design', status: 'pending' },
