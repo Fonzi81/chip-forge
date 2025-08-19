@@ -25,6 +25,7 @@ import { useHDLDesignStore } from "@/state/hdlDesignStore";
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Html, Text } from '@react-three/drei';
 import * as THREE from 'three';
+import SchematicCanvas from "../components/chipforge/SchematicCanvas";
 
 // General Chip Design Component interface
 interface Component {
@@ -186,8 +187,6 @@ function SchematicDesignTab() {
   // Local state mirrors global store, always kept in sync
   const [components, setComponents] = useState([]);
   const [wires, setWires] = useState([]);
-
-  // On mount and whenever design changes, sync local state
   useEffect(() => {
     if (design) {
       setComponents(design.components || []);
@@ -1644,7 +1643,7 @@ export default function ChipForgeWorkspace() {
                 <div className="p-4">
                   <Button onClick={handleDemoSchematic} className="mb-2">Load 4-bit Counter Demo</Button>
                   <ErrorBoundary>
-                    <SchematicDesignTab />
+                    <SchematicCanvas />
                   </ErrorBoundary>
                 </div>
               )}

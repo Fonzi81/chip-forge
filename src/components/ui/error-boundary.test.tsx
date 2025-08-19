@@ -2,6 +2,9 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from './error-boundary';
 
+// Import Jest globals explicitly
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 // Component that throws an error
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   if (shouldThrow) {

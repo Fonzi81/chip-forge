@@ -32,11 +32,24 @@ interface ChatMessage {
 }
 
 export default function EnhancedHDLGenerator() {
-  const { design, waveform, testbenchVerilog, setHDL, setHDLScore, hdlOutput, hdlScore } = useHDLDesignStore();
+  const { 
+    design, 
+    waveform, 
+    testbenchVerilog, 
+    setHDL, 
+    setHDLScore, 
+    hdlOutput, 
+    hdlScore,
+    exportNetlist,
+    generateWaveformJSON,
+    generateNaturalLanguageHints,
+    guidedMode
+  } = useHDLDesignStore();
   const [status, setStatus] = useState("idle");
   const [log, setLog] = useState<string[]>([]);
   const [prompt, setPrompt] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
+  const [explanation, setExplanation] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -75,8 +88,15 @@ endmodule`);
       return;
     }
 
+    if (guidedMode.isActive) {
+      setLog((prev) => [
+        ...prev,
+        "📘 We will now convert your schematic into Verilog HDL.",
+      ]);
+    }
+
     setStatus("generating");
-    setLog(["🔄 Generating HDL code using AI model..."]);
+    setLog((prev) => [...prev, "🔄 Generating HDL code using AI model..."]);
 
     try {
       const result = await hdlGenerator.generateHDL({
@@ -91,13 +111,123 @@ endmodule`);
       setCodeContent(code);
       setHDL(code);
       setHDLScore(0.9);
+      setExplanation(buildExplanation([], code));
       setLog((prev) => [...prev, "✅ HDL Generated successfully!"]);
       setStatus("done");
-      setActiveTab("editor");
+      setActiveTab("generate");
     } catch (e: any) {
       setLog((prev) => [...prev, "❌ HDL generation failed: " + e.message]);
       setStatus("error");
     }
+  };
+
+  // New: Generate directly from schematic + waveform (Smeltr-style pipeline)
+  const generateFromSchematic = async () => {
+    try {
+      if (!design) {
+        setLog((prev) => [...prev, "❌ No design available. Create a schematic first."]);
+        return;
+      }
+
+      const netlist = exportNetlist();
+      const designJSON = JSON.stringify(netlist, null, 2);
+      const waveformJSON = generateWaveformJSON();
+
+      if (guidedMode.isActive) {
+        setLog((prev) => [
+          ...prev,
+          "📘 We will now convert your schematic into Verilog HDL.",
+          "🔗 Including schematic JSON and waveform JSON in generation context...",
+        ]);
+      }
+
+      setStatus("generating");
+
+      const combinedDescription = [
+        "Generate synthesizable Verilog RTL from the provided ChipForge schematic and intended waveforms.",
+        "Respect clock/reset semantics and IO directions.",
+        "\n[Schematic JSON]",
+        designJSON,
+        "\n[Waveform JSON]",
+        waveformJSON,
+      ].join("\n");
+
+      const result = await hdlGenerator.generateHDLWithReflexion({
+        description: combinedDescription,
+        targetLanguage: 'verilog',
+        style: 'rtl',
+        moduleName: design?.moduleName || 'generated_module',
+        io: design?.io,
+      } as any);
+
+      const code = result.code || "// No code generated";
+      setGeneratedCode(code);
+      setCodeContent(code);
+      setHDL(code);
+      setHDLScore(result.reflexionLoop?.success ? 0.95 : 0.8);
+
+      // Build natural language explanation from hints + reflexion + mismatch analysis
+      const hints = generateNaturalLanguageHints();
+      const mismatches = analyzeDesignMismatch();
+      const reflexionNotes = summarizeReflexion(result.reflexionLoop);
+      setExplanation(buildExplanation([...hints, ...mismatches, ...reflexionNotes], code));
+
+      setLog((prev) => [...prev, "✅ HDL Generated from schematic successfully!"]);
+      setStatus("done");
+      setActiveTab("generate");
+    } catch (e: any) {
+      setLog((prev) => [...prev, "❌ Schematic-based HDL generation failed: " + e.message]);
+      setStatus("error");
+    }
+  };
+
+  const summarizeReflexion = (loop: any | undefined): string[] => {
+    if (!loop) return [];
+    const lines: string[] = [];
+    lines.push(`Reflexion loop ${loop.success ? 'succeeded' : 'did not fully converge'} in ${loop.iterations ?? 0} iteration(s).`);
+    if (Array.isArray(loop.steps) && loop.steps.length > 0) {
+      lines.push(`Applied ${loop.steps.length} improvement step(s).`);
+    }
+    return lines;
+  };
+
+  const analyzeDesignMismatch = (): string[] => {
+    const notes: string[] = [];
+    if (!design) return notes;
+
+    // Detect unconnected reset inputs
+    const resetPortNames = ['rst', 'rst_n', 'reset', 'reset_n', 'rstn', 'resetn'];
+    const componentsNeedingReset = design.components.filter(c => c.inputs.some(i => resetPortNames.includes(i.toLowerCase())));
+    componentsNeedingReset.forEach(c => {
+      c.inputs.forEach(pin => {
+        if (resetPortNames.includes(pin.toLowerCase())) {
+          const isConnected = design.wires.some(w => w.to.nodeId === c.id && w.to.port.toLowerCase() === pin.toLowerCase());
+          if (!isConnected) {
+            notes.push(`Simulation shows ${c.label || c.id} may never reset because reset wire not connected (${pin}).`);
+          }
+        }
+      });
+    });
+
+    // Detect resets never asserted in waveform
+    const wfSignals = Object.keys(waveform || {});
+    const resetSignals = wfSignals.filter(s => /rst|reset/i.test(s));
+    resetSignals.forEach(sig => {
+      const values = Object.values(waveform[sig] || {});
+      const everHigh = values.some(v => v === 1);
+      if (!everHigh) {
+        notes.push(`Waveform for ${sig} never asserts reset (always 0).`);
+      }
+    });
+
+    return notes;
+  };
+
+  const buildExplanation = (bullets: string[], code: string) => {
+    const header = "Natural Language Explanation";
+    const intro = "This HDL was generated from your schematic and waveform plan. Key points:";
+    const list = bullets.length ? bullets.map(b => `- ${b}`).join("\n") : "- Generation completed. Review the code on the left.";
+    return `${header}\n\n${intro}\n${list}`;
   };
 
   const sendChatMessage = async () => {
@@ -358,17 +488,67 @@ What would you like to work on?`;
 
             <TabsContent value="generate" className="flex-1 p-6">
               <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-100 mb-4">Generate HDL from Description</h3>
-                <div className="space-y-4">
-                  <Textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Describe your design (e.g., '4-bit up counter with synchronous reset and enable')"
-                    className="min-h-[100px] bg-slate-900 border-slate-600 text-slate-100 placeholder:text-slate-400"
-                  />
-                  <Button onClick={generate} disabled={status === "generating"} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    {status === "generating" ? "🔄 Generating..." : "🚀 Generate HDL"}
-                  </Button>
+                <h3 className="text-lg font-semibold text-slate-100 mb-4">Generate HDL</h3>
+
+                {guidedMode.isActive && (
+                  <Card className="mb-4 border-blue-500/30 bg-blue-500/10">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2 text-blue-300">
+                        <Lightbulb className="h-4 w-4" />
+                        Guided Mode
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-blue-200">We will now convert your schematic into Verilog HDL.</div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <Textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Describe your design (e.g., '4-bit up counter with synchronous reset and enable')"
+                      className="min-h-[100px] bg-slate-900 border-slate-600 text-slate-100 placeholder:text-slate-400"
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={generate} disabled={status === "generating"} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                        {status === "generating" ? "🔄 Generating..." : "🚀 Generate from Text"}
+                      </Button>
+                      <Button onClick={generateFromSchematic} disabled={status === "generating"} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                        {status === "generating" ? "🔄 Generating..." : "🧩 Generate from Schematic"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Side-by-side code & explanation after generation */}
+                  <div className="space-y-2">
+                    <Card className="h-full">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm">Natural Language Explanation</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ScrollArea className="h-64 border border-slate-700 rounded p-2">
+                          <pre className="whitespace-pre-wrap text-xs text-slate-200">{explanation || 'No explanation yet. Generate HDL to see analysis.'}</pre>
+                        </ScrollArea>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* Code preview */}
+                <div className="mt-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Generated Verilog</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-64 border border-slate-700 rounded p-2">
+                        <pre className="text-xs text-green-300">{generatedCode || '// Generate HDL to see output here.'}</pre>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </TabsContent>

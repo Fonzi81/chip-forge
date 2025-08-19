@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ChipForge Waveform Schema",
+  "description": "Schema for ChipForge waveform test plans",
+  "type": "object",
+  "required": ["nets"],
+  "properties": {
+    "nets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["netId", "sequence"],
+        "properties": {
+          "netId": {
+            "type": "string",
+            "description": "Reference to net in design"
+          },
+          "sequence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/waveStep"
+            },
+            "minItems": 1,
+            "description": "Sequence of waveform steps"
+          }
+        }
+      },
+      "description": "Waveform sequences for each net"
+    }
+  },
+  "definitions": {
+    "waveStep": {
+      "type": "object",
+      "required": ["at", "value"],
+      "properties": {
+        "at": {
+          "type": "string",
+          "description": "Timing specification (e.g., 't+10ns', 'rise(HCLK)*3')"
+        },
+        "value": {
+          "oneOf": [
+            {"type": "string", "enum": ["0", "1", "X", "Z"]},
+            {"type": "number"},
+            {"type": "string"}
+          ],
+          "description": "Signal value at specified time"
+        }
+      }
+    }
+  }
+} 

@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ChipForge Constraints Schema",
+  "description": "Schema for ChipForge design constraints",
+  "type": "object",
+  "required": ["clocks", "resets", "buses"],
+  "properties": {
+    "clocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "frequency_mhz"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Clock signal name"
+          },
+          "frequency_mhz": {
+            "type": "number",
+            "minimum": 0.001,
+            "description": "Clock frequency in MHz"
+          },
+          "stable_between_clock": {
+            "type": "boolean",
+            "description": "Whether signal is stable between clock edges"
+          }
+        }
+      },
+      "minItems": 1,
+      "description": "Clock constraints"
+    },
+    "resets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "active", "sync_deassert"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Reset signal name"
+          },
+          "active": {
+            "type": "string",
+            "enum": ["low", "high"],
+            "description": "Active level of reset signal"
+          },
+          "sync_deassert": {
+            "type": "boolean",
+            "description": "Whether reset deassertion is synchronous"
+          }
+        }
+      },
+      "minItems": 1,
+      "description": "Reset constraints"
+    },
+    "buses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Bus identifier"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["AHB", "AXI", "APB", "Custom"],
+            "description": "Bus protocol type"
+          },
+          "properties": {
+            "type": "object",
+            "description": "Additional bus-specific properties"
+          }
+        }
+      },
+      "description": "Bus constraints"
+    }
+  },
+  "parity": {
+    "type": "object",
+    "properties": {
+      "checkType": {
+        "type": "string",
+        "enum": ["False", "Odd_Parity_Byte_All"],
+        "description": "Parity checking type for AHB bus data integrity"
+      },
+      "enabled": {
+        "type": "boolean",
+        "description": "Whether parity checking is enabled"
+      }
+    }
+  }
+} 

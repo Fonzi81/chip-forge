@@ -26,8 +26,10 @@ import {
   Play,
   Target,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Lightbulb
 } from "lucide-react";
+import { useHDLDesignStore } from "@/state/hdlDesignStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -103,6 +105,7 @@ const WORKFLOW_STAGES = [
 export default function TopNav() {
   const location = useLocation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const { guidedMode, setGuidedMode } = useHDLDesignStore();
 
   // Determine current workflow stage
   const getCurrentStage = () => {
@@ -205,6 +208,22 @@ export default function TopNav() {
 
       {/* Right side actions */}
       <div className="flex items-center gap-2">
+        {/* Guided Mode Toggle */}
+        <Button
+          variant={guidedMode.isActive ? "default" : "outline"}
+          size="sm"
+          onClick={() => setGuidedMode(!guidedMode.isActive)}
+          className={`flex items-center gap-2 ${
+            guidedMode.isActive 
+              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+              : 'text-slate-400 hover:text-slate-200 border-slate-600'
+          }`}
+          title={guidedMode.isActive ? "Disable Guided Mode" : "Enable Guided Mode"}
+        >
+          <Lightbulb className="h-4 w-4" />
+          {guidedMode.isActive ? "ON" : "OFF"}
+        </Button>
+        
         <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
           <CheckCircle className="h-3 w-3 mr-1" />
           AI-Powered
