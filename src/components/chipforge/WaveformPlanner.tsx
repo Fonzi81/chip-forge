@@ -14,12 +14,16 @@ import {
   Lightbulb,
   Play,
   Square,
-  Circle
+  Circle,
+  ArrowLeft,
+  CircuitBoard
 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 const MAX_CYCLES = 16;
 
 export default function WaveformPlanner() {
+  const navigate = useNavigate();
   const { 
     design, 
     waveform, 
@@ -41,8 +45,8 @@ export default function WaveformPlanner() {
 
   // Enhanced signal detection with automatic categorization
   const allSignals = [
-    ...(design?.components.flatMap(c => c.inputs.map(i => `${c.id}.${i}`)) || []),
-    ...(design?.components.flatMap(c => c.outputs.map(o => `${c.id}.${o}`)) || []),
+    ...(design?.components.flatMap(c => c.inputs.map(i => `${c.label}.${i}`)) || []),
+    ...(design?.components.flatMap(c => c.outputs.map(o => `${c.label}.${o}`)) || []),
   ];
 
   // Auto-populate signals if none exist
@@ -62,17 +66,23 @@ export default function WaveformPlanner() {
           for (let i = 0; i < cycles; i++) {
             defaultPattern[i] = (i === 0 ? 1 : 0) as 0 | 1;
           }
-        } else {
-          // Default pattern: all 0
+        } else if (signal.toLowerCase().includes('enable') || signal.toLowerCase().includes('en')) {
+          // Enable pattern: 1 for first few cycles
           for (let i = 0; i < cycles; i++) {
-            defaultPattern[i] = 0;
+            defaultPattern[i] = (i < 4 ? 1 : 0) as 0 | 1;
+          }
+        } else {
+          // Default pattern: all 0 for inputs, alternating for outputs
+          const isOutput = design?.components.some(c => c.outputs.some(o => `${c.label}.${o}` === signal));
+          for (let i = 0; i < cycles; i++) {
+            defaultPattern[i] = isOutput ? (i % 2) as 0 | 1 : 0;
           }
         }
         
         setWaveformSignal(signal, defaultPattern);
       });
     }
-  }, [allSignals, cycles, waveform, setWaveformSignal]);
+  }, [allSignals, cycles, waveform, setWaveformSignal, design]);
 
   // Generate natural language hints when guided mode is active
   useEffect(() => {
@@ -166,13 +176,72 @@ export default function WaveformPlanner() {
     }
   }, [testbenchVerilog, showModal]);
 
+  // NEW: Navigate back to schematic
+  const goToSchematic = () => {
+    navigate('/workspace');
+  };
+
   return (
     <div className="p-4 bg-slate-900 text-white">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Waveform Planner</h2>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-4">
           <Button 
             variant="outline" 
+            onClick={goToSchematic}
+            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Schematic
+          </Button>
+          <h2 className="text-xl font-bold">Waveform Planner</h2>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => {
+              // Refresh signals from schematic
+              if (design && design.components.length > 0) {
+                const newSignals = [
+                  ...design.components.flatMap(c => c.inputs.map(i => `${c.label}.${i}`)),
+                  ...design.components.flatMap(c => c.outputs.map(o => `${c.label}.${o}`)),
+                ];
+                
+                newSignals.forEach(signal => {
+                  if (!waveform[signal]) {
+                    let defaultPattern: Record<number, 0 | 1> = {};
+                    
+                    if (signal.toLowerCase().includes('clk') || signal.toLowerCase().includes('clock')) {
+                      for (let i = 0; i < cycles; i++) {
+                        defaultPattern[i] = (i % 2) as 0 | 1;
+                      }
+                    } else if (signal.toLowerCase().includes('reset') || signal.toLowerCase().includes('rst')) {
+                      for (let i = 0; i < cycles; i++) {
+                        defaultPattern[i] = (i === 0 ? 1 : 0) as 0 | 1;
+                      }
+                    } else if (signal.toLowerCase().includes('enable') || signal.toLowerCase().includes('en')) {
+                      for (let i = 0; i < cycles; i++) {
+                        defaultPattern[i] = (i < 4 ? 1 : 0) as 0 | 1;
+                      }
+                    } else {
+                      const isOutput = design.components.some(c => c.outputs.some(o => `${c.label}.${o}` === signal));
+                      for (let i = 0; i < cycles; i++) {
+                        defaultPattern[i] = isOutput ? (i % 2) as 0 | 1 : 0;
+                      }
+                    }
+                    
+                    setWaveformSignal(signal, defaultPattern);
+                  }
+                });
+              }
+            }}
+            className="flex items-center gap-2 border-slate-600 text-slate-300 hover:bg-slate-700"
+            title="Refresh signals from schematic"
+          >
+            <CircuitBoard className="h-4 w-4" />
+            Refresh Signals
+          </Button>
+          <Button 
+            variant="outline"
             onClick={handleGenerateWaveform}
             className="flex items-center gap-2"
           >
@@ -188,6 +257,34 @@ export default function WaveformPlanner() {
           </Button>
         </div>
       </div>
+
+      {/* NEW: Schematic Summary Card */}
+      {design && (
+        <Card className="mb-4 bg-slate-800 border-slate-600">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CircuitBoard className="h-5 w-5 text-cyan-400" />
+              Schematic Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="text-slate-400">Components:</span>
+                <span className="ml-2 text-white font-medium">{design.components.length}</span>
+              </div>
+              <div>
+                <span className="text-slate-400">Wires:</span>
+                <span className="ml-2 text-white font-medium">{design.wires.length}</span>
+              </div>
+              <div>
+                <span className="text-slate-400">Signals:</span>
+                <span className="ml-2 text-white font-medium">{allSignals.length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Guided Mode Hints */}
       {guidedMode.isActive && naturalLanguageHints.length > 0 && (

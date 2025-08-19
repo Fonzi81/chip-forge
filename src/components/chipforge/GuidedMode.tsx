@@ -39,33 +39,33 @@ const GUIDED_STEPS: GuidedStep[] = [
     id: 1,
     title: "Welcome to ChipForge!",
     description: "Let's build your first schematic step by step. I'll guide you through the process of creating a digital circuit.",
-    target: ".component-library",
+    target: ".schematic-canvas",
     position: "left",
     completed: false
   },
   {
     id: 2,
     title: "Choose Components",
-    description: "Start by selecting components from the library. Click on any component button to add it to your canvas. Try adding an AND gate or DFF (D-Flip Flop) to get started.",
-    target: ".component-library",
+    description: "Start by selecting components from the integrated library. Browse categories like Logic, Memory, or Arithmetic, or search for specific components. Drag any component to add it to your canvas.",
+    target: ".component-categories",
     position: "left",
     completed: false,
-    action: "Click on a component button"
+    action: "Browse component categories and drag a component to the canvas"
   },
   {
     id: 3,
     title: "Place Components",
-    description: "Great! Now you can drag components around the canvas to position them. Click and drag any component to move it. Components snap to a grid for neat organization.",
-    target: "canvas",
+    description: "Great! Now you can drag components around the canvas to position them. Components snap to a grid for neat organization. Try positioning your components logically.",
+    target: ".schematic-canvas",
     position: "bottom",
     completed: false,
-    action: "Drag a component to a new position"
+    action: "Drag components to organize them on the canvas"
   },
   {
     id: 4,
     title: "Connect with Wires",
     description: "Time to connect your components! Click on an output port (right side) of one component, then click on an input port (left side) of another component to create a wire.",
-    target: "canvas",
+    target: ".schematic-canvas",
     position: "bottom",
     completed: false,
     action: "Connect two components with a wire"
@@ -74,7 +74,7 @@ const GUIDED_STEPS: GuidedStep[] = [
     id: 5,
     title: "Name Your Signals",
     description: "Give your signals meaningful names. You can edit component labels and port names to make your design clear and understandable.",
-    target: "canvas",
+    target: ".schematic-canvas",
     position: "bottom",
     completed: false,
     action: "Double-click a component to edit its name"
@@ -83,7 +83,7 @@ const GUIDED_STEPS: GuidedStep[] = [
     id: 6,
     title: "Plan Your Waveforms",
     description: "Think about how your circuit should behave. What inputs will you provide? What outputs do you expect? This planning helps you test your design later.",
-    target: "canvas",
+    target: ".schematic-canvas",
     position: "bottom",
     completed: false
   },
@@ -91,7 +91,7 @@ const GUIDED_STEPS: GuidedStep[] = [
     id: 7,
     title: "Test Your Design",
     description: "Congratulations! You've created your first schematic. You can now simulate your design, export it to HDL code, or continue building more complex circuits.",
-    target: "canvas",
+    target: ".schematic-canvas",
     position: "bottom",
     completed: false
   }

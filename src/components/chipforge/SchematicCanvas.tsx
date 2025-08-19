@@ -1,10 +1,11 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useHDLDesignStore, HDLComponent, HDLWire } from "@/state/hdlDesignStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
   Cpu, 
   CircuitBoard, 
@@ -13,29 +14,31 @@ import {
   Calculator, 
   MemoryStick,
   Lightbulb,
-  Play
+  Play,
+  Plus,
+  Trash2,
+  RotateCcw,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+  Eye
 } from "lucide-react";
 
-// Use the existing Component interface from the HDL tab
-interface Component {
+// Import the component library
+import componentLibrary from "@/lib/component.library.json";
+import { useNavigate } from 'react-router-dom';
+
+// Component interface matching the library
+interface ComponentBlock {
   id: string;
-  name: string;
-  type: 'nmos' | 'pmos' | 'bjt' | 'nand' | 'nor' | 'and' | 'or' | 'xor' | 'not' | 
-        'dff' | 'tff' | 'jkff' | 'srff' | 'dlatch' | 'srlatch' | 'register' | 'counter' | 'sram' | 'rom' | 'adder' | 'multiplier' | 'alu' | 'io_buffer' | 
-        'level_shifter' | 'opamp' | 'adc' | 'dac' | 'pll' | 'vreg' | 'power_switch' |
-        'uart' | 'spi' | 'i2c';
+  type: string;
+  label: string;
+  ports: { name: string; width: number }[];
   description: string;
-  creator: string;
-  verified: boolean;
-  usage: string;
-  likes: number;
-  icon: React.ReactNode;
+  verilog: string;
   category: string;
-  pins: string[];
-  power: string;
-  area: string;
-  outputs?: string[];
-  inputs?: string[];
+  symbol: string;
+  hdl: string;
 }
 
 // Guided mode steps with actual circuit building guidance
@@ -94,196 +97,27 @@ const GUIDED_STEPS = [
 ];
 
 // Component recommendations based on chip type - using existing component types
-const getComponentRecommendations = (chipType: string, allComponents: Component[]): Component[] => {
-  const recommendations: { [key: string]: Component['type'][] } = {
+const getComponentRecommendations = (chipType: string, allComponents: ComponentBlock[]): ComponentBlock[] => {
+  const recommendations: { [key: string]: string[] } = {
     "counter": ["dff", "and", "or", "not"],
     "alu": ["alu", "dff", "adder", "and", "or", "xor"],
-    "memory": ["dff", "sram", "rom", "and"],
-    "controller": ["dff", "and", "or", "register", "counter"],
-    "multiplier": ["dff", "and", "multiplier", "adder"],
-    "divider": ["dff", "adder", "register", "counter"]
+    "memory": ["dff", "sram", "rom", "register"],
+    "processor": ["alu", "dff", "register", "and", "or", "not"],
+    "fifo": ["dff", "register", "counter"],
+    "uart": ["dff", "register", "counter", "and", "or"],
+    "spi": ["dff", "register", "counter", "and", "or"],
+    "i2c": ["dff", "register", "and", "or", "not"]
   };
   
-  const defaultComponents: Component['type'][] = ["dff", "and", "or", "not"];
+  const defaultComponents: string[] = ["dff", "and", "or", "not"];
   const selectedTypes = recommendations[chipType.toLowerCase()] || defaultComponents;
   
-  // Return actual components from the existing library
-  return allComponents.filter(comp => selectedTypes.includes(comp.type));
+  return allComponents.filter(comp => 
+    selectedTypes.some(type => comp.label.toLowerCase().includes(type.toLowerCase()))
+  );
 };
 
-// Use the existing component library from the HDL tab
-const chipComponents: Component[] = [
-  // Transistors
-  {
-    id: 'nmos_001',
-    name: 'NMOS Transistor',
-    type: 'nmos',
-    description: 'N-channel MOSFET for digital logic',
-    creator: 'TSMC',
-    verified: true,
-    usage: '15.2k',
-    likes: 892,
-    icon: <Cpu className="h-4 w-4" />,
-    category: 'Transistors',
-    pins: ['Source', 'Drain', 'Gate', 'Bulk'],
-    power: '0.1mW',
-    area: '0.5μm²'
-  },
-  {
-    id: 'pmos_001',
-    name: 'PMOS Transistor',
-    type: 'pmos',
-    description: 'P-channel MOSFET for complementary logic',
-    creator: 'TSMC',
-    verified: true,
-    usage: '12.8k',
-    likes: 756,
-    icon: <Cpu className="h-4 w-4" />,
-    category: 'Transistors',
-    pins: ['Source', 'Drain', 'Gate', 'Bulk'],
-    power: '0.1mW',
-    area: '1.0μm²'
-  },
-  {
-    id: 'bjt_001',
-    name: 'BJT Transistor',
-    type: 'bjt',
-    description: 'Bipolar Junction Transistor for analog circuits',
-    creator: 'TSMC',
-    verified: true,
-    usage: '3.4k',
-    likes: 234,
-    icon: <Cpu className="h-4 w-4" />,
-    category: 'Transistors',
-    pins: ['Emitter', 'Base', 'Collector'],
-    power: '1.0mW',
-    area: '2.0μm²'
-  },
-  // Logic Gates
-  {
-    id: 'nand_001',
-    name: 'NAND Gate',
-    type: 'nand',
-    description: 'Universal logic gate (NOT-AND)',
-    creator: 'TSMC',
-    verified: true,
-    usage: '25.6k',
-    likes: 1245,
-    icon: <CircuitBoard className="h-4 w-4" />,
-    category: 'Logic Gates',
-    pins: ['A', 'B', 'Y'],
-    power: '0.2mW',
-    area: '1.5μm²'
-  },
-  {
-    id: 'nor_001',
-    name: 'NOR Gate',
-    type: 'nor',
-    description: 'Universal logic gate (NOT-OR)',
-    creator: 'TSMC',
-    verified: true,
-    usage: '18.9k',
-    likes: 987,
-    icon: <CircuitBoard className="h-4 w-4" />,
-    category: 'Logic Gates',
-    pins: ['A', 'B', 'Y'],
-    power: '0.2mW',
-    area: '1.5μm²'
-  },
-  {
-    id: 'and_001',
-    name: 'AND Gate',
-    type: 'and',
-    description: 'Logical AND operation',
-    creator: 'TSMC',
-    verified: true,
-    usage: '22.1k',
-    likes: 1102,
-    icon: <CircuitBoard className="h-4 w-4" />,
-    category: 'Logic Gates',
-    pins: ['A', 'B', 'Y'],
-    power: '0.15mW',
-    area: '1.2μm²'
-  },
-  {
-    id: 'or_001',
-    name: 'OR Gate',
-    type: 'or',
-    description: 'Logical OR operation',
-    creator: 'TSMC',
-    verified: true,
-    usage: '19.7k',
-    likes: 876,
-    icon: <CircuitBoard className="h-4 w-4" />,
-    category: 'Logic Gates',
-    pins: ['A', 'B', 'Y'],
-    power: '0.15mW',
-    area: '1.2μm²'
-  },
-  {
-    id: 'xor_001',
-    name: 'XOR Gate',
-    type: 'xor',
-    description: 'Exclusive OR operation',
-    creator: 'TSMC',
-    verified: true,
-    usage: '8.3k',
-    likes: 445,
-    icon: <CircuitBoard className="h-4 w-4" />,
-    category: 'Logic Gates',
-    pins: ['A', 'B', 'Y'],
-    power: '0.3mW',
-    area: '2.5μm²'
-  },
-  {
-    id: 'not_001',
-    name: 'NOT Gate',
-    type: 'not',
-    description: 'Logical inversion',
-    creator: 'TSMC',
-    verified: true,
-    usage: '31.2k',
-    likes: 1567,
-    icon: <CircuitBoard className="h-4 w-4" />,
-    category: 'Logic Gates',
-    pins: ['A', 'Y'],
-    power: '0.1mW',
-    area: '0.8μm²'
-  },
-  // Memory Elements
-  {
-    id: 'dff_001',
-    name: 'D-Flip Flop',
-    type: 'dff',
-    description: 'Data flip-flop with clock',
-    creator: 'TSMC',
-    verified: true,
-    usage: '14.7k',
-    likes: 678,
-    icon: <Clock className="h-4 w-4" />,
-    category: 'Memory Elements',
-    pins: ['D', 'CLK', 'Q', 'Q_bar'],
-    power: '0.5mW',
-    area: '3.0μm²'
-  },
-  {
-    id: 'tff_001',
-    name: 'T-Flip Flop',
-    type: 'tff',
-    description: 'Toggle flip-flop',
-    creator: 'TSMC',
-    verified: true,
-    usage: '8.9k',
-    likes: 445,
-    icon: <Clock className="h-4 w-4" />,
-    category: 'Memory Elements',
-    pins: ['T', 'CLK', 'Q', 'Q_bar'],
-    power: '0.4mW',
-    area: '2.8μm²'
-  }
-];
-
-
+// Component library is imported from @/lib/component.library.json
 
 const GRID_SIZE = 20;
 const BLOCK_WIDTH = 120;
@@ -305,6 +139,8 @@ export default function SchematicCanvas() {
     setGuidedStep,
     completeGuidedStep,
     resetGuidedMode,
+    waveform,
+    setWaveformSignal,
   } = useHDLDesignStore();
   
   const [dragging, setDragging] = useState<null | { id: string; offsetX: number; offsetY: number }>(null);
@@ -314,6 +150,8 @@ export default function SchematicCanvas() {
   const [selected, setSelected] = useState<{ type: 'component' | 'wire'; id: string; wire?: HDLWire } | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [future, setFuture] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [zoom, setZoom] = useState(1);
   
 
   
@@ -322,7 +160,7 @@ export default function SchematicCanvas() {
     chipType: string;
     selectedComponents: string[];
     currentStep: number;
-    recommendations: Component[];
+    recommendations: ComponentBlock[];
   }>({
     chipType: '',
     selectedComponents: [],
@@ -355,7 +193,7 @@ export default function SchematicCanvas() {
   // Handle guided mode input
   const handleGuidedInput = (value: string) => {
     if (guidedData.currentStep === 1) {
-      const recommendations = getComponentRecommendations(value, chipComponents);
+      const recommendations = getComponentRecommendations(value, componentLibrary);
       setGuidedData(prev => ({
         ...prev,
         chipType: value,
@@ -377,40 +215,37 @@ export default function SchematicCanvas() {
   };
 
   // Add component from library
-  const handleAddComponent = (component: Component) => {
+  const handleAddComponent = (component: ComponentBlock) => {
     console.log('handleAddComponent called with:', component);
     console.log('Current design state:', design);
     
     if (!design) {
       console.log('No design state, initializing...');
-      // Initialize design if it doesn't exist
-      const initialDesign = {
-        moduleName: 'schematic_design',
-        description: 'Schematic design created in canvas',
+      // Initialize design if none exists
+      const newDesign = {
+        moduleName: 'NewDesign',
+        description: 'Design created from component library',
         io: [],
         verilog: '',
         components: [],
         wires: []
       };
-      setDesign(initialDesign);
+      setDesign(newDesign);
     }
     
     const id = `${component.type}-${Date.now()}`;
     const newComponent: HDLComponent = {
       id,
       type: component.type,
-      label: component.name,
+      label: component.label,
       x: 200 + Math.random() * 300,
       y: 150 + Math.random() * 200,
-      inputs: component.pins.slice(0, -1),
-      outputs: component.pins.slice(-1)
+      inputs: component.ports.slice(0, -1).map(p => p.name),
+      outputs: component.ports.slice(-1).map(p => p.name)
     };
     
-    console.log('Creating new component:', newComponent);
     addComponent(newComponent);
     pushHistory();
-    
-    console.log('Component added, new design state:', design);
     
     // Complete guided step if active
     if (guidedMode.isActive) {
@@ -418,27 +253,29 @@ export default function SchematicCanvas() {
       setGuidedData(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
       setGuidedStep(guidedData.currentStep + 1);
     }
+    
+    console.log('Component added:', newComponent);
   };
 
   // Add component from guided recommendations
-  const handleAddGuidedComponent = (component: Component) => {
+  const handleAddGuidedComponent = (component: ComponentBlock) => {
     if (!design) return;
 
     const id = `${component.type}-${Date.now()}`;
-      const newComponent: HDLComponent = {
+    const newComponent: HDLComponent = {
       id,
       type: component.type,
-      label: component.name,
+      label: component.label,
       x: 200 + Math.random() * 300,
       y: 150 + Math.random() * 200,
-      inputs: component.pins.slice(0, -1),
-      outputs: component.pins.slice(-1)
-      };
+      inputs: component.ports.slice(0, -1).map(p => p.name),
+      outputs: component.ports.slice(-1).map(p => p.name)
+    };
 
-      addComponent(newComponent);
-      pushHistory();
-
-    // Complete guided step
+    addComponent(newComponent);
+    pushHistory();
+    
+    // Complete guided step if active
     if (guidedMode.isActive) {
       completeGuidedStep(guidedData.currentStep);
       setGuidedData(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
@@ -510,6 +347,52 @@ export default function SchematicCanvas() {
     setSelected(null);
   };
 
+  // Drag and drop handlers for component library integration
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!design) return;
+
+    try {
+      const componentData = JSON.parse(e.dataTransfer.getData('application/json'));
+      const rect = (canvasRef.current as HTMLCanvasElement).getBoundingClientRect();
+      const dropX = e.clientX - rect.left;
+      const dropY = e.clientY - rect.top;
+      
+      // Snap to grid
+      const gridX = Math.round(dropX / GRID_SIZE) * GRID_SIZE;
+      const gridY = Math.round(dropY / GRID_SIZE) * GRID_SIZE;
+      
+      const newComponent: HDLComponent = {
+        id: `${componentData.type}-${Date.now()}`,
+        type: componentData.type,
+        label: componentData.label,
+        x: gridX,
+        y: gridY,
+        inputs: componentData.ports.slice(0, -1).map((p: any) => p.name),
+        outputs: componentData.ports.slice(-1).map((p: any) => p.name)
+      };
+      
+      addComponent(newComponent);
+      pushHistory();
+      
+      // Complete guided step if active
+      if (guidedMode.isActive) {
+        completeGuidedStep(guidedData.currentStep);
+        setGuidedData(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
+        setGuidedStep(guidedData.currentStep + 1);
+      }
+      
+      console.log('Component dropped:', newComponent);
+    } catch (error) {
+      console.error('Failed to parse dropped component data:', error);
+    }
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!design) return;
     
@@ -570,15 +453,42 @@ export default function SchematicCanvas() {
     return () => window.removeEventListener("keydown", handleKey);
   });
 
+  // Update canvas size to use full available space
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const resizeCanvas = () => {
+      const container = canvas.parentElement;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
+    };
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, []);
+
   // Draw everything
   useEffect(() => {
-    if (!design || !canvasRef.current) return;
-    
-    const ctx = canvasRef.current.getContext("2d");
+    const canvas = canvasRef.current;
+    if (!canvas || !design) return;
+
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+    // Apply zoom transformation
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
     // Draw grid
     ctx.strokeStyle = "#334155";
     ctx.lineWidth = 1;
@@ -705,7 +615,8 @@ export default function SchematicCanvas() {
         ctx.fillText(port, x + 12, y + 4);
       });
     });
-  }, [design, dragging, dragPos, hoveredPort, wiring, selected]);
+    ctx.restore();
+  }, [design, dragging, dragPos, hoveredPort, wiring, selected, zoom]);
 
   // Helper function for port positioning
   function getPortPosition(comp: HDLComponent, port: string, isInput: boolean, idx: number, total: number) {
@@ -713,6 +624,64 @@ export default function SchematicCanvas() {
     const x = isInput ? comp.x : comp.x + BLOCK_WIDTH;
     return { x, y };
   }
+
+  const navigate = useNavigate();
+  
+  // NEW: Navigate to waveform planner
+  const goToWaveform = () => {
+    navigate('/waveform');
+  };
+
+  // NEW: Auto-populate waveform signals from schematic
+  const autoPopulateWaveformSignals = () => {
+    if (!design || design.components.length === 0) return;
+    
+    // Generate all signal names from components
+    const allSignals = [
+      ...design.components.flatMap(c => c.inputs.map(i => `${c.label}.${i}`)),
+      ...design.components.flatMap(c => c.outputs.map(o => `${c.label}.${o}`)),
+    ];
+    
+    // Auto-populate waveform with default patterns
+    allSignals.forEach(signal => {
+      if (!waveform[signal]) {
+        let defaultPattern: Record<number, 0 | 1> = {};
+        
+        // Smart default patterns based on signal names
+        if (signal.toLowerCase().includes('clk') || signal.toLowerCase().includes('clock')) {
+          // Clock pattern: alternating 0,1
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = (i % 2) as 0 | 1;
+          }
+        } else if (signal.toLowerCase().includes('reset') || signal.toLowerCase().includes('rst')) {
+          // Reset pattern: 1 at start, 0 after
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = (i === 0 ? 1 : 0) as 0 | 1;
+          }
+        } else if (signal.toLowerCase().includes('enable') || signal.toLowerCase().includes('en')) {
+          // Enable pattern: 1 for first few cycles
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = (i < 4 ? 1 : 0) as 0 | 1;
+          }
+        } else {
+          // Default pattern: all 0 for inputs, alternating for outputs
+          const isOutput = design.components.some(c => c.outputs.some(o => `${c.label}.${o}` === signal));
+          for (let i = 0; i < 16; i++) {
+            defaultPattern[i] = isOutput ? (i % 2) as 0 | 1 : 0;
+          }
+        }
+        
+        setWaveformSignal(signal, defaultPattern);
+      }
+    });
+  };
+
+  // NEW: Auto-populate signals when components are added
+  useEffect(() => {
+    if (design && design.components.length > 0) {
+      autoPopulateWaveformSignals();
+    }
+  }, [design?.components.length]);
 
   return (
     <div className="relative w-full h-[80vh] bg-slate-800 rounded flex">
@@ -760,7 +729,7 @@ export default function SchematicCanvas() {
                         className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
                       >
                         <CircuitBoard className="h-4 w-4 mr-2" />
-                        {comp.name}
+                        {comp.label}
                       </Button>
                     ))}
                   </div>
@@ -780,102 +749,119 @@ export default function SchematicCanvas() {
           </Card>
         )}
         
-        {/* Quick Add Components */}
-        <div>
-          <h3 className="text-lg font-semibold mb-3 text-slate-200">Quick Add</h3>
-          <div className="space-y-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAddComponent({
-                id: 'and_001',
-                name: 'AND Gate',
-                type: 'and',
-                description: 'Logical AND operation',
-                creator: 'TSMC',
-                verified: true,
-                usage: '22.1k',
-                likes: 1102,
-                icon: <CircuitBoard className="h-4 w-4" />,
-                category: 'Logic Gates',
-                pins: ['A', 'B', 'Y'],
-                power: '0.15mW',
-                area: '1.2μm²'
-              })}
-              className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
-            >
-              <CircuitBoard className="h-4 w-4 mr-2" />
-              AND Gate
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAddComponent({
-                id: 'or_001',
-                name: 'OR Gate',
-                type: 'or',
-                description: 'Logical OR operation',
-                creator: 'TSMC',
-                verified: true,
-                usage: '19.7k',
-                likes: 876,
-                icon: <CircuitBoard className="h-4 w-4" />,
-                category: 'Logic Gates',
-                pins: ['A', 'B', 'Y'],
-                power: '0.15mW',
-                area: '1.2μm²'
-              })}
-              className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
-            >
-              <CircuitBoard className="h-4 w-4 mr-2" />
-              OR Gate
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAddComponent({
-                id: 'not_001',
-                name: 'NOT Gate',
-                type: 'not',
-                description: 'Logical inversion',
-                creator: 'TSMC',
-                verified: true,
-                usage: '31.2k',
-                likes: 1567,
-                icon: <CircuitBoard className="h-4 w-4" />,
-                category: 'Logic Gates',
-                pins: ['A', 'Y'],
-                power: '0.1mW',
-                area: '0.8μm²'
-              })}
-              className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
-            >
-              <CircuitBoard className="h-4 w-4 mr-2" />
-              NOT Gate
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAddComponent({
-                id: 'dff_001',
-                name: 'D-Flip Flop',
-                type: 'dff',
-                description: 'Data flip-flop with clock',
-                creator: 'TSMC',
-                verified: true,
-                usage: '14.7k',
-                likes: 678,
-                icon: <Clock className="h-4 w-4" />,
-                category: 'Memory Elements',
-                pins: ['D', 'CLK', 'Q', 'Q_bar'],
-                power: '0.5mW',
-                area: '3.0μm²'
-              })}
-              className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
-            >
-              <Clock className="h-4 w-4 mr-2" />
-              D-Flip Flop
-            </Button>
+        {/* Component Library */}
+        <div className="w-64 bg-slate-800 border-r border-slate-700 p-4 overflow-y-auto">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">Component Library</h3>
+            <Input
+              placeholder="Search components..."
+              className="bg-slate-700 border-slate-600 text-slate-200"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* Component Categories */}
+          <Tabs defaultValue="logic" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-slate-700">
+              <TabsTrigger value="logic" className="text-xs">Logic</TabsTrigger>
+              <TabsTrigger value="memory" className="text-xs">Memory</TabsTrigger>
+              <TabsTrigger value="arithmetic" className="text-xs">Math</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="logic" className="mt-4 space-y-2">
+              {componentLibrary
+                .filter(comp => comp.category === 'logic' && comp.label.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((component) => (
+                  <Button
+                    key={component.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddComponent(component)}
+                    className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                  >
+                    <CircuitBoard className="h-4 w-4 mr-2" />
+                    {component.label}
+                  </Button>
+                ))}
+            </TabsContent>
+            
+            <TabsContent value="memory" className="mt-4 space-y-2">
+              {componentLibrary
+                .filter(comp => comp.category === 'memory' && comp.label.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((component) => (
+                  <Button
+                    key={component.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddComponent(component)}
+                    className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                  >
+                    <MemoryStick className="h-4 w-4 mr-2" />
+                    {component.label}
+                  </Button>
+                ))}
+            </TabsContent>
+            
+            <TabsContent value="arithmetic" className="mt-4 space-y-2">
+              {componentLibrary
+                .filter(comp => comp.category === 'arithmetic' && comp.label.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((component) => (
+                  <Button
+                    key={component.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddComponent(component)}
+                    className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                  >
+                    <Calculator className="h-4 w-4 mr-2" />
+                    {component.label}
+                  </Button>
+                ))}
+            </TabsContent>
+          </Tabs>
+
+          {/* Quick Add Buttons for Common Components */}
+          <div className="mt-4 pt-4 border-t border-slate-700">
+            <h4 className="text-sm font-medium text-slate-300 mb-2">Quick Add</h4>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'logic' && c.label.includes('AND'))!)}
+                className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+              >
+                <CircuitBoard className="h-4 w-4 mr-2" />
+                AND Gate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'logic' && c.label.includes('OR'))!)}
+                className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+              >
+                <CircuitBoard className="h-4 w-4 mr-2" />
+                OR Gate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'logic' && c.label.includes('NOT'))!)}
+                className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+              >
+                <CircuitBoard className="h-4 w-4 mr-2" />
+                NOT Gate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAddComponent(componentLibrary.find(c => c.type === 'memory' && c.label.includes('D Flip-Flop'))!)}
+                className="w-full justify-start bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                D-Flip Flop
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -917,22 +903,55 @@ export default function SchematicCanvas() {
       <div className="flex-1 relative">
         <canvas
           ref={canvasRef}
-          width={600}
-          height={500}
-          className="border border-slate-700 cursor-crosshair"
+          className="w-full h-full border border-slate-700 cursor-crosshair"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onWheel={(e) => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            setZoom(prev => Math.max(0.1, Math.min(5, prev * zoomFactor)));
+          }}
           id="canvas"
         />
+        
+        {/* Zoom Controls */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          <Button 
+            onClick={() => setZoom(prev => Math.min(5, prev * 1.2))}
+            size="sm"
+            className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+            title="Zoom In"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button 
+            onClick={() => setZoom(prev => Math.max(0.1, prev / 1.2))}
+            size="sm"
+            className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+            title="Zoom Out"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+        </div>
         
         {/* Canvas Controls */}
         <div className="absolute bottom-4 right-4 flex gap-2">
           <Button 
             onClick={() => window.location.reload()}
-            className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600 hover:text-slate-100"
+            className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
           >
             Reset View
+          </Button>
+          <Button 
+            onClick={goToWaveform}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+            disabled={!design || design.components.length === 0}
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View Waveforms
           </Button>
           <Button 
             onClick={() => {/* TODO: Generate HDL */}}
@@ -944,7 +963,7 @@ export default function SchematicCanvas() {
         
         {/* Status Bar */}
         <div className="absolute bottom-4 left-4 text-sm text-slate-400">
-          {design?.components.length || 0} components | {design?.wires.length || 0} wires
+          {design?.components.length || 0} components | {design?.wires.length || 0} wires | Zoom: {Math.round(zoom * 100)}%
         </div>
       </div>
     </div>
