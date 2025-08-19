@@ -1,58 +1,294 @@
 [
   {
-    "id": "dff",
-    "name": "D Flip-Flop",
-    "category": "memory",
-    "pins": [
-      { "name": "D", "type": "input", "position": "left" },
-      { "name": "CLK", "type": "input", "position": "bottom" },
-      { "name": "Q", "type": "output", "position": "right" }
-    ],
-    "symbol": "DFF",
-    "hdl": "module dff(input D, input CLK, output reg Q); always @(posedge CLK) Q <= D; endmodule"
-  },
-  {
     "id": "and_gate",
-    "name": "AND Gate",
-    "category": "logic",
-    "pins": [
-      { "name": "A", "type": "input", "position": "left" },
-      { "name": "B", "type": "input", "position": "left" },
-      { "name": "Y", "type": "output", "position": "right" }
+    "type": "logic",
+    "label": "AND Gate",
+    "ports": [
+      {"name": "A", "width": 1},
+      {"name": "B", "width": 1},
+      {"name": "Y", "width": 1}
     ],
+    "description": "Basic 2-input AND gate. Outputs 1 only when both inputs are 1, otherwise outputs 0.",
+    "verilog": "assign Y = A & B;",
+    "category": "logic",
     "symbol": "AND",
     "hdl": "module and_gate(input A, input B, output Y); assign Y = A & B; endmodule"
   },
   {
     "id": "or_gate",
-    "name": "OR Gate",
-    "category": "logic",
-    "pins": [
-      { "name": "A", "type": "input", "position": "left" },
-      { "name": "B", "type": "input", "position": "left" },
-      { "name": "Y", "type": "output", "position": "right" }
+    "type": "logic",
+    "label": "OR Gate",
+    "ports": [
+      {"name": "A", "width": 1},
+      {"name": "B", "width": 1},
+      {"name": "Y", "width": 1}
     ],
+    "description": "Basic 2-input OR gate. Outputs 1 when either input is 1, outputs 0 only when both inputs are 0.",
+    "verilog": "assign Y = A | B;",
+    "category": "logic",
     "symbol": "OR",
     "hdl": "module or_gate(input A, input B, output Y); assign Y = A | B; endmodule"
   },
   {
-    "id": "input_port",
-    "name": "Input Port",
-    "category": "io",
-    "pins": [
-      { "name": "IN", "type": "output", "position": "right" }
+    "id": "nand_gate",
+    "type": "logic",
+    "label": "NAND Gate",
+    "ports": [
+      {"name": "A", "width": 1},
+      {"name": "B", "width": 1},
+      {"name": "Y", "width": 1}
     ],
+    "description": "2-input NAND gate. Outputs 0 only when both inputs are 1, otherwise outputs 1.",
+    "verilog": "assign Y = ~(A & B);",
+    "category": "logic",
+    "symbol": "NAND",
+    "hdl": "module nand_gate(input A, input B, output Y); assign Y = ~(A & B); endmodule"
+  },
+  {
+    "id": "nor_gate",
+    "type": "logic",
+    "label": "NOR Gate",
+    "ports": [
+      {"name": "A", "width": 1},
+      {"name": "B", "width": 1},
+      {"name": "Y", "width": 1}
+    ],
+    "description": "2-input NOR gate. Outputs 1 only when both inputs are 0, otherwise outputs 0.",
+    "verilog": "assign Y = ~(A | B);",
+    "category": "logic",
+    "symbol": "NOR",
+    "hdl": "module nor_gate(input A, input B, output Y); assign Y = ~(A | B); endmodule"
+  },
+  {
+    "id": "xor_gate",
+    "type": "logic",
+    "label": "XOR Gate",
+    "ports": [
+      {"name": "A", "width": 1},
+      {"name": "B", "width": 1},
+      {"name": "Y", "width": 1}
+    ],
+    "description": "2-input XOR gate. Outputs 1 when inputs are different, outputs 0 when inputs are the same.",
+    "verilog": "assign Y = A ^ B;",
+    "category": "logic",
+    "symbol": "XOR",
+    "hdl": "module xor_gate(input A, input B, output Y); assign Y = A ^ B; endmodule"
+  },
+  {
+    "id": "not_gate",
+    "type": "logic",
+    "label": "NOT Gate",
+    "ports": [
+      {"name": "A", "width": 1},
+      {"name": "Y", "width": 1}
+    ],
+    "description": "Basic inverter. Outputs the opposite of the input (1 becomes 0, 0 becomes 1).",
+    "verilog": "assign Y = ~A;",
+    "category": "logic",
+    "symbol": "NOT",
+    "hdl": "module not_gate(input A, output Y); assign Y = ~A; endmodule"
+  },
+  {
+    "id": "dff",
+    "type": "memory",
+    "label": "D Flip-Flop",
+    "ports": [
+      {"name": "D", "width": 1},
+      {"name": "CLK", "width": 1},
+      {"name": "Q", "width": 1}
+    ],
+    "description": "Positive-edge triggered D flip-flop. Stores the input D value on each rising clock edge.",
+    "verilog": "always @(posedge CLK) Q <= D;",
+    "category": "memory",
+    "symbol": "DFF",
+    "hdl": "module dff(input D, input CLK, output reg Q); always @(posedge CLK) Q <= D; endmodule"
+  },
+  {
+    "id": "tff",
+    "type": "memory",
+    "label": "T Flip-Flop",
+    "ports": [
+      {"name": "T", "width": 1},
+      {"name": "CLK", "width": 1},
+      {"name": "Q", "width": 1}
+    ],
+    "description": "Positive-edge triggered T flip-flop. Toggles output Q when T=1 on rising clock edge.",
+    "verilog": "always @(posedge CLK) Q <= T ? ~Q : Q;",
+    "category": "memory",
+    "symbol": "TFF",
+    "hdl": "module tff(input T, input CLK, output reg Q); always @(posedge CLK) Q <= T ? ~Q : Q; endmodule"
+  },
+  {
+    "id": "jkff",
+    "type": "memory",
+    "label": "JK Flip-Flop",
+    "ports": [
+      {"name": "J", "width": 1},
+      {"name": "K", "width": 1},
+      {"name": "CLK", "width": 1},
+      {"name": "Q", "width": 1}
+    ],
+    "description": "Positive-edge triggered JK flip-flop. J=1 sets Q, K=1 resets Q, J=K=1 toggles Q.",
+    "verilog": "always @(posedge CLK) Q <= J ? (K ? ~Q : 1) : (K ? 0 : Q);",
+    "category": "memory",
+    "symbol": "JKFF",
+    "hdl": "module jkff(input J, input K, input CLK, output reg Q); always @(posedge CLK) Q <= J ? (K ? ~Q : 1) : (K ? 0 : Q); endmodule"
+  },
+  {
+    "id": "register",
+    "type": "memory",
+    "label": "Register",
+    "ports": [
+      {"name": "D", "width": 8},
+      {"name": "CLK", "width": 1},
+      {"name": "EN", "width": 1},
+      {"name": "Q", "width": 8}
+    ],
+    "description": "8-bit register with clock enable. Stores input D when EN=1 on rising clock edge.",
+    "verilog": "always @(posedge CLK) if (EN) Q <= D;",
+    "category": "memory",
+    "symbol": "REG",
+    "hdl": "module register(input [7:0] D, input CLK, input EN, output reg [7:0] Q); always @(posedge CLK) if (EN) Q <= D; endmodule"
+  },
+  {
+    "id": "counter",
+    "type": "memory",
+    "label": "Counter",
+    "ports": [
+      {"name": "CLK", "width": 1},
+      {"name": "RST", "width": 1},
+      {"name": "EN", "width": 1},
+      {"name": "COUNT", "width": 8}
+    ],
+    "description": "8-bit up counter. Increments on rising clock when EN=1, resets to 0 when RST=1.",
+    "verilog": "always @(posedge CLK) COUNT <= RST ? 0 : (EN ? COUNT + 1 : COUNT);",
+    "category": "memory",
+    "symbol": "CNT",
+    "hdl": "module counter(input CLK, input RST, input EN, output reg [7:0] COUNT); always @(posedge CLK) COUNT <= RST ? 0 : (EN ? COUNT + 1 : COUNT); endmodule"
+  },
+  {
+    "id": "mux",
+    "type": "logic",
+    "label": "Multiplexer",
+    "ports": [
+      {"name": "A", "width": 8},
+      {"name": "B", "width": 8},
+      {"name": "SEL", "width": 1},
+      {"name": "Y", "width": 8}
+    ],
+    "description": "2-to-1 multiplexer. Outputs A when SEL=0, outputs B when SEL=1.",
+    "verilog": "assign Y = SEL ? B : A;",
+    "category": "logic",
+    "symbol": "MUL",
+    "hdl": "module mux(input [7:0] A, input [7:0] B, input SEL, output [7:0] Y); assign Y = SEL ? B : A; endmodule"
+  },
+  {
+    "id": "decoder",
+    "type": "logic",
+    "label": "Decoder",
+    "ports": [
+      {"name": "IN", "width": 2},
+      {"name": "OUT0", "width": 1},
+      {"name": "OUT1", "width": 1},
+      {"name": "OUT2", "width": 1},
+      {"name": "OUT3", "width": 1}
+    ],
+    "description": "2-to-4 decoder. Activates one of four outputs based on 2-bit input value.",
+    "verilog": "assign OUT0 = (IN == 2'b00), OUT1 = (IN == 2'b01), OUT2 = (IN == 2'b10), OUT3 = (IN == 2'b11);",
+    "category": "logic",
+    "symbol": "DEC",
+    "hdl": "module decoder(input [1:0] IN, output OUT0, OUT1, OUT2, OUT3); assign OUT0 = (IN == 2'b00), OUT1 = (IN == 2'b01), OUT2 = (IN == 2'b10), OUT3 = (IN == 2'b11); endmodule"
+  },
+  {
+    "id": "adder",
+    "type": "arithmetic",
+    "label": "Adder",
+    "ports": [
+      {"name": "A", "width": 8},
+      {"name": "B", "width": 8},
+      {"name": "CIN", "width": 1},
+      {"name": "SUM", "width": 8},
+      {"name": "COUT", "width": 1}
+    ],
+    "description": "8-bit full adder with carry in and carry out. Performs A + B + CIN.",
+    "verilog": "assign {COUT, SUM} = A + B + CIN;",
+    "category": "arithmetic",
+    "symbol": "ADD",
+    "hdl": "module adder(input [7:0] A, input [7:0] B, input CIN, output [7:0] SUM, output COUT); assign {COUT, SUM} = A + B + CIN; endmodule"
+  },
+  {
+    "id": "multiplier",
+    "type": "arithmetic",
+    "label": "Multiplier",
+    "ports": [
+      {"name": "A", "width": 8},
+      {"name": "B", "width": 8},
+      {"name": "PROD", "width": 16}
+    ],
+    "description": "8x8 bit multiplier. Multiplies inputs A and B to produce 16-bit product.",
+    "verilog": "assign PROD = A * B;",
+    "category": "arithmetic",
+    "symbol": "MUL",
+    "hdl": "module multiplier(input [7:0] A, input [7:0] B, output [15:0] PROD); assign PROD = A * B; endmodule"
+  },
+  {
+    "id": "alu",
+    "type": "arithmetic",
+    "label": "ALU",
+    "ports": [
+      {"name": "A", "width": 8},
+      {"name": "B", "width": 8},
+      {"name": "OP", "width": 3},
+      {"name": "RESULT", "width": 8},
+      {"name": "ZERO", "width": 1}
+    ],
+    "description": "8-bit Arithmetic Logic Unit. Supports ADD, SUB, AND, OR, XOR operations based on OP code.",
+    "verilog": "assign RESULT = (OP == 3'b000) ? A + B : (OP == 3'b001) ? A - B : (OP == 3'b010) ? A & B : (OP == 3'b011) ? A | B : (OP == 3'b100) ? A ^ B : 8'b0;",
+    "category": "arithmetic",
+    "symbol": "ALU",
+    "hdl": "module alu(input [7:0] A, input [7:0] B, input [2:0] OP, output [7:0] RESULT, output ZERO); assign RESULT = (OP == 3'b000) ? A + B : (OP == 3'b001) ? A - B : (OP == 3'b010) ? A & B : (OP == 3'b011) ? A | B : (OP == 3'b100) ? A ^ B : 8'b0; endmodule"
+  },
+  {
+    "id": "input_port",
+    "type": "io",
+    "label": "Input Port",
+    "ports": [
+      {"name": "IN", "width": 8}
+    ],
+    "description": "8-bit input port for external signals. Connects to other components in the design.",
+    "verilog": "// Input port - connects to external signal",
+    "category": "io",
     "symbol": "IN",
     "hdl": "// Input port placeholder"
   },
   {
     "id": "output_port",
-    "name": "Output Port",
-    "category": "io",
-    "pins": [
-      { "name": "OUT", "type": "input", "position": "left" }
+    "type": "io",
+    "label": "Output Port",
+    "ports": [
+      {"name": "OUT", "width": 8}
     ],
+    "description": "8-bit output port for external signals. Connects from other components in the design.",
+    "verilog": "// Output port - connects to external signal",
+    "category": "io",
     "symbol": "OUT",
     "hdl": "// Output port placeholder"
+  },
+  {
+    "id": "fsm_template",
+    "type": "control",
+    "label": "FSM Template",
+    "ports": [
+      {"name": "CLK", "width": 1},
+      {"name": "RST", "width": 1},
+      {"name": "INPUT", "width": 8},
+      {"name": "OUTPUT", "width": 8},
+      {"name": "STATE", "width": 4}
+    ],
+    "description": "Finite State Machine template with 16 states. Includes clock, reset, input, output, and current state.",
+    "verilog": "always @(posedge CLK or posedge RST) if (RST) STATE <= 4'b0000; else case(STATE) 4'b0000: STATE <= 4'b0001; 4'b0001: STATE <= 4'b0010; default: STATE <= 4'b0000; endcase",
+    "category": "control",
+    "symbol": "FSM",
+    "hdl": "module fsm_template(input CLK, input RST, input [7:0] INPUT, output reg [7:0] OUTPUT, output reg [3:0] STATE); always @(posedge CLK or posedge RST) if (RST) STATE <= 4'b0000; else case(STATE) 4'b0000: STATE <= 4'b0001; 4'b0001: STATE <= 4'b0010; default: STATE <= 4'b0000; endcase endmodule"
   }
 ] 
