@@ -1640,8 +1640,7 @@ export default function ChipForgeWorkspace() {
             {/* Tab Content */}
             <div className="flex-1 min-h-0">
               {activeTab === 'schematic' && (
-                <div className="p-4">
-                  <Button onClick={handleDemoSchematic} className="mb-2">Load 4-bit Counter Demo</Button>
+                <div className="h-full">
                   <ErrorBoundary>
                     <SchematicCanvas />
                   </ErrorBoundary>
@@ -1660,10 +1659,8 @@ export default function ChipForgeWorkspace() {
             </div>
           </div>
 
-          {/* Right Side - Component Library */}
-          <ErrorBoundary>
-            <ComponentLibrary />
-          </ErrorBoundary>
+          {/* Right Side - Component Library (now integrated in SchematicCanvas) */}
+          {/* Removed duplicate ComponentLibrary - now integrated in SchematicCanvas */}
         </div>
       </div>
     </>

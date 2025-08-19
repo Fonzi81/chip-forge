@@ -65,12 +65,6 @@ const MAIN_NAVIGATION = [
         description: "Integrated design environment"
       },
       {
-        label: "Schematic Wizard",
-        path: "/wizard",
-        icon: Cpu,
-        description: "Step-by-step schematic builder"
-      },
-      {
         label: "Waveform Planner",
         path: "/waveform",
         icon: TestTube,
