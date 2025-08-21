@@ -215,7 +215,6 @@ export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
       wires: design.wires
     };
   },
-  waveform: {},
   waveformData: {
     signals: [],
     cycles: 16,
@@ -341,7 +340,6 @@ export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
     lines.push("endmodule");
     set({ testbenchVerilog: lines.join("\n") });
   },
-  hdlOutput: "",
   hdlScore: 0,
   setHDL: (code) => {
     set({ hdlOutput: code });
