@@ -293,7 +293,7 @@ export default function WaveformCanvas({
   return (
     <Card className="bg-slate-800 border-slate-600">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-slate-200">Waveform Visualization</CardTitle>
+                                                 <CardTitle className="text-sm text-slate-200">Waveform Visualization</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Waveform Canvas */}
@@ -344,7 +344,7 @@ export default function WaveformCanvas({
           <div className="flex items-center gap-4">
             {/* Playback Speed Control */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Speed:</span>
+                              <span className="text-xs text-slate-400">Speed:</span>
               <input
                 type="range"
                 min="0.1"
@@ -354,7 +354,7 @@ export default function WaveformCanvas({
                 onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
                 className="w-20 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
               />
-              <span className="text-xs text-slate-400 w-8">{playbackSpeed.toFixed(1)}x</span>
+                              <span className="text-xs text-slate-400 w-8">{playbackSpeed.toFixed(1)}x</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -365,7 +365,7 @@ export default function WaveformCanvas({
               >
                 <ZoomOut className="h-4 w-4" />
               </Button>
-              <span className="text-xs text-slate-400">Zoom: {zoomLevel.toFixed(1)}x</span>
+                              <span className="text-xs text-slate-400">Zoom: {zoomLevel.toFixed(1)}x</span>
               <Button
                 size="sm"
                 onClick={zoomIn}
@@ -378,7 +378,7 @@ export default function WaveformCanvas({
         </div>
 
         {/* Time Display */}
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
+                      <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
           <span>Current Time: {currentTime.toFixed(1)} ns</span>
           <span>Total Time: {simulationTime} ns</span>
           <span>Resolution: {timeResolution}</span>
@@ -388,15 +388,15 @@ export default function WaveformCanvas({
         <div className="grid grid-cols-3 gap-4 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded"></div>
-            <span className="text-slate-300">Clock Signals</span>
+                            <span className="text-slate-300">Clock Signals</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-red-500 rounded"></div>
-            <span className="text-slate-300">Reset Signals</span>
+                            <span className="text-slate-300">Reset Signals</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-emerald-500 rounded"></div>
-            <span className="text-slate-300">Data Signals</span>
+                            <span className="text-slate-300">Data Signals</span>
           </div>
         </div>
 

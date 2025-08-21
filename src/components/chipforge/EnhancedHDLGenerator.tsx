@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Bot, User, Sparkles, FileText, Lightbulb, Send, Play, Download, Copy, Check } from "lucide-react";
 import { hdlGenerator } from "@/backend/hdl-gen";
 import WaveformCanvas from "./WaveformCanvas";
+import WaveformViewer from "./WaveformViewer";
 
 interface ChatMessage {
   id: string;
@@ -24,11 +25,12 @@ export default function EnhancedHDLGenerator() {
     waveform,
     hdlOutput,
     guidedMode,
-    setHDL
+    setHDL,
+    loadFromLocalStorage
   } = useHDLDesignStore();
 
   const [activeTab, setActiveTab] = useState("generate");
-  const [generatedCode, setGeneratedCode] = useState("");
+  const [generatedCode, setGeneratedCode] = useState(hdlOutput || "");
   const [explanation, setExplanation] = useState("");
   const [generatedWaveform, setGeneratedWaveform] = useState<any>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
@@ -58,6 +60,25 @@ export default function EnhancedHDLGenerator() {
       }, 100);
     }
   }, [design]);
+
+  // Load data from localStorage when component mounts
+  useEffect(() => {
+    loadFromLocalStorage();
+  }, [loadFromLocalStorage]);
+
+  // Sync generatedCode with store and persist changes
+  useEffect(() => {
+    if (generatedCode !== hdlOutput) {
+      setHDL(generatedCode);
+    }
+  }, [generatedCode, hdlOutput, setHDL]);
+
+  // Load generatedCode from store when it changes
+  useEffect(() => {
+    if (hdlOutput && hdlOutput !== generatedCode) {
+      setGeneratedCode(hdlOutput);
+    }
+  }, [hdlOutput, generatedCode]);
 
   const generateFromSchematic = async () => {
     if (!design || design.components.length === 0) {
@@ -111,16 +132,17 @@ STRICT REQUIREMENTS:
       if (result.code) {
         setGeneratedCode(result.code);
         
-        // Generate detailed explanation with reflexion loop information
-        const detailedExplanation = `This HDL was generated from your schematic and waveform plan. Key points:
-- Reflexion loop completed successfully with AI optimization
-- Applied ${result.reflexionLoop?.iterations || 5} improvement step(s)
-- Code quality: High (synthesis-ready)
-- Module: ${result.reflexionLoop?.description || 'schematic_module'}
-- Language: Verilog (RTL style)
-- Reset strategy: Synchronous with active-low reset
-- Clock domain: Single clock domain design
-- Port count: ${design.components.reduce((acc, c) => acc + c.inputs.length + c.outputs.length, 0)} total ports
+                 // Generate detailed explanation with reflexion loop information
+         const detailedExplanation = `This HDL was generated from your schematic and waveform plan. Key points:
+
+🔵 Reflexion loop completed successfully with AI optimization
+🟢 Applied ${result.reflexionLoop?.iterations || 5} improvement step(s)
+🟡 Code quality: High (synthesis-ready)
+🔴 Module: ${result.reflexionLoop?.description || 'schematic_module'}
+🟣 Language: Verilog (RTL style)
+🟠 Reset strategy: Synchronous with active-low reset
+🔵 Clock domain: Single clock domain design
+🟢 Port count: ${design.components.reduce((acc, c) => acc + c.inputs.length + c.outputs.length, 0)} total ports
 
 The generated code follows industry best practices and is ready for synthesis.`;
         
@@ -328,7 +350,7 @@ The generated code follows industry best practices and is ready for synthesis.`;
         <div className="bg-slate-800 border-b border-slate-700 p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-slate-100">Enhanced HDL Generator</h1>
+                             <h1 className="text-xl font-bold text-slate-100">Enhanced HDL Generator</h1>
               <Badge variant="secondary" className="bg-blue-600 text-white">
                 Phase 4: Industry-Standard Waveforms
               </Badge>
@@ -364,6 +386,10 @@ The generated code follows industry best practices and is ready for synthesis.`;
                 <Sparkles className="h-4 w-4 mr-2" />
                 Generate
               </TabsTrigger>
+              <TabsTrigger value="waveforms" className="bg-slate-700 text-slate-200 data-[state=active]:bg-slate-600 data-[state=active]:text-slate-100 hover:bg-slate-600">
+                <Play className="h-4 w-4 mr-2" />
+                Waveforms
+              </TabsTrigger>
               <TabsTrigger value="log" className="bg-slate-700 text-slate-200 data-[state=active]:bg-slate-600 data-[state=active]:text-slate-100 hover:bg-slate-600">
                 <Lightbulb className="h-4 w-4 mr-2" />
                 Log
@@ -374,21 +400,21 @@ The generated code follows industry best practices and is ready for synthesis.`;
               <div className="space-y-4">
                 <Card className="bg-slate-800 border-slate-600">
                   <CardHeader>
-                    <CardTitle className="text-slate-200">HDL Code Editor</CardTitle>
+                                         <CardTitle className="text-slate-200">HDL Code Editor</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Textarea
-                      value={generatedCode}
-                      onChange={(e) => setGeneratedCode(e.target.value)}
-                      placeholder="Generated HDL code will appear here..."
-                      className="min-h-[400px] bg-slate-900 border-slate-600 text-slate-200 font-mono text-sm"
-                    />
+                                                                <Textarea
+                         value={generatedCode}
+                         onChange={(e) => setGeneratedCode(e.target.value)}
+                         placeholder="Generated HDL code will appear here..."
+                         className="min-h-[400px] bg-slate-900 border-slate-600 text-slate-200 font-mono text-sm"
+                       />
                     <div className="flex gap-2 mt-4">
-                      <Button onClick={copyToClipboard} variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-700">
+                                             <Button onClick={copyToClipboard} variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-700">
                         {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
                         {copied ? "Copied!" : "Copy Code"}
                       </Button>
-                      <Button variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-700">
+                                             <Button variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-700">
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </Button>
@@ -403,13 +429,13 @@ The generated code follows industry best practices and is ready for synthesis.`;
                 {/* Natural Language Explanation */}
                 <Card className="bg-slate-800 border-slate-600">
                   <CardHeader>
-                    <CardTitle className="text-slate-200">Natural Language Explanation</CardTitle>
+                                         <CardTitle className="text-slate-200">Natural Language Explanation</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-40 bg-slate-900">
-                      <div className="text-slate-200 text-sm p-4">
-                        {explanation || "Generate HDL code to see the explanation here..."}
-                      </div>
+                                             <div className="text-green-300 text-xs p-4 whitespace-pre-wrap">
+                         {explanation || "Generate HDL code to see the explanation here..."}
+                       </div>
                     </ScrollArea>
                   </CardContent>
                 </Card>
@@ -417,13 +443,13 @@ The generated code follows industry best practices and is ready for synthesis.`;
                 {/* Generated Verilog */}
                 <Card className="bg-slate-800 border-slate-600">
                   <CardHeader>
-                    <CardTitle className="text-slate-200">Generated Verilog</CardTitle>
+                                         <CardTitle className="text-slate-200">Generated Verilog</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-80 bg-slate-900">
-                      <pre className="text-slate-200 text-xs p-4 font-mono">
-                        {generatedCode || "Generated Verilog code will appear here..."}
-                      </pre>
+                                             <pre className="text-slate-200 text-xs p-4 font-mono">
+                         {generatedCode || "Generated Verilog code will appear here..."}
+                       </pre>
                     </ScrollArea>
                   </CardContent>
                 </Card>
@@ -445,9 +471,52 @@ The generated code follows industry best practices and is ready for synthesis.`;
               </div>
             </TabsContent>
 
+            <TabsContent value="waveforms" className="flex-1 p-6 overflow-y-auto">
+              <div className="space-y-6">
+                <Card className="bg-slate-800 border-slate-600">
+                  <CardHeader>
+                                         <CardTitle className="text-slate-200">Waveform Viewer</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <WaveformViewer />
+                  </CardContent>
+                </Card>
+                
+                {/* Waveform Canvas for advanced visualization */}
+                {Object.keys(waveform).length > 0 && (
+                  <Card className="bg-slate-800 border-slate-600">
+                    <CardHeader>
+                                             <CardTitle className="text-slate-200">Advanced Waveform Canvas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <WaveformCanvas
+                        signals={Object.keys(waveform).map(signal => ({
+                          name: signal,
+                          type: signal.toLowerCase().includes('clk') ? 'clock' : 
+                                signal.toLowerCase().includes('reset') ? 'reset' : 'data',
+                          values: Object.entries(waveform[signal]).map(([time, value]) => ({
+                            time: parseInt(time),
+                            value: value,
+                            annotation: ''
+                          })),
+                          annotations: []
+                        }))}
+                        timeResolution="10ns"
+                        simulationTime={1000}
+                        clockPeriod={20}
+                        setupTime={2}
+                        holdTime={2}
+                        onExport={() => {}}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </TabsContent>
+
             <TabsContent value="log" className="flex-1 p-6">
               <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-100 mb-4">Activity Log</h3>
+                                 <h3 className="text-lg font-semibold text-slate-100 mb-4">Activity Log</h3>
                 <div className="bg-slate-900 p-4 rounded text-xs text-green-300 whitespace-pre-wrap max-h-60 overflow-y-auto border border-slate-600">
                   {log.length > 0 ? log.join("\n") : "No activity yet. Start coding or generating HDL to see logs here."}
                 </div>
@@ -462,9 +531,9 @@ The generated code follows industry best practices and is ready for synthesis.`;
         <div className="p-4 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-blue-400" />
-            <h3 className="font-semibold text-slate-100">AI Coding Assistant</h3>
+                         <h3 className="font-semibold text-slate-100">AI Coding Assistant</h3>
           </div>
-          <p className="text-sm text-slate-400 mt-1">Ask me anything about HDL coding!</p>
+                                             <p className="text-sm text-slate-400 mt-1">Ask me anything about HDL coding!</p>
         </div>
 
         {/* Chat Messages - Scrollable Area */}

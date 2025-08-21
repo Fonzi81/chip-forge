@@ -59,9 +59,9 @@ export default function WaveformViewer() {
         <table className="text-sm text-white min-w-max">
           <thead>
             <tr>
-              <th className="text-left pr-4">Signal</th>
+                             <th className="text-left pr-4">Signal</th>
               {Array.from({ length: maxCycles }).map((_, i) => (
-                <th key={i} className="w-6 text-xs text-center">{i}</th>
+                                 <th key={i} className="w-6 text-xs text-center">{i}</th>
               ))}
             </tr>
           </thead>
