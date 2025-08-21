@@ -23,6 +23,7 @@ import AdvancedChipDesign from "./pages/AdvancedChipDesign";
 import AdvancedLayoutDesigner from "./pages/AdvancedLayoutDesignerPage";
 import LayoutEditorPage from "./pages/LayoutEditorPage";
 import CrossSectionViewerPage from "./pages/CrossSectionViewerPage";
+import SynthesisPage from "./pages/SynthesisPage";
 import ProfessionalChip3DViewer from "./components/chipforge/ProfessionalChip3DViewer";
 import ChipForgeWorkspace from "./pages/ChipForgeWorkspace";
 import SimulationEnvironment from "./pages/SimulationEnvironment";
@@ -62,6 +63,7 @@ const App = () => (
             
             {/* Phase 1-3 Development Pages */}
             <Route path="/hdl-generator" element={<HDLGeneratorPage />} />
+            <Route path="/synthesis" element={<SynthesisPage />} />
             <Route path="/test-native-simulator" element={<TestNativeSimulator />} />
             <Route path="/advanced-chip-design" element={<AdvancedChipDesign />} />
             <Route path="/advanced-layout-designer" element={<AdvancedLayoutDesigner />} />

@@ -85,6 +85,8 @@ interface HDLDesignState {
 
 const LOCAL_STORAGE_KEY = 'chipforge-hdl-design';
 const GUIDED_MODE_KEY = 'chipforge-guided-mode';
+const WAVEFORM_STORAGE_KEY = 'chipforge-waveform-data';
+const HDL_OUTPUT_KEY = 'chipforge-hdl-output';
 
 // Load guided mode from localStorage
 const loadGuidedMode = () => {
@@ -103,9 +105,37 @@ const loadGuidedMode = () => {
   };
 };
 
+// Load waveform data from localStorage
+const loadWaveformData = () => {
+  try {
+    const saved = localStorage.getItem(WAVEFORM_STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.warn('Failed to load waveform data from localStorage:', error);
+  }
+  return {};
+};
+
+// Load HDL output from localStorage
+const loadHDLOutput = () => {
+  try {
+    const saved = localStorage.getItem(HDL_OUTPUT_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.warn('Failed to load HDL output from localStorage:', error);
+  }
+  return "";
+};
+
 export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
   design: null,
   guidedMode: loadGuidedMode(),
+  waveform: loadWaveformData(),
+  hdlOutput: loadHDLOutput(),
   setDesign: (design) => {
     set({ design });
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(design));
@@ -121,6 +151,14 @@ export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
   loadFromLocalStorage: () => {
     const data = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (data) set({ design: JSON.parse(data) });
+    
+    // Also load waveform data
+    const waveformData = localStorage.getItem(WAVEFORM_STORAGE_KEY);
+    if (waveformData) set({ waveform: JSON.parse(waveformData) });
+    
+    // Also load HDL output
+    const hdlOutput = localStorage.getItem(HDL_OUTPUT_KEY);
+    if (hdlOutput) set({ hdlOutput: JSON.parse(hdlOutput) });
   },
   addComponent: (component) => {
     set((state) => {
@@ -190,9 +228,12 @@ export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
   },
   testbenchVerilog: "",
   setWaveformSignal: (signal, values) => {
-    set((state) => ({
-      waveform: { ...state.waveform, [signal]: values }
-    }));
+    set((state) => {
+      const newWaveform = { ...state.waveform, [signal]: values };
+      // Persist waveform data to localStorage
+      localStorage.setItem('chipforge-waveform-data', JSON.stringify(newWaveform));
+      return { waveform: newWaveform };
+    });
   },
   setWaveformData: (data) => {
     set({ waveformData: data });
@@ -302,7 +343,11 @@ export const useHDLDesignStore = create<HDLDesignState>((set, get) => ({
   },
   hdlOutput: "",
   hdlScore: 0,
-  setHDL: (code) => set({ hdlOutput: code }),
+  setHDL: (code) => {
+    set({ hdlOutput: code });
+    // Persist HDL output to localStorage
+    localStorage.setItem('chipforge-hdl-output', JSON.stringify(code));
+  },
   setHDLScore: (score) => set({ hdlScore: score }),
   simResults: {},
   setSimResults: (results) => set({ simResults: results }),

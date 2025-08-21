@@ -683,6 +683,12 @@ export default function SchematicCanvas() {
     }
   }, [design?.components.length]);
 
+  // Navigate to HDL generator and auto-trigger generation
+  const goToHDLGenerator = () => {
+    // Navigate to the HDL generator page with auto-generate parameter
+    navigate('/hdl-generator?auto-generate=true');
+  };
+
   return (
     <div className="relative w-full h-[80vh] bg-slate-800 rounded flex">
       {/* Left Sidebar: Component Library & Guided Mode */}
@@ -763,10 +769,25 @@ export default function SchematicCanvas() {
 
           {/* Component Categories */}
           <Tabs defaultValue="logic" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-slate-700">
-              <TabsTrigger value="logic" className="text-xs">Logic</TabsTrigger>
-              <TabsTrigger value="memory" className="text-xs">Memory</TabsTrigger>
-              <TabsTrigger value="arithmetic" className="text-xs">Math</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 bg-slate-700 border border-slate-600 rounded-md p-1">
+              <TabsTrigger 
+                value="logic" 
+                className="text-xs bg-slate-700 text-slate-200 hover:bg-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white rounded-sm"
+              >
+                Logic
+              </TabsTrigger>
+              <TabsTrigger 
+                value="memory" 
+                className="text-xs bg-slate-700 text-slate-200 hover:bg-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white rounded-sm"
+              >
+                Memory
+              </TabsTrigger>
+              <TabsTrigger 
+                value="arithmetic" 
+                className="text-xs bg-slate-700 text-slate-200 hover:bg-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white rounded-sm"
+              >
+                Math
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="logic" className="mt-4 space-y-2">
@@ -954,10 +975,12 @@ export default function SchematicCanvas() {
             View Waveforms
           </Button>
           <Button 
-            onClick={() => {/* TODO: Generate HDL */}}
+            onClick={goToHDLGenerator}
             className="bg-cyan-600 hover:bg-cyan-700 text-white"
+            title="Navigate to HDL Generator and auto-generate code from schematic"
+            disabled={!design || design.components.length === 0}
           >
-            Generate HDL
+            🚀 Generate HDL
           </Button>
         </div>
         
