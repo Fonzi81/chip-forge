@@ -92,7 +92,7 @@ const WORKFLOW_STAGES = [
   { id: 'waveform', label: 'Waveform Planning', path: '/waveform', status: 'pending' },
   { id: 'hdl', label: 'HDL Code', path: '/hdl-generator', status: 'pending' },
   { id: 'simulation', label: 'Simulation', path: '/test-native-simulator', status: 'pending' },
-  { id: 'synthesis', label: 'Synthesis', path: '/advanced-chip-design', status: 'pending' },
+  { id: 'synthesis', label: 'Synthesis', path: '/synthesis', status: 'pending' },
   { id: 'layout', label: 'Layout', path: '/advanced-layout-designer', status: 'pending' },
   { id: 'export', label: 'Export', path: '/export', status: 'pending' }
 ];
