@@ -361,16 +361,24 @@ The generated code follows industry best practices and is ready for synthesis.`;
                 {hdlScore === 1.0 ? "100% Quality" : `${Math.round(hdlScore * 100)}% Quality`}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={generateFromSchematic}
-                disabled={isGenerating || !design || design.components.length === 0}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                {isGenerating ? "Generating..." : "Generate HDL"}
-              </Button>
-            </div>
+                         <div className="flex items-center gap-2">
+               <Button
+                 onClick={() => window.open('/waveform', '_blank')}
+                 variant="outline"
+                 className="border-slate-600 text-slate-200 hover:bg-slate-700"
+               >
+                 <Play className="h-4 w-4 mr-2" />
+                 Waveform Planner
+               </Button>
+               <Button
+                 onClick={generateFromSchematic}
+                 disabled={isGenerating || !design || design.components.length === 0}
+                 className="bg-blue-600 hover:bg-blue-700 text-white"
+               >
+                 <Sparkles className="h-4 w-4 mr-2" />
+                 {isGenerating ? "Generating..." : "Generate HDL"}
+               </Button>
+             </div>
           </div>
         </div>
 
@@ -455,7 +463,7 @@ The generated code follows industry best practices and is ready for synthesis.`;
                 </Card>
 
                 {/* Waveform Visualization */}
-                {generatedWaveform && (
+                {generatedWaveform ? (
                   <div className="mt-4">
                     <WaveformCanvas
                       signals={generatedWaveform.signals}
@@ -467,23 +475,68 @@ The generated code follows industry best practices and is ready for synthesis.`;
                       onExport={() => exportWaveform(generatedWaveform)}
                     />
                   </div>
+                ) : (
+                  <Card className="bg-slate-800 border-slate-600">
+                    <CardHeader>
+                      <CardTitle className="text-slate-200">Waveform Generation</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-6">
+                        <div className="text-slate-400 mb-3">
+                          <Play className="h-8 w-8 mx-auto mb-2" />
+                          <p>Generate HDL code to create waveforms</p>
+                        </div>
+                        <p className="text-slate-500 text-sm">
+                          Click "Generate HDL" above to create code and generate waveform visualization
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </TabsContent>
 
             <TabsContent value="waveforms" className="flex-1 p-6 overflow-y-auto">
               <div className="space-y-6">
-                <Card className="bg-slate-800 border-slate-600">
-                  <CardHeader>
+                {Object.keys(waveform).length > 0 ? (
+                  <>
+                    <Card className="bg-slate-800 border-slate-600">
+                      <CardHeader>
                                          <CardTitle className="text-slate-200">Waveform Viewer</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <WaveformViewer />
-                  </CardContent>
-                </Card>
+                      </CardHeader>
+                      <CardContent>
+                        <WaveformViewer />
+                      </CardContent>
+                    </Card>
+                  </>
+                ) : (
+                  <Card className="bg-slate-800 border-slate-600">
+                    <CardHeader>
+                      <CardTitle className="text-slate-200">No Waveform Data</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <div className="text-slate-400 mb-4">
+                          <Play className="h-12 w-12 mx-auto mb-2" />
+                          <p>No waveform data available</p>
+                        </div>
+                        <p className="text-slate-500 text-sm mb-4">
+                          Create waveform patterns first to visualize your design behavior
+                        </p>
+                        <Button 
+                          onClick={() => window.open('/waveform', '_blank')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Open Waveform Planner
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 
                 {/* Waveform Canvas for advanced visualization */}
-                {Object.keys(waveform).length > 0 && (
+                {Object.keys(waveform).length > 0 ? (
                   <Card className="bg-slate-800 border-slate-600">
                     <CardHeader>
                                              <CardTitle className="text-slate-200">Advanced Waveform Canvas</CardTitle>
@@ -508,6 +561,30 @@ The generated code follows industry best practices and is ready for synthesis.`;
                         holdTime={2}
                         onExport={() => {}}
                       />
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="bg-slate-800 border-slate-600">
+                    <CardHeader>
+                      <CardTitle className="text-slate-200">No Waveform Data</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <div className="text-slate-400 mb-4">
+                          <Play className="h-12 w-12 mx-auto mb-2" />
+                          <p>No waveform data available</p>
+                        </div>
+                        <p className="text-slate-500 text-sm mb-4">
+                          Create waveform patterns first to visualize your design behavior
+                        </p>
+                        <Button 
+                          onClick={() => window.open('/waveform', '_blank')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Open Waveform Planner
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
